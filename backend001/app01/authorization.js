@@ -5,7 +5,6 @@ const secretKey = "secretKey";
 // 生成token
 var generateToken = function (payload) { 
   const token =
-    "Bearer " +
     jwt.sign(payload, secretKey, {
       expiresIn: 60 * 60,
     });
