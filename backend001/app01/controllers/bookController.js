@@ -23,6 +23,17 @@ const bookDetailAPI = (req, res) => {
   });
 }
 
+const bookDetail2API = (req, res) => {
+  // Check if the request has a token in the header
+  if (!req.headers.authorization) {
+    return res.json({ code: "200000", msg: "token无效" });
+  }
+  verifyToken(req, res, () => {
+    console.log('token验证通过');
+    getTheBook(req, res);
+  });
+}
+
 const addBookAPI = (req, res) => {
   // Check if the request has a token in the header
   if (!req.headers.authorization) {
@@ -64,7 +75,18 @@ const getBookList = (req, res) => {
     console.log('Connected to the database');
     // Logic to get all books
     // let sql = 'SELECT * FROM tbl_books';
-    let sql = `SELECT * FROM tbl_books LIMIT ${limit} OFFSET ${offset}`;
+    // let sql = `SELECT * FROM tbl_books LIMIT ${limit} OFFSET ${offset}`;
+    let sql = `SELECT * FROM tbl_books bt where 1=1`;
+    if (req.query.book.title) {
+      sql += ` AND bt.title like '%${req.query.book.title}%'`;
+    }
+    if (req.query.book.author) {
+      sql += ` AND bt.author like '%${req.query.book.author}%'`;
+    }
+    if (req.query.book.publisher) {
+      sql += ` AND bt.publisher like '%${req.query.book.publisher}%'`;
+    }
+    sql += ` LIMIT ${limit} OFFSET ${offset}`;
     // let sql = `SELECT count(*) FROM tbl_books `;
     console.log('sql:', sql);
     connection.query(sql, (error, results, fields) => {
@@ -103,11 +125,23 @@ const getTheBook = (req, res) => {
       return;
     }
     // console.log('Connected to the database');
-    // console.log('req.body:', req.body);
-    // console.log('req.query:', req.query);
+    console.log('req.body:', req.body);
+    console.log('req.query:', req.query);
     console.log('req.params:', req.params);
     // Logic to get a book by ID
-    let sql = `SELECT * FROM tbl_books WHERE bookId = '${req.params.bookId}'`;
+    let sql = `SELECT * FROM tbl_books tb WHERE tb.bookId = '${req.params.bookId}'`;
+    // if (req.params.book.bookId) {
+    //   sql += ` AND tb.bookId = '${req.params.bookId}'`;
+    // }
+    // if (req.query.title) {
+    //   sql += ` AND tb.title = '${req.query.title}'`;
+    // }
+    // if (req.query.author) {
+    //   sql += ` AND tb.author = '${req.query.author}'`;
+    // }
+    // if (req.query.publisher) {
+    //   sql += ` AND tb.publisher = '${req.query.publisher}'`;
+    // }
     console.log('sql:', sql);
     connection.query(sql, (error, results, fields) => {
       if (error) {
@@ -209,6 +243,7 @@ const updateTheBook = (req, res) => {
 module.exports = {
   bookListAPI,
   bookDetailAPI,
+  // bookDetail2API,
   addBookAPI,
   updateBookAPI
 };
