@@ -23,7 +23,27 @@ const bookDetailAPI = (req, res) => {
   });
 }
 
+const addBookAPI = (req, res) => {
+  // Check if the request has a token in the header
+  if (!req.headers.authorization) {
+    return res.json({ code: "200000", msg: "token无效" });
+  }
+  verifyToken(req, res, () => {
+    console.log('token验证通过');
+    addTheBook(req, res);
+  });
+}
 
+const updateBookAPI = (req, res) => {
+  // Check if the request has a token in the header
+  if (!req.headers.authorization) {
+    return res.json({ code: "200000", msg: "token无效" });
+  }
+  verifyToken(req, res, () => {
+    console.log('token验证通过');
+    updateTheBook(req, res);
+  });
+}
 
 
 
@@ -46,12 +66,14 @@ const getBookList = (req, res) => {
     console.log('sql:', sql);
     connection.query(sql, (error, results, fields) => {
       if (error) {
-        throw error;
+        // throw error;
+        return res.json({ code: '999999', msg: 'ERROR : ' + error});
       }
       console.log('results:', results);
       connection.execute(`SELECT count(*) FROM tbl_books`, (error, results2, fields) => {
         if (error) {
-          throw error;
+          // throw error;
+          return res.json({ code: '999999', msg: 'ERROR : ' + error});
         }
         console.log('results count:', results2);
         let count = results2[0]['count(*)'];
@@ -69,7 +91,7 @@ const getBookList = (req, res) => {
     connection.release();
   });
 }
-
+// 获取书籍详情
 const getTheBook = (req, res) => {
   // Get a connection from the pool
   pool.getConnection((err, connection) => {
@@ -86,7 +108,8 @@ const getTheBook = (req, res) => {
     console.log('sql:', sql);
     connection.query(sql, (error, results, fields) => {
       if (error) {
-        throw error;
+        // throw error;
+        return res.json({ code: '999999', msg: 'ERROR : ' + error});
       }
       if (results.length === 0) {
         return res.json({ code: '100001', msg: 'book not found'});
@@ -98,8 +121,91 @@ const getTheBook = (req, res) => {
   });
 }
 
+// 添加书籍
+const addTheBook = (req, res) => {
+  // Get a connection from the pool
+  pool.getConnection((err, connection) => {
+    if (err) {
+      console.error('Failed to connect to the database:', err);
+      return;
+    }
+    let userInfo = req.decoded; // { username: 'sniper', iat: 1716979789, exp: 1716983389 }
+    req.body.updated_by = userInfo.username;
+    req.body.created_by = userInfo.username;
+    req.body.created_at = new Date();
+    req.body.updated_at = new Date();
+    console.log('req.params:', req.params);
+    // Logic to get a book by ID
+    // let sql = `INSERT INTO tbl_books (bookId, title, author, price, publisher, pubdate, type, created_by, updated_by, created_at, updated_at) VALUES (
+    //   '${req.body.bookId}',
+    //   '${req.body.title}',
+    //   '${req.body.author}',
+    //   '${req.body.price}',
+    //   '${req.body.publisher}',
+    //   '${req.body.pubdate}',
+    //   '${req.body.type}',
+    //   '${req.body.created_by}',
+    //   '${req.body.updated_by}',
+    //   '${created_at}', 
+    //   '${updated_at}'
+    // )`;
+    let sql = `INSERT INTO tbl_books SET ?`;
+    console.log('sql:', sql);
+    connection.query(sql, req.body, (error, results, fields) => {
+    // connection.query(sql, (error, results, fields) => {
+      if (error) {
+        // throw error;
+        return res.json({ code: '100002', msg: 'add book failed' + error});
+      }
+      return res.json({ code: '000000', msg: 'success', data: results[0]});
+    });
+    // Release the connection
+    connection.release();
+  });
+}
+
+// 修改书籍
+const updateTheBook = (req, res) => {
+  // Get a connection from the pool
+  pool.getConnection((err, connection) => {
+    if (err) {
+      console.error('Failed to connect to the database:', err);
+      return;
+    }
+    console.log('req.body:', req.body);
+    let userInfo = req.decoded; // { username: 'sniper', iat: 1716979789, exp: 1716983389 }
+    req.body.updated_by = userInfo.username;
+    // console.log('req.query:', req.query);
+    // console.log('req.params:', req.params);
+    // 从token中获取用户信息
+    // console.log('req.user:', req.user);
+    // Logic to get a book by ID
+    // let sql = `UPDATE tbl_books SET title = '${req.body.title}', author = '${req.body.author}', price = '${req.body.price}', publisher = '${req.body.publisher}', pubdate = '${req.body.pubdate}', type = '${req.body.type}' WHERE bookId = '${req.params.bookId}'`;
+    let sql = `UPDATE tbl_books SET ? WHERE bookId = '${req.params.bookId}'`;
+    console.log('sql:', sql);
+    connection.query(sql, req.body, (error, results, fields) => {
+      if (error) {
+        // throw error;
+        return res.json({ code: '100003', msg: 'update book failed' + error});
+      }
+      return res.json({ code: '000000', msg: 'success', data: results[0]});
+    });
+    // connection.query(sql, (error, results, fields) => {
+    //   if (error) {
+    //     // throw error;
+    //     return res.json({ code: '100003', msg: 'update book failed' + error});
+    //   }
+    //   return res.json({ code: '000000', msg: 'success', data: results[0]});
+    // });
+    // Release the connection
+    connection.release();
+  });
+}
+
 // Export your controller functions
 module.exports = {
   bookListAPI,
-  bookDetailAPI
+  bookDetailAPI,
+  addBookAPI,
+  updateBookAPI
 };

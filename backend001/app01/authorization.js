@@ -6,7 +6,7 @@ const secretKey = "secretKey";
 var generateToken = function (payload) { 
   const token =
     jwt.sign(payload, secretKey, {
-      expiresIn: 60 * 60,
+      expiresIn: 3 * 60 * 60,
     });
   return token;
 };
@@ -20,6 +20,7 @@ var verifyToken = function (req, res, next) {
       return res.json({ code: "404", msg: "token无效" });
     }
     console.log("verify decoded", decoded);
+    req.decoded = decoded;
     next();
   });
 };
