@@ -1,21 +1,9 @@
 var express = require('express');
-
 var router = express.Router();
+var movieController = require('../controllers/movieController');
 
 // GET /movies
-router.get('/movie-list', (req, res) => {
-  // Logic to fetch all movies from the database
-  // Replace this with your own implementation
-  // 打印req
-  // console.log('movie-list req:', req);
-  const movies = [
-    { id: 1, title: 'Movie 1' },
-    { id: 2, title: 'Movie 2' },
-    { id: 3, title: 'Movie 3' }
-  ];
-
-  res.json(movies);
-});
+router.get('/movie-list', movieController.movieList);
 
 // GET /movies/:id
 router.get('/detail/:id', (req, res) => {

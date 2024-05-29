@@ -1,6 +1,7 @@
 // Import any required modules or dependencies here
 // import db
 var pool = require('../config/db');
+const { generateToken, verifyToken } = require('../authorization');
 
 // Define your controller functions
 const userList = (req, res) => {
@@ -61,14 +62,35 @@ const deleteUser = (req, res) => {
 
 // login
 const login = (req, res) => {
-  // 如果用户名和密码都是sniper，返回登录成功
-  if (req.body.username === 'sniper' && req.body.password === 'sniper') {
-    res.json({ message: 'Login success' });
-  } else {
-    res.json({ message: 'Login failed' });
-  }
-  // Logic to login
-  // res.json({ message: 'Login' });
+  // 登录
+  pool.getConnection((err, connection) => {
+    if (err) {
+      console.error('Failed to connect to the database:', err);
+      return;
+    }
+    console.log('Connected to the database');
+    // Logic to get the user of the specified username
+    let sql = 'SELECT username, password FROM tbl_myusers tm WHERE username = ?';
+    // Logic to get all users
+    connection.query(sql, [req.body.username], (error, results, fields) => {
+      if (error) {
+        throw error;
+      }
+      if (results.length > 0) {
+        console.log('results:', results);
+        if (results[0].password === req.body.password) {
+          let token = generateToken({ username: req.body.username });
+          res.json({ code: '000000', msg: 'success', data: { token: token, username: req.body.username}});
+        } else {
+          res.json({ code: '100001', msg: '密码错误'});
+        }
+      } else {
+        res.json({ code: '100002', msg: '用户不存在'});
+      }
+    });
+    // Release the connection
+    connection.release();
+  });
 };
 
 // Export your controller functions
