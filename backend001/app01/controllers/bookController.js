@@ -49,8 +49,11 @@ const updateBookAPI = (req, res) => {
 
 // 获取书籍列表
 const getBookList = (req, res) => {
-  let page = req.body.page || 1;
-  let limit = req.body.limit || 10;
+  console.log('req.body:', req.body);
+  console.log('req.query:', req.query);
+  console.log('req.params:', req.params);
+  let page = req.query.page || 1;
+  let limit = req.query.limit || 10;
   let offset = (page - 1) * limit;
   // Get a connection from the pool
   pool.getConnection((err, connection) => {
@@ -69,7 +72,7 @@ const getBookList = (req, res) => {
         // throw error;
         return res.json({ code: '999999', msg: 'ERROR : ' + error});
       }
-      console.log('results:', results);
+      // console.log('results:', results);
       connection.execute(`SELECT count(*) FROM tbl_books`, (error, results2, fields) => {
         if (error) {
           // throw error;
