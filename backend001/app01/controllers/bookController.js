@@ -1,5 +1,6 @@
 var pool = require('../config/db');
 const { verifyToken } = require('../authorization');
+const moment = require('moment');
 
 const bookListAPI = (req, res) => {
   // Check if the request has a token in the header
@@ -90,6 +91,10 @@ const getBookList = (req, res) => {
     // let sql = `SELECT count(*) FROM tbl_books `;
     console.log('sql:', sql);
     connection.query(sql, (error, results, fields) => {
+      // 遍历results，将pubdate转换为yyyy-MM-dd格式
+      results.forEach(item => {
+        item.pubdate = moment(item.pubdate).format('YYYY-MM-DD');
+      });
       if (error) {
         // throw error;
         return res.json({ code: '999999', msg: 'ERROR : ' + error});
