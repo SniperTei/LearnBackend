@@ -1,5 +1,6 @@
 const { query } = require('express');
 const bookDAO = require('../dao/bookDAO');
+const moment = require('moment');
 
 // Import the book DAO module
 const bookService = {
@@ -14,6 +15,10 @@ const bookService = {
       // Call the getBookById method of the book DAO
       let result = await bookDAO.getBookList(page, limit, condition);
       let count = await bookDAO.getBookCount(condition);
+      // 遍历result，将每个book的pudate转换为yyyy-MM-dd格式
+      result.forEach((book) => {
+        book.pubdate = moment(book.pubdate).format('YYYY-MM-DD');
+      });
       console.log('result:', result);
       console.log('count:', count);
       return { list: result, count: count };
