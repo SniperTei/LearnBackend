@@ -1,6 +1,7 @@
 var pool = require('../config/db');
 const { verifyToken } = require('../authorization');
 const moment = require('moment');
+const bookDAO = require('../dao/bookDAO');
 
 const bookListAPI = (req, res) => {
   // Check if the request has a token in the header
@@ -67,59 +68,81 @@ const getBookList = (req, res) => {
   let page = req.query.page || 1;
   let limit = req.query.limit || 10;
   let offset = (page - 1) * limit;
-  // Get a connection from the pool
-  pool.getConnection((err, connection) => {
+  bookDAO.getBookList(page, limit, req.query.book, (err, result) => {
     if (err) {
-      console.error('Failed to connect to the database:', err);
-      return;
+      console.error('An error occurred:', err);
+      return res.json({ code: '999999', msg: 'ERROR : ' + err});
     }
-    console.log('Connected to the database');
-    // Logic to get all books
-    // let sql = 'SELECT * FROM tbl_books';
-    // let sql = `SELECT * FROM tbl_books LIMIT ${limit} OFFSET ${offset}`;
-    let sql = `SELECT * FROM tbl_books bt where 1=1`;
-    if (req.query.book.title) {
-      sql += ` AND bt.title like '%${req.query.book.title}%'`;
-    }
-    if (req.query.book.author) {
-      sql += ` AND bt.author like '%${req.query.book.author}%'`;
-    }
-    if (req.query.book.publisher) {
-      sql += ` AND bt.publisher like '%${req.query.book.publisher}%'`;
-    }
-    sql += ` LIMIT ${limit} OFFSET ${offset}`;
-    // let sql = `SELECT count(*) FROM tbl_books `;
-    console.log('sql:', sql);
-    connection.query(sql, (error, results, fields) => {
-      // 遍历results，将pubdate转换为yyyy-MM-dd格式
-      results.forEach(item => {
-        item.pubdate = moment(item.pubdate).format('YYYY-MM-DD');
-      });
-      if (error) {
-        // throw error;
-        return res.json({ code: '999999', msg: 'ERROR : ' + error});
-      }
-      // console.log('results:', results);
-      connection.execute(`SELECT count(*) FROM tbl_books`, (error, results2, fields) => {
-        if (error) {
-          // throw error;
-          return res.json({ code: '999999', msg: 'ERROR : ' + error});
-        }
-        console.log('results count:', results2);
-        let count = results2[0]['count(*)'];
-        return res.json({ code: '000000', msg: 'success', data: { 
-          list: results,
-          total: count,
-          page: page,
-          limit: limit
-        }});
-      });
-      // res.json({ code: '000000', msg: 'success', data: { list: results, total: results.length}});
-      // res.json({ code: '000000', msg: 'success'});
+    // 遍历results，将pubdate转换为yyyy-MM-dd格式
+    result.forEach(item => {
+      item.pubdate = moment(item.pubdate).format('YYYY-MM-DD');
     });
-    // Release the connection
-    connection.release();
+    bookDAO.getBookCount(req.query.book, (err, count) => {
+      if (err) {
+        console.error('An error occurred:', err);
+        return res.json({ code: '999999', msg: 'ERROR : ' + err});
+      }
+      return res.json({ code: '000000', msg: 'success', data: { 
+        list: result,
+        total: count,
+        page: page,
+        limit: limit
+      }});
+    });
   });
+  // Get a connection from the pool
+  // pool.getConnection((err, connection) => {
+  //   if (err) {
+  //     console.error('Failed to connect to the database:', err);
+  //     return;
+  //   }
+  //   console.log('Connected to the database');
+  //   // Logic to get all books
+  //   // let sql = 'SELECT * FROM tbl_books';
+  //   // let sql = `SELECT * FROM tbl_books LIMIT ${limit} OFFSET ${offset}`;
+  //   let sql = `SELECT * FROM tbl_books bt where 1=1`;
+  //   if (req.query.book.title) {
+  //     sql += ` AND bt.title like '%${req.query.book.title}%'`;
+  //   }
+  //   if (req.query.book.author) {
+  //     sql += ` AND bt.author like '%${req.query.book.author}%'`;
+  //   }
+  //   if (req.query.book.publisher) {
+  //     sql += ` AND bt.publisher like '%${req.query.book.publisher}%'`;
+  //   }
+  //   sql += ` LIMIT ${limit} OFFSET ${offset}`;
+  //   // let sql = `SELECT count(*) FROM tbl_books `;
+  //   console.log('sql:', sql);
+  //   connection.query(sql, (error, results, fields) => {
+  //     // 遍历results，将pubdate转换为yyyy-MM-dd格式
+  //     results.forEach(item => {
+  //       item.pubdate = moment(item.pubdate).format('YYYY-MM-DD');
+  //     });
+  //     if (error) {
+  //       // throw error;
+  //       return res.json({ code: '999999', msg: 'ERROR : ' + error});
+  //     }
+  //     // console.log('results:', results);
+  //     connection.execute(`SELECT count(*) FROM tbl_books`, (error, results2, fields) => {
+  //       if (error) {
+  //         // throw error;
+  //         return res.json({ code: '999999', msg: 'ERROR : ' + error});
+  //       }
+  //       console.log('results count:', results2);
+  //       let count = results2[0]['count(*)'];
+  //       return res.json({ code: '000000', msg: 'success', data: { 
+  //         list: results,
+  //         total: count,
+  //         page: page,
+  //         limit: limit
+  //       }});
+  //     });
+  //     // res.json({ code: '000000', msg: 'success', data: { list: results, total: results.length}});
+  //     // res.json({ code: '000000', msg: 'success'});
+  //   });
+  //   // Release the connection
+  //   connection.release();
+  // });
 }
 // 获取书籍详情
 const getTheBook = (req, res) => {
