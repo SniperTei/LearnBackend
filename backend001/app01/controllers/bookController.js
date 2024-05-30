@@ -75,14 +75,31 @@ const updateBookAPI = (req, res) => {
 }
 
 // 删除书籍
-const deleteBookAPI = (req, res) => {
+const physicalDeleteBookAPI = (req, res) => {
   // Check if the request has a token in the header
   if (!req.headers.authorization) {
     return res.json({ code: "200000", msg: "token无效" });
   }
   verifyToken(req, res, () => {
     console.log('token验证通过');
-    bookService.deleteBook(req.body).then((result) => {
+    bookService.physicalDeleteBook(req.query).then((result) => {
+      console.log('service result:', result);
+      return res.json({ code: '000000', msg: 'success', data: result});
+    }).catch((error) => {
+      console.error('An error occurred:', error);
+      return res.json({ code: '999999', msg: 'ERROR : ' + error});
+    });
+  });
+}
+
+const logicalDeleteBookAPI = (req, res) => {
+  // Check if the request has a token in the header
+  if (!req.headers.authorization) {
+    return res.json({ code: "200000", msg: "token无效" });
+  }
+  verifyToken(req, res, () => {
+    console.log('token验证通过');
+    bookService.logicalDeleteBook(req.params).then((result) => {
       console.log('service result:', result);
       return res.json({ code: '000000', msg: 'success', data: result});
     }).catch((error) => {
@@ -97,5 +114,7 @@ module.exports = {
   bookListAPI,
   bookDetailAPI,
   addBookAPI,
-  updateBookAPI
+  updateBookAPI,
+  physicalDeleteBookAPI,
+  logicalDeleteBookAPI
 };

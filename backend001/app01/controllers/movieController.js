@@ -57,9 +57,9 @@ const addMovie = (req, res) => {
   verifyToken(req, res, () => {
     console.log('token验证通过');
     // Call the movieService module's addMovie method
-    movieService.addMovie(req.body).then((result) => {
+    movieService.addMovie(req.query).then((result) => {
       console.log('service result:', result);
-      return res.json({ code: '000000', msg: 'success', data: result});
+      return res.json({ code: '000000', msg: 'success'});
     }
     ).catch((error) => {
       console.error('An error occurred:', error);
@@ -90,7 +90,7 @@ const updateMovie = (req, res) => {
   });
 }
 
-const deleteMovie = (req, res) => {
+const physicalDeleteMovie = (req, res) => {
   // 如果没登录
   if (!req.headers.authorization) {
     return res.json({ code: "200000", msg: "token无效" });
@@ -98,10 +98,31 @@ const deleteMovie = (req, res) => {
   // 验证token
   verifyToken(req, res, () => {
     console.log('token验证通过');
+    console.log('req.query:', req.query); // DELETE
     // Call the movieService module's deleteMovie method
-    movieService.deleteMovie(req.params.movieId).then((result) => {
+    movieService.physicalDeleteMovie(req.query).then((result) => {
       console.log('service result:', result);
-      return res.json({ code: '000000', msg: 'success', data: result});
+      return res.json({ code: '000000', msg: 'success'});
+    }).catch((error) => {
+      console.error('An error occurred:', error);
+      return res.json({ code: '999999', msg: 'ERROR : ' + error});
+    });
+  });
+}
+
+const logicDeleteMovie = (req, res) => {
+  // 如果没登录
+  if (!req.headers.authorization) {
+    return res.json({ code: "200000", msg: "token无效" });
+  }
+  // 验证token
+  verifyToken(req, res, () => {
+    console.log('token验证通过');
+    // console.log('req.params:', req.params); // POST
+    // Call the movieService module's deleteMovie method
+    movieService.logicDeleteMovie(req.params).then((result) => {
+      console.log('service result:', result);
+      return res.json({ code: '000000', msg: 'success'});
     }).catch((error) => {
       console.error('An error occurred:', error);
       return res.json({ code: '999999', msg: 'ERROR : ' + error});
@@ -115,5 +136,6 @@ module.exports = {
   movieDetail,
   addMovie,
   updateMovie,
-  deleteMovie
+  physicalDeleteMovie,
+  logicDeleteMovie,
 };

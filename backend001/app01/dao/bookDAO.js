@@ -8,7 +8,7 @@ const getBookList = (currentPage, pageSize, condition) => {
     let limit = pageSize || 10;
     let offset = (page - 1) * limit;
     // SQL query to get the list of books
-    let sql = `SELECT * FROM tbl_books bt where 1=1`;
+    let sql = `SELECT * FROM tbl_books bt where bt.is_deleted = 0`;
     if (condition.title) {
       sql += ` AND bt.title like '%${condition.title}%'`;
     }
@@ -33,7 +33,7 @@ const getBookList = (currentPage, pageSize, condition) => {
 // Get the total number of books from the database
 const getBookCount = (condition) => {
   return new Promise((resolve, reject) => {
-    let sql = `SELECT COUNT(*) as count FROM tbl_books bt where 1=1`;
+    let sql = `SELECT COUNT(*) as count FROM tbl_books bt where bt.is_deleted = 0`;
     if (condition.title) {
       sql += ` AND bt.title like '%${condition.title}%'`;
     }
@@ -137,8 +137,8 @@ const addBook = (book) => {
   // });
 }
 
-// delete book
-const deleteBook = (bookId) => {
+// 物理删除书籍
+const physicalDeleteBook = (bookId) => {
   return new Promise((resolve, reject) => {
     // SQL query to get the list of books
     let sql = `DELETE FROM tbl_books WHERE bookId = '${bookId}'`;
@@ -151,18 +151,22 @@ const deleteBook = (bookId) => {
       resolve(result);
     });
   });
-  // SQL query to get the list of books
-  // let sql = `DELETE FROM tbl_books WHERE bookId = '${bookId}'`;
-  // // Execute the query
-  // pool.query(sql, (err, result) => {
-  //   if (err) {
-  //     console.error('An error occurred:', err);
-  //     callback(err, null);
-  //     return;
-  //   }
-  //   // Return the result
-  //   callback(null, result);
-  // });
+}
+
+// 逻辑删除书籍
+const logicalDeleteBook = (bookId) => {
+  return new Promise((resolve, reject) => {
+    // SQL query to get the list of books
+    let sql = `UPDATE tbl_books SET is_deleted = 0 WHERE bookId = '${bookId}'`;
+    // Execute
+    pool.query(sql, (err, result) => {
+      if (err) {
+        console.error('An error occurred:', err);
+        reject(err);
+      }
+      resolve(result);
+    });
+  });
 }
 
 // Export the functions
@@ -172,5 +176,6 @@ module.exports = {
   getBook,
   updateBook,
   addBook,
-  deleteBook
+  physicalDeleteBook,
+  logicalDeleteBook
 }

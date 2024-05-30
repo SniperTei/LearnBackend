@@ -64,9 +64,9 @@ const movieService = {
       throw error;
     }
   },
-  deleteMovie: async (movieId) => {
+  physicalDeleteMovie: async (movie) => {
     try {
-      let result = await movieDAO.deleteMovie(movieId);
+      let result = await movieDAO.physicalDeleteMovie(movie);
       console.log('result:', result);
       return result;
     } catch (error) {
@@ -74,6 +74,17 @@ const movieService = {
       throw error;
     }
   },
+
+  logicDeleteMovie: async (movie) => {
+    try {
+      let result = await movieDAO.logicDeleteMovie(movie);
+      console.log('result:', result);
+      return result;
+    } catch (error) {
+      console.error('An error occurred:', error);
+      throw error;
+    }
+  }
 };
 
 module.exports = movieService;

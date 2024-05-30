@@ -5,7 +5,7 @@ const getMovieList = (currentPage, pageSize, condition) => {
     let page = currentPage || 1;
     let limit = pageSize || 10;
     let offset = (page - 1) * limit;
-    let sql = `SELECT * FROM tbl_movies tm where 1=1`;
+    let sql = `SELECT * FROM tbl_movies tm where tm.is_deleted = 0`;
     if (condition.title) {
       sql += ` AND tm.title like '%${condition.title}%'`;
     }
@@ -28,7 +28,7 @@ const getMovieList = (currentPage, pageSize, condition) => {
 
 const getMovieCount = (condition) => {
   return new Promise((resolve, reject) => {
-    let sql = `SELECT COUNT(*) as count FROM tbl_movies tm where 1=1`;
+    let sql = `SELECT COUNT(*) as count FROM tbl_movies tm where tm.is_deleted = 0`;
     if (condition.title) {
       sql += ` AND tm.title like '%${condition.title}%'`;
     }
@@ -63,18 +63,10 @@ const getMovie = (movieId) => {
 
 const addMovie = (movie) => {
   return new Promise((resolve, reject) => {
-    let sql = `INSERT INTO tbl_movies (title, director, actor, genre, release_date, duration, rating, summary) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`;
-    pool.query(sql,
-      [
-        movie.title,
-        movie.director,
-        movie.actor,
-        movie.genre,
-        movie.release_date,
-        movie.duration,
-        movie.rating,
-        movie.summary
-      ], (err, result) => {
+    // let sql = `INSERT INTO tbl_movies (title, director, actor, genre, release_date, duration, rating, summary) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`;
+    let sql = `INSERT INTO tbl_movies SET ?`;
+    // Execute
+    pool.query(sql, movie, (err, result) => {
       if (err) {
         console.error('An error occurred:', err);
         reject(err);
@@ -98,10 +90,25 @@ const updateMovie = (movie) => {
   });
 }
 
-const deleteMovie = (movieId) => {
+// 物理删除
+const physicalDeleteMovie = (movie) => {
   return new Promise((resolve, reject) => {
     let sql = `DELETE FROM tbl_movies WHERE movieId = ?`;
-    pool.query(sql, [movieId], (err, result) => {
+    pool.query(sql, [movie.movieId], (err, result) => {
+      if (err) {
+        console.error('An error occurred:', err);
+        reject(err);
+      }
+      resolve(result);
+    });
+  });
+}
+
+// 逻辑删除
+const logicDeleteMovie = (movie) => {
+  return new Promise((resolve, reject) => {
+    let sql = `UPDATE tbl_movies SET is_deleted = 1 WHERE movieId = ?`;
+    pool.query(sql, [movie.movieId], (err, result) => {
       if (err) {
         console.error('An error occurred:', err);
         reject(err);
@@ -117,5 +124,6 @@ module.exports = {
   getMovie,
   addMovie,
   updateMovie,
-  deleteMovie
+  physicalDeleteMovie,
+  logicDeleteMovie
 };

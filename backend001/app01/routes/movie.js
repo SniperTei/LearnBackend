@@ -8,9 +8,10 @@ router.get('/movie-list', movieController.movieList);
 router.get('/movie-detail/:movieId', movieController.movieDetail);
 // POST add movie
 router.post('/movie-add', movieController.addMovie);
+// DELETE delete movie
+// router.delete('/movie-delete/:movieId', movieController.physicalDeleteMovie);
+router.post('/movie-delete/:movieId', movieController.logicDeleteMovie);
 // PUT update movie
 router.put('/movie-update/:movieId', movieController.updateMovie);
-// DELETE delete movie
-router.delete('/movie-delete/:movieId', movieController.deleteMovie);
 
 module.exports = router;

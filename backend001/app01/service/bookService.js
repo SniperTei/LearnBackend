@@ -70,10 +70,22 @@ const bookService = {
     }
   },
 
-  deleteBook: async (bookId) => {
+  physicalDeleteBook: async (bookId) => {
     try {
       // Call the deleteBook method of the book DAO
-      let result = await bookDAO.deleteBook(bookId);
+      let result = await bookDAO.physicalDeleteBook(bookId);
+      console.log('result:', result);
+      return result;
+    } catch (error) {
+      console.error('An error occurred:', error);
+      throw error;
+    }
+  },
+
+  logicalDeleteBook: async (bookId) => {
+    try {
+      // Call the logicalDeleteBook method of the book DAO
+      let result = await bookDAO.logicalDeleteBook(bookId);
       console.log('result:', result);
       return result;
     } catch (error) {
