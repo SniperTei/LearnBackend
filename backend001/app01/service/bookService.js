@@ -21,7 +21,7 @@ const bookService = {
       });
       console.log('result:', result);
       console.log('count:', count);
-      return { list: result, count: count };
+      return { list: result, total: count };
     } catch (error) {
       console.error('An error occurred:', error);
       throw error;
@@ -33,7 +33,12 @@ const bookService = {
       // Call the getBookById method of the book DAO
       let result = await bookDAO.getBook(bookId);
       console.log('result:', result);
-      return result;
+      if (result.length > 0) {
+        result[0].pubdate = moment(result[0].pubdate).format('YYYY-MM-DD');
+        return result[0];
+      } else {
+        return {};
+      }
     } catch (error) {
       console.error('An error occurred:', error);
       throw error;

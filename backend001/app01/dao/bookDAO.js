@@ -57,7 +57,7 @@ const getBookCount = (condition) => {
 const getBook = (bookId) => {
   return new Promise((resolve, reject) => {
     // SQL query to get the list of books
-    let sql = `SELECT * FROM tbl_books bt where bt.bookId = ${bookId}`;
+    let sql = `SELECT * FROM tbl_books bt where bt.bookId = '${bookId}'`;
     // Execute
     pool.query(sql, (err, result) => {
       if (err) {
