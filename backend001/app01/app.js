@@ -29,7 +29,7 @@ app.use(cors());
 app.use('/', indexRouter);
 app.use('/api/v1/users', usersRouter);
 // Use the movie router
-app.use('/movies', movieRouter);
+app.use('/api/v1/movies', movieRouter);
 // Use the account router
 app.use('/api/v1/accounts', accountRouter);
 // Use the book router

@@ -35,6 +35,7 @@ const bookService = {
       console.log('result:', result);
       if (result.length > 0) {
         result[0].pubdate = moment(result[0].pubdate).format('YYYY-MM-DD');
+        result[0].typeDesc = getBookTypeDesc(result[0].type);
         return result[0];
       } else {
         return {};
@@ -81,6 +82,47 @@ const bookService = {
     }
   }
 };
+
+const getBookTypeDesc = (type) => {
+  let typeDesc = '';
+  // 类型(0: 未知, 1: 科幻, 2: 悬疑, 3: 爱情, 4: 惊悚, 5: 恐怖, 6: 励志, 7: 历史, 8: 传记, 9: 其他)
+  switch (type) {
+    case 0:
+      typeDesc = '未知';
+      break;
+    case 1:
+      typeDesc = '科幻';
+      break;
+    case 2:
+      typeDesc = '悬疑';
+      break;
+    case 3:
+      typeDesc = '爱情';
+      break;
+    case 4:
+      typeDesc = '惊悚';
+      break;
+    case 5:
+      typeDesc = '恐怖';
+      break;
+    case 6:
+      typeDesc = '励志';
+      break;
+    case 7:
+      typeDesc = '历史';
+      break;
+    case 8:
+      typeDesc = '传记';
+      break;
+    case 9:
+      typeDesc = '其他';
+      break;
+    default:
+      typeDesc = '未知';
+      break;
+  }
+  return typeDesc;
+}
 
 // Export the book service object
 module.exports = bookService;
