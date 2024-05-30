@@ -11,7 +11,7 @@ const bookService = {
     try {
       let page = query.page || 1;
       let limit = query.limit || 10;
-      let condition = query.book || {};
+      let condition = query.condition || {};
       // Call the getBookById method of the book DAO
       let result = await bookDAO.getBookList(page, limit, condition);
       let count = await bookDAO.getBookCount(condition);

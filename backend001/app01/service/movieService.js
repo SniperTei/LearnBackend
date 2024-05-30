@@ -8,7 +8,7 @@ const movieService = {
     try {
       let page = query.page || 1;
       let limit = query.limit || 10;
-      let condition = query.movie || {};
+      let condition = query.condition || {};
       let result = await movieDAO.getMovieList(page, limit, condition);
       let count = await movieDAO.getMovieCount(condition);
       result.forEach((movie) => {

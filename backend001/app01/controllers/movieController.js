@@ -19,6 +19,7 @@ const movieList = (req, res) => {
   verifyToken(req, res, () => {
     console.log('token验证通过');
     // Call the movieService module's queryMovies method
+    console.log('req.query:', req.query);
     movieService.queryMovies(req.query).then((result) => {
       console.log('service result:', result);
       return res.json({ code: '000000', msg: 'success', data: result});
