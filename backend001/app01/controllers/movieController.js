@@ -39,7 +39,7 @@ const movieDetail = (req, res) => {
   verifyToken(req, res, () => {
     console.log('token验证通过');
     // Call the movieService module's queryMovieById method
-    movieService.queryMovieById(req.params.movieId).then((result) => {
+    movieService.queryMovieById(req.params).then((result) => {
       console.log('service result:', result);
       return res.json({ code: '000000', msg: 'success', data: result});
     }).catch((error) => {

@@ -1,5 +1,6 @@
 const { query } = require('express');
 const movieDAO = require('../dao/movieDAO');
+const movieCommentDAO = require('../dao/movieCommentDAO');
 const moment = require('moment');
 
 const movieService = {
@@ -14,21 +15,37 @@ const movieService = {
       result.forEach((movie) => {
         movie.release_date = moment(movie.release_date).format('YYYY-MM-DD');
       });
-      console.log('result:', result);
-      console.log('count:', count);
       return { list: result, total: count };
     } catch (error) {
       console.error('An error occurred:', error);
       throw error;
     }
   },
-  queryMovieById: async (movieId) => {
+  queryMovieById: async (query) => {
     try {
+      let page = query.page || 1;
+      let limit = query.limit || 10;
+      let movieId = query.movieId || {};
+      // 电影
       let result = await movieDAO.getMovie(movieId);
-      console.log('result:', result);
+      // 电影评论
+      let movieComments = await movieCommentDAO.getMovieCommentList(page, limit, movieId);
+      if (movieComments.length > 0) {
+        movieComments.forEach((comment) => {
+          comment.created_at = moment(comment.created_at).format('YYYY-MM-DD HH:mm:ss');
+          comment.updated_at = moment(comment.updated_at).format('YYYY-MM-DD HH:mm:ss');
+        });
+      }
+      // 电影评论总数
+      let count = await movieCommentDAO.getMovieCommentCount(movieId);
+      let movieComment = {
+        list: movieComments,
+        total: count
+      };
       if (result.length > 0) {
         result[0].release_date = moment(result[0].release_date).format('YYYY-MM-DD');
-        return result[0];
+        // return { movie: result[0], 'aaa': 'bbb' };
+        return { movie: result[0], movieComment: movieComment };
       } else {
         return {};
       }
