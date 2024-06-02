@@ -101,6 +101,17 @@ const movieService = {
       console.error('An error occurred:', error);
       throw error;
     }
+  },
+
+  addMovieComment: async (movieComment) => {
+    try {
+      let result = await movieCommentDAO.addMovieComment(movieComment);
+      console.log('result:', result);
+      return result;
+    } catch (error) {
+      console.error('An error occurred:', error);
+      throw error;
+    }
   }
 };
 

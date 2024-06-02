@@ -131,6 +131,26 @@ const logicDeleteMovie = (req, res) => {
   });
 }
 
+// addMovieComment
+const addMovieComment = (req, res) => {
+  // 如果没登录
+  if (!req.headers.authorization) {
+    return res.json({ code: "200000", msg: "token无效" });
+  }
+  // 验证token
+  verifyToken(req, res, () => {
+    console.log('token验证通过');
+    // Call the movieService module's addMovieComment method
+    movieService.addMovieComment(req.query).then((result) => {
+      console.log('service result:', result);
+      return res.json({ code: '000000', msg: 'success'});
+    }).catch((error) => {
+      console.error('An error occurred:', error);
+      return res.json({ code: '999999', msg: 'ERROR : ' + error});
+    });
+  });
+}
+
 // Export the router
 module.exports = {
   movieList,
@@ -139,4 +159,5 @@ module.exports = {
   updateMovie,
   physicalDeleteMovie,
   logicDeleteMovie,
+  addMovieComment
 };

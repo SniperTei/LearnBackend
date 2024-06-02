@@ -13,5 +13,7 @@ router.post('/movie-add', movieController.addMovie);
 router.post('/movie-delete/:movieId', movieController.logicDeleteMovie);
 // PUT update movie
 router.put('/movie-update/:movieId', movieController.updateMovie);
+// POST add movie comment
+router.post('/movie-comment-add', movieController.addMovieComment);
 
 module.exports = router;
