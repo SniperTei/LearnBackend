@@ -17,7 +17,7 @@ var verifyToken = function (req, res, next) {
   jwt.verify(token, secretKey, function (err, decoded) {
     if (err) {
       console.log("verify error", err);
-      return res.json({ code: "404", msg: "token无效" });
+      return res.json({ code: "200000", msg: "token无效" });
     }
     console.log("verify decoded", decoded);
     req.decoded = decoded;
