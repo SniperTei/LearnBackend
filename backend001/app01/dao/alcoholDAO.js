@@ -47,3 +47,8 @@ const getAlcoholCount = (condition) => {
     });
   });
 }
+
+module.exports = {
+  getAlcoholList,
+  getAlcoholCount
+};

@@ -10,6 +10,7 @@ var usersRouter = require('./routes/users');
 var movieRouter = require('./routes/movie');
 var accountRouter = require('./routes/accounts');
 var bookRouter = require('./routes/books');
+var alcoholRouter = require('./routes/alcohols');
 
 var app = express();
 
@@ -34,6 +35,8 @@ app.use('/api/v1/movies', movieRouter);
 app.use('/api/v1/accounts', accountRouter);
 // Use the book router
 app.use('/api/v1/books', bookRouter);
+// Use the alcohol router
+app.use('/api/v1/alcohols', alcoholRouter);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {

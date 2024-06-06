@@ -25,3 +25,9 @@ const alcoholList = (req, res) => {
     });
   });
 }
+
+module.exports = {
+  alcoholList,
+  // movieDetail,
+  // addMovie
+};

@@ -46,3 +46,5 @@ const alcoholService = {
     //   }
     // }
   };
+
+module.exports = alcoholService;
