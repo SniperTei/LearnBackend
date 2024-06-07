@@ -1,7 +1,4 @@
-var pool = require('../config/db');
 const { verifyToken } = require('../authorization');
-const moment = require('moment');
-const bookDAO = require('../dao/bookDAO');
 const bookService = require('../service/bookService');
 
 // 获取书籍列表

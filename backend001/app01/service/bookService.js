@@ -1,4 +1,3 @@
-const { query } = require('express');
 const bookDAO = require('../dao/bookDAO');
 const moment = require('moment');
 

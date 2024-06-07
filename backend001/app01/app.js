@@ -11,6 +11,7 @@ var movieRouter = require('./routes/movie');
 var accountRouter = require('./routes/accounts');
 var bookRouter = require('./routes/books');
 var alcoholRouter = require('./routes/alcohols');
+var drinkRouter = require('./routes/drinks');
 
 var app = express();
 
@@ -37,6 +38,8 @@ app.use('/api/v1/accounts', accountRouter);
 app.use('/api/v1/books', bookRouter);
 // Use the alcohol router
 app.use('/api/v1/alcohols', alcoholRouter);
+// Use the drink router
+app.use('/api/v1/drinks', drinkRouter);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
