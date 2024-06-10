@@ -27,6 +27,27 @@ const getDrinkList = (currentPage, pageSize, condition) => {
   });
 }
 
+const getDrinkListAndAlcoholInfo = (currentPage, pageSize, condition) => {
+  return new Promise((resolve, reject) => {
+    let page = currentPage || 1;
+    let limit = pageSize || 10;
+    let offset = (page - 1) * limit;
+    let sql = `SELECT dt.*, al.alcohol_name FROM tbl_drinks dt LEFT JOIN tbl_alcohols al ON dt.alcohol_id = al.alcoholId where 1 = 1`;
+    // drink_date在开始日期和结束日期之间的数据
+    if (condition.startDate && condition.endDate) {
+      sql += ` AND dt.drink_date BETWEEN '${condition.startDate}' AND '${condition.endDate}'`;
+    }
+    // sql += ` LIMIT ${limit} OFFSET ${offset}`;
+    pool.query(sql, (err, result) => {
+      if (err) {
+        console.error('An error occurred:', err);
+        reject(err);
+      }
+      resolve(result);
+    });
+  });
+}
+
 // const getDrinkCount = (condition) => {
 //   return new Promise((resolve, reject) => {
 //     let sql = `SELECT COUNT(*) as count FROM tbl_drinks dt where dt.is_deleted = 0`;
@@ -48,5 +69,6 @@ const getDrinkList = (currentPage, pageSize, condition) => {
 
 module.exports = {
   getDrinkList,
+  getDrinkListAndAlcoholInfo
   // getDrinkCount
 };
