@@ -38,7 +38,23 @@ const getDrinkListAndAlcoholInfo = (currentPage, pageSize, condition) => {
       sql += ` AND dt.drink_date BETWEEN '${condition.startDate}' AND '${condition.endDate}'`;
     }
     // sql += ` LIMIT ${limit} OFFSET ${offset}`;
+    // 打印sql
+    console.log('sql:', sql);
     pool.query(sql, (err, result) => {
+      if (err) {
+        console.error('An error occurred:', err);
+        reject(err);
+      }
+      resolve(result);
+    });
+  });
+}
+
+// 添加喝酒事件
+const addDrink = (drink) => {
+  return new Promise((resolve, reject) => {
+    let sql = `INSERT INTO tbl_drinks SET ?`;
+    pool.query(sql, drink, (err, result) => {
       if (err) {
         console.error('An error occurred:', err);
         reject(err);
