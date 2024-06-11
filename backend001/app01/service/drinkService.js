@@ -22,6 +22,15 @@ const drinkService = {
     }
   },
 
+  addDrink: async (drink) => {
+    try {
+      let result = await drinkDAO.addDrink(drink);
+      return result;
+    } catch (error) {
+      console.error('An error occurred:', error);
+      throw error;
+    }
+  }
 };
 
 module.exports = drinkService;

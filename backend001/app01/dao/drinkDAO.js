@@ -85,6 +85,7 @@ const addDrink = (drink) => {
 
 module.exports = {
   getDrinkList,
-  getDrinkListAndAlcoholInfo
+  getDrinkListAndAlcoholInfo,
+  addDrink
   // getDrinkCount
 };
