@@ -31,15 +31,15 @@ app.use(cors());
 app.use('/', indexRouter);
 app.use('/api/v1/users', usersRouter);
 // Use the movie router
-app.use('/api/v1/movies', movieRouter);
+// app.use('/api/v1/movies', movieRouter);
 // Use the account router
-app.use('/api/v1/accounts', accountRouter);
+// app.use('/api/v1/accounts', accountRouter);
 // Use the book router
-app.use('/api/v1/books', bookRouter);
+// app.use('/api/v1/books', bookRouter);
 // Use the alcohol router
-app.use('/api/v1/alcohols', alcoholRouter);
+// app.use('/api/v1/alcohols', alcoholRouter);
 // Use the drink router
-app.use('/api/v1/drinks', drinkRouter);
+// app.use('/api/v1/drinks', drinkRouter);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
