@@ -1,15 +1,15 @@
 var express = require('express');
 var router = express.Router();
 // userController
-const userController = require('../controller/userController');
+const movieController = require('../controller/movieController');
 
 /* GET users listing. */
 router.get('/', function(req, res, next) {
   res.send('respond with a resource');
 });
-// 登录
-router.post('/user/login', userController.login);
-// 注册
-router.post('/user/register', userController.register);
+// 检索列表
+router.get('/movie/list', movieController.movieList);
+// 添加
+router.post('/movie/add', movieController.movieAdd);
 
 module.exports = router;
