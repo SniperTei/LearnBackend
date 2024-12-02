@@ -1,4 +1,5 @@
 const movieModel = require('../model/movie');
+const moment = require('moment');
 
 const movieService = {
   queryMovieList: async (params) => {
@@ -12,8 +13,18 @@ const movieService = {
     }
     try {
       // 获取第一页的10个电影列表
-      const movieList = await movieModel.find().skip((page - 1) * limit).limit(limit);
-      return { msg: 'Query movie list success', data: { movieList } };
+      let movieList = await movieModel.find().skip((page - 1) * limit).limit(limit);
+      // 循环遍历movieList， 使用moment把字符串release_date转换为yyyy-MM-dd格式
+      movieList = movieList.map(movie => {
+        let release_date = moment(movie.release_date).format('YYYY-MM-DD');
+        return {
+          ...movie._doc,
+          release_date,
+        };
+      });
+      // 所有电影的总数
+      let total = await movieModel.countDocuments();
+      return { msg: 'Query movie list success', data: { list: movieList, total: total} };
     } catch (error) {
       throw new Error(error.message);
     }

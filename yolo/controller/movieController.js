@@ -17,13 +17,13 @@ const movieList = async (req, res) => {
 }
 
 const movieAdd = async (req, res) => {
-  // const token = req.headers['authorization'];
+  const token = req.headers['authorization'];
   try {
-    // let verifyResult = verifyToken(token);
-    // if (!verifyResult.valid) {
-    //   throw new Error('Invalid token');
-    // }
-    movieService.addTestDatas().then(result => {
+    let verifyResult = verifyToken(token);
+    if (!verifyResult.valid) {
+      throw new Error('Invalid token');
+    }
+    movieService.addMovie(req.body).then(result => {
       res.json({
         code: '000000',
         msg: result.msg,
@@ -34,7 +34,7 @@ const movieAdd = async (req, res) => {
         msg: err.message,
       });
     });
-    // movieService.addMovie(req.body).then(result => {
+    // movieService.addTestDatas().then(result => {
     //   res.json({
     //     code: '000000',
     //     msg: result.msg,
