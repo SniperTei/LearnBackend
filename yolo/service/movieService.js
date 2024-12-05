@@ -2,6 +2,7 @@ const movieModel = require('../model/movie');
 const moment = require('moment');
 
 const movieService = {
+  // 查询
   queryMovieList: async (params) => {
     let page = 1;
     let limit = 10;
@@ -29,6 +30,7 @@ const movieService = {
       throw new Error(error.message);
     }
   },
+  // 添加
   addMovie: async (params) => {
     try {
       const { title, genre, country, release_date, description, image, duration, jyp_viewed, sniper_viewed } = params;

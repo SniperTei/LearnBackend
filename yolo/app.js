@@ -8,6 +8,9 @@ var cors = require("cors");
 var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
 var movieRouter = require('./routes/movie');
+var bookRouter = require('./routes/book');
+var alcoholRouter = require('./routes/alcohol');
+var drinkRouter = require('./routes/drink');
 
 var app = express();
 
@@ -26,6 +29,9 @@ app.use(cors());
 app.use('/', indexRouter);
 app.use('/api/v1/', usersRouter);
 app.use('/api/v1/', movieRouter);
+app.use('/api/v1/', bookRouter);
+app.use('/api/v1/', alcoholRouter);
+app.use('/api/v1/', drinkRouter);
 
 // 数据库连接
 require('./config/mongodb')();

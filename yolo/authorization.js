@@ -10,7 +10,9 @@ function generateToken(payload) {
 // Function to verify a token
 function verifyToken(token) {
   try {
+    console.log('token:', token);
     const decoded = jwt.verify(token, secretKey);
+    console.log('token decoded:', decoded);
     return { valid: true, decoded };
   } catch (err) {
     return { valid: false, error: err.message };
