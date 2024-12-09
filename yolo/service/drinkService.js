@@ -1,5 +1,5 @@
 const drinkModel = require('../model/drink');
-const alcoholModel = require('../model/alcohol');
+const moment = require('moment');
 
 const drinkService = {
   // 查询
@@ -25,8 +25,21 @@ const drinkService = {
           },
         },
         {
+          // 连接user查昵称
+          $lookup: {
+            from: 'user_profile',
+            localField: 'drinker_username',
+            foreignField: 'username',
+            as: 'drinker_info'
+          }
+        },
+        {
           // 将数组字段拆分为多个文档
           $unwind: '$drink_alcohol_info',
+        },
+        {
+          // 将数组字段拆分为多个文档
+          $unwind: '$drinker_info',
         },
         {
           // 选择字段
@@ -36,6 +49,7 @@ const drinkService = {
             drink_location: 1,
             drink_amount: 1,
             drink_unit: 1,
+            drinker_nickname: '$drinker_info.nickname',
             alcohol_name: '$drink_alcohol_info.alcohol_name',
           },
         },
@@ -49,6 +63,10 @@ const drinkService = {
         //   $limit: limit,
         // },
       ]);
+      // result中吧drink_date转换为字符串
+      result.forEach(drink => {
+        drink.drink_date = moment(drink.drink_date).format('YYYY-MM-DD');
+      });
       console.log('result:', result);
       return { msg: 'Query drink list success', data: { list: result} };
     } catch (error) {
