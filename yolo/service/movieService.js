@@ -6,15 +6,25 @@ const movieService = {
   queryMovieList: async (params) => {
     let page = 1;
     let limit = 10;
+    let condition = {};
+    console.log('params:', params);
     if (params.page) {
       page = parseInt(params.page);
     }
     if (params.limit) {
       limit = parseInt(params.limit);
     }
+    if (params.condition) { // 查询条件
+      for (let key in params.condition) {
+        if (params.condition[key]) {
+          condition[key] = params.condition[key];
+        }
+      }
+    }
+    console.log('condition:', condition);
     try {
       // 获取第一页的10个电影列表
-      let movieList = await movieModel.find().skip((page - 1) * limit).limit(limit);
+      let movieList = await movieModel.find(condition).skip((page - 1) * limit).limit(limit);
       // 循环遍历movieList， 使用moment把字符串release_date转换为yyyy-MM-dd格式
       movieList = movieList.map(movie => {
         let release_date = moment(movie.release_date).format('YYYY-MM-DD');
@@ -24,7 +34,7 @@ const movieService = {
         };
       });
       // 所有电影的总数
-      let total = await movieModel.countDocuments();
+      let total = await movieModel.countDocuments(condition);
       return { msg: 'Query movie list success', data: { list: movieList, total: total} };
     } catch (error) {
       throw new Error(error.message);

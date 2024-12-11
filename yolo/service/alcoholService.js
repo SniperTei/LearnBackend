@@ -4,15 +4,23 @@ const alcoholService = {
   queryAlcoholList: async (query) => {
     let page = 1;
     let limit = 10;
+    let condition = {};
     if (query.page) {
       page = parseInt(query.page);
     }
     if (query.limit) {
       limit = parseInt(query.limit);
     }
+    if (query.condition) { // 查询条件
+      for (let key in query.condition) {
+        if (query.condition[key]) {
+          condition[key] = query.condition[key];
+        }
+      }
+    }
     try {
-      let alcoholList = await alcoholModel.find().skip((page - 1) * limit).limit(limit);
-      let total = await alcoholModel.countDocuments();
+      let alcoholList = await alcoholModel.find(condition).skip((page - 1) * limit).limit(limit);
+      let total = await alcoholModel.countDocuments(condition);
       return { msg: 'Query alcohol list success', data: { list: alcoholList, total: total } };
     } catch (error) {
       throw new Error(error.message);
