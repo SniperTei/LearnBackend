@@ -6,12 +6,8 @@ const alcohol = new mongoose.Schema({
     type: String,
     required: true,
   },
-  alcohol_type: {
-    type: String,
-    required: true,
-  },
-  alcohol_subtype: {
-    type: String,
+  alcohol_type_id: {
+    type: mongoose.Schema.Types.ObjectId,
     required: true,
   },
   nan_rating: {
@@ -19,6 +15,22 @@ const alcohol = new mongoose.Schema({
     required: true,
   },
   nan_review: {
+    type: String,
+    required: true,
+  },
+  updated_at: {
+    type: Date,
+    default: Date.now,
+  },
+  updated_by: {
+    type: String,
+    required: true,
+  },
+  created_at: {
+    type: Date,
+    default: Date.now,
+  },
+  created_by: {
     type: String,
     required: true,
   },

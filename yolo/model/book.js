@@ -17,6 +17,22 @@ const book = new mongoose.Schema({
     type: Date,
     required: true,
   },
+  updated_at: {
+    type: Date,
+    default: Date.now,
+  },
+  updated_by: {
+    type: String,
+    required: true,
+  },
+  created_at: {
+    type: Date,
+    default: Date.now,
+  },
+  created_by: {
+    type: String,
+    required: true,
+  },
 });
 
 // 输出模型

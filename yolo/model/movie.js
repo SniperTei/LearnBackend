@@ -37,6 +37,22 @@ const movie = new mongoose.Schema({
     type: String,
     required: false,
   },
+  updated_at: {
+    type: Date,
+    default: Date.now,
+  },
+  updated_by: {
+    type: String,
+    required: true,
+  },
+  created_at: {
+    type: Date,
+    default: Date.now,
+  },
+  created_by: {
+    type: String,
+    required: true,
+  },
 });
 
 // 输出模型

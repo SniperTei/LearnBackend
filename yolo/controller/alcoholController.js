@@ -19,11 +19,11 @@ const alcoholList = async (req, res) => {
 const alcoholAdd = async (req, res) => {
   const token = req.headers['authorization'];
   try {
-    let verifyResult = verifyToken(token);
-    if (!verifyResult.valid) {
-      throw new Error('Invalid token');
-    }
-    alcoholService.alcoholAdd(req, res).then(result => {
+    // let verifyResult = verifyToken(token);
+    // if (!verifyResult.valid) {
+    //   throw new Error('Invalid token');
+    // }
+    alcoholService.alcoholAdd(req.body).then(result => {
       res.json({
         code: '000000',
         msg: result.msg,

@@ -12,6 +12,7 @@ var bookRouter = require('./routes/book');
 var alcoholRouter = require('./routes/alcohol');
 var drinkRouter = require('./routes/drink');
 var foodRouter = require('./routes/food');
+var alcoholTypeRouter = require('./routes/alcohol_type');
 
 var app = express();
 
@@ -34,6 +35,7 @@ app.use('/api/v1/', bookRouter);
 app.use('/api/v1/', alcoholRouter);
 app.use('/api/v1/', drinkRouter);
 app.use('/api/v1/', foodRouter);
+app.use('/api/v1/', alcoholTypeRouter);
 
 // 数据库连接
 require('./config/mongodb')();

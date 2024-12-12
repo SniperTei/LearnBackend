@@ -1,29 +1,13 @@
 const mongoose = require('mongoose');
 
-const food = new mongoose.Schema({
-  name: {
+const alcoholType = new mongoose.Schema({
+  alcohol_type: {
     type: String,
     required: true,
   },
-  category: {
+  alcohol_subtype: {
     type: String,
     required: true,
-  },
-  price: {
-    type: Number,
-    required: false,
-  },
-  image: {
-    type: String,
-    required: false,
-  },
-  recipe: {
-    type: String,
-    required: false,
-  },
-  description: {
-    type: String,
-    required: false,
   },
   updated_at: {
     type: Date,
@@ -43,5 +27,4 @@ const food = new mongoose.Schema({
   },
 });
 
-// 输出模型
-module.exports = mongoose.model('Food', food, 'food');
+module.exports = mongoose.model('AlcoholType', alcoholType, 'alcohol_type');
