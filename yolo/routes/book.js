@@ -11,5 +11,9 @@ router.get('/', function(req, res, next) {
 router.get('/book/list', movieController.bookList);
 // 添加
 router.post('/book/add', movieController.bookAdd);
+// 修改
+router.post('/book/update', movieController.bookUpdate);
+// 删除
+router.post('/book/delete', movieController.bookDelete);
 
 module.exports = router;

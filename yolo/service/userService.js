@@ -37,6 +37,7 @@ const userService = {
   
       // Find user by username
       const user = await User.findOne({ username, password });
+      console.log('user:', user);
       if (!user) {
         throw new Error('Invalid username or password');
       }
@@ -49,6 +50,8 @@ const userService = {
   
       // Generate token
       const token = generateToken({ username });
+      // 打印token
+      console.log('token:', token);
   
       return { msg: 'Login successful', data: { token } };
     } catch (error) {
