@@ -76,15 +76,16 @@ const bookUpdate = async (req, res) => {
     });
   }
 }
-
-const bookDelete = async (req, res) => {
+// 物理删除
+const bookPhysicalDelete = async (req, res) => {
   const token = req.headers['authorization'];
   try {
     let verifyResult = verifyToken(token);
     if (!verifyResult.valid) {
       throw new Error('Invalid token');
     }
-    bookService.deleteBook(req.body).then(result => {
+    console.log('req.params:', req.params);
+    bookService.deleteBook(req.params).then(result => {
       res.json({
         code: '000000',
         msg: result.msg,
@@ -103,9 +104,53 @@ const bookDelete = async (req, res) => {
   }
 }
 
+// 逻辑删除
+// const bookLogicalDelete = async (req, res) => {
+//   const token = req.headers['authorization'];
+//   try {
+//     let verifyResult = verifyToken(token);
+//     if (!verifyResult.valid) {
+//       throw new Error('Invalid token');
+//     }
+//     bookService.deleteBook(req.body).then(result => {
+//       res.json({
+//         code: '000000',
+//         msg: result.msg,
+//       });
+//     }).catch(err => {
+//       res.json({
+//         code: '100001',
+//         msg: err.message,
+//       });
+//     });
+//   } catch (error) {
+//     res.json({
+//       code: '100002',
+//       msg: 'Invalid token',
+//     });
+//   }
+// }
+
+// 查详情
+const bookDetail = async (req, res) => {
+  bookService.queryBookDetail(req.params).then(result => {
+    res.json({
+      code: '000000',
+      msg: result.msg,
+      data: result.data
+    });
+  }).catch(err => {
+    res.json({
+      code: '100001',
+      msg: err.message,
+    });
+  });
+}
+
 module.exports = {
   bookList,
   bookAdd,
   bookUpdate,
-  bookDelete,
+  bookPhysicalDelete,
+  bookDetail
 };

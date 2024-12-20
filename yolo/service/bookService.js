@@ -76,7 +76,7 @@ const bookService = {
       throw new Error(error.message);
     }
   },
-  // 删除
+  // 物理删除
   deleteBook: async (params) => {
     try {
       let { _id } = params;
@@ -93,6 +93,27 @@ const bookService = {
       throw new Error(error.message);
     }
   },
+  // 详情
+  queryBookDetail: async (params) => {
+    try {
+      let { _id } = params;
+      if (!_id) {
+        throw new Error('Missing parameters');
+      }
+      let book = await bookModel.findById(_id);
+      // pubdate格式化
+      book = {
+        ...book._doc,
+        pubdate: moment(book.pubdate).format('YYYY-MM-DD')
+      };
+      if (!book) {
+        throw new Error('Book not found');
+      }
+      return { msg: 'Query book detail success', data: book };
+    } catch (error) {
+      throw new Error(error.message);
+    }
+  }
 };
 
 module.exports = bookService;
