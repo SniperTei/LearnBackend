@@ -1,12 +1,15 @@
 const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
+const crypto = require('crypto');
 
 const userSchema = new mongoose.Schema({
   username: {
     type: String,
-    required: true,
+    required: [true, 'Username is required'],
     unique: true,
-    trim: true
+    trim: true,
+    minlength: [3, 'Username must be at least 3 characters long'],
+    maxlength: [20, 'Username cannot exceed 20 characters']
   },
   email: {
     type: String,
@@ -17,28 +20,91 @@ const userSchema = new mongoose.Schema({
   },
   password: {
     type: String,
-    required: true
+    required: [true, 'Password is required'],
+    minlength: [6, 'Password must be at least 6 characters long']
+  },
+  gender: {
+    type: String,
+    enum: ['male', 'female', 'other'],
+    required: [true, 'Gender is required']
+  },
+  birthDate: {
+    type: Date,
+    required: [true, 'Birth date is required'],
+    validate: {
+      validator: function(date) {
+        return date <= new Date();
+      },
+      message: 'Birth date cannot be in the future'
+    }
+  },
+  avatarUrl: {
+    type: String,
+    default: 'default-avatar.png'
   },
   isDeleted: {
     type: Boolean,
-    default: false
+    default: false,
+    select: false  // 默认不返回此字段
+  },
+  lastLoginAt: {
+    type: Date
   }
 }, {
-  timestamps: true
+  timestamps: true,  // 自动添加 createdAt 和 updatedAt
+  toJSON: { 
+    transform: function(doc, ret) {
+      delete ret.password;  // 永远不返回密码
+      delete ret.__v;      // 不返回版本号
+      if (!ret.isDeleted) {
+        delete ret.isDeleted;  // 只在用户被删除时才显示此字段
+      }
+      return ret;
+    }
+  }
 });
 
-// Hash password before saving
+// 密码加密中间件
 userSchema.pre('save', async function(next) {
+  // 只在密码被修改时才重新加密
   if (this.isModified('password')) {
-    this.password = await bcrypt.hash(this.password, 8);
+    // 使用 MD5 加密
+    this.password = crypto.createHash('md5')
+      .update(this.password)
+      .digest('hex');
   }
   next();
 });
 
-// Compare password method
+// 验证密码
 userSchema.methods.comparePassword = async function(password) {
-  return bcrypt.compare(password, this.password);
+  const hashedPassword = crypto.createHash('md5')
+    .update(password)
+    .digest('hex');
+  return this.password === hashedPassword;
 };
+
+// 更新最后登录时间
+userSchema.methods.updateLastLogin = async function() {
+  this.lastLoginAt = new Date();
+  await this.save();
+};
+
+// 软删除方法
+userSchema.methods.softDelete = async function() {
+  this.isDeleted = true;
+  await this.save();
+};
+
+// 查询中间件：自动排除已删除的用户
+userSchema.pre(/^find/, function(next) {
+  // 除非明确要求，否则不返回已删除的用户
+  if (!this.getQuery().includeDeleted) {
+    this.find({ isDeleted: { $ne: true } });
+  }
+  delete this.getQuery().includeDeleted;
+  next();
+});
 
 const User = mongoose.model('User', userSchema);
 
