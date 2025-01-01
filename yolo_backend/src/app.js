@@ -9,34 +9,42 @@ const envFile = process.env.NODE_ENV === 'production' ? '.env' : '.env.dev';
 require('dotenv').config({ path: path.join(__dirname, '..', envFile) });
 
 const connectDB = require('./config/database');
+const requestLogger = require('./middleware/logger');
 const userRoutes = require('./routes/user.routes');
 
 const app = express();
 
-// Middleware
+// 基础中间件
 app.use(cors());
 app.use(express.json());
-app.use(morgan('dev'));
+
+// 开发环境下使用 morgan 进行简单的请求日志
+if (process.env.NODE_ENV === 'development') {
+    app.use(morgan('dev'));
+}
+
+// 请求日志中间件
+app.use(requestLogger);
 
 // Custom middleware to add timestamp to requests
 app.use((req, res, next) => {
-  req.requestTime = moment().format();
+  req.requestTime = moment();
   next();
 });
 
-// Routes
+// 基础路由
 app.get('/', (req, res) => {
   res.json({ 
     message: 'Welcome to YOLO Backend API',
-    timestamp: req.requestTime,
+    timestamp: req.requestTime.format(),
     environment: process.env.NODE_ENV || 'development'
   });
 });
 
-// API Routes
+// API 路由
 app.use('/api/users', userRoutes);
 
-// Error handling middleware
+// 错误处理中间件
 app.use((err, req, res, next) => {
   console.error('\nRequest Error:');
   console.error('---------------');
