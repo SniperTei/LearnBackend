@@ -1,4 +1,6 @@
 const User = require('../models/user.model');
+const Menu = require('../models/menu.model');
+const Permission = require('../models/permission.model');
 const jwt = require('jsonwebtoken');
 
 class UserController {
@@ -42,6 +44,20 @@ class UserController {
   static async login(req, res) {
     try {
       const { username, password } = req.body;
+      
+      // 调试日志
+      // console.log('Login Request:');
+      // console.log('Headers:', req.headers);
+      // console.log('Body:', req.body);
+      // console.log('Content-Type:', req.headers['content-type']);
+      
+      // 检查用户名和密码是否为空
+      if (!username || !password) {
+        return res.status(400).json({
+          success: false,
+          message: 'Username and password are required'
+        });
+      }
 
       // 查找用户
       const user = await User.findOne({ username });
@@ -51,18 +67,38 @@ class UserController {
           message: 'Invalid username or password'
         });
       }
-
+      // 打印password
+      console.log('Password:', user.password);
+      console.log('Password:', password);
       // 验证密码
       const isMatch = await user.comparePassword(password);
       if (!isMatch) {
         return res.status(401).json({
           success: false,
-          message: 'Invalid username or password'
+          message: 'Invalid username or password2'
         });
       }
 
       // 更新最后登录时间
       await user.updateLastLogin();
+
+      // 获取用户的菜单权限
+      let menus = [];
+      if (user.isAdmin) {
+        // 管理员获取所有菜单
+        menus = await Menu.find().sort({ code: 1 });
+      } else {
+        // 普通用户获取其权限内的菜单
+        const permission = await Permission.findOne({ username: user.username });
+        if (permission) {
+          menus = await Menu.find({
+            code: { $in: permission.menuCodes }
+          }).sort({ code: 1 });
+        }
+      }
+
+      // 构建菜单树
+      const menuTree = buildMenuTree(menus);
 
       // 生成 JWT token
       const token = jwt.sign(
@@ -76,7 +112,8 @@ class UserController {
         message: 'Login successful',
         data: {
           user,
-          token
+          token,
+          menus: menuTree
         }
       });
     } catch (error) {
@@ -192,6 +229,40 @@ class UserController {
       });
     }
   }
+}
+
+// 构建菜单树的辅助函数
+function buildMenuTree(menus) {
+  const menuMap = {};
+  const menuTree = [];
+
+  // 首先将所有菜单放入map中
+  menus.forEach(menu => {
+    menuMap[menu.code] = {
+      ...menu.toObject(),
+      children: []
+    };
+  });
+
+  // 构建树形结构
+  menus.forEach(menu => {
+    const menuNode = menuMap[menu.code];
+    const codeSegments = menu.code.split('_');
+    
+    if (codeSegments.length === 1) {
+      // 顶级菜单
+      menuTree.push(menuNode);
+    } else {
+      // 子菜单，找到父菜单并添加到其children中
+      const parentCode = codeSegments.slice(0, -1).join('_');
+      const parentNode = menuMap[parentCode];
+      if (parentNode) {
+        parentNode.children.push(menuNode);
+      }
+    }
+  });
+
+  return menuTree;
 }
 
 module.exports = UserController;

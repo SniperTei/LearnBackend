@@ -8,25 +8,58 @@ const requestLogger = (req, res, next) => {
     // 在响应结束时记录请求信息
     res.on('finish', () => {
         const duration = Date.now() - startTime;
+        
+        // 构建基础日志信息
         const logInfo = {
-            timestamp: req.requestTime.format(),
+            timestamp: req.requestTime.format('YYYY-MM-DD HH:mm:ss.SSS'),
             method: req.method,
             url: req.originalUrl || req.url,
             status: res.statusCode,
             duration: `${duration}ms`,
             ip: req.ip,
-            userAgent: req.get('user-agent'),
-            query: Object.keys(req.query).length ? req.query : undefined,
-            body: Object.keys(req.body).length ? sanitizeBody(req.body) : undefined
+            userAgent: req.get('user-agent')
         };
+
+        // 添加请求参数
+        if (Object.keys(req.query).length) {
+            logInfo.query = req.query;
+        }
+        
+        if (Object.keys(req.body).length) {
+            logInfo.body = sanitizeBody(req.body);
+        }
+
+        // 添加用户信息（如果有）
+        if (req.user) {
+            logInfo.user = {
+                id: req.user.userId,
+                username: req.user.username
+            };
+        }
+
+        // 构建日志输出
+        const logMessage = `
+==========================================================
+  API Request | ${logInfo.timestamp}
+----------------------------------------------------------
+  Method: ${logInfo.method}
+  URL: ${logInfo.url}
+  Status: ${logInfo.status}
+  Duration: ${logInfo.duration}
+  IP: ${logInfo.ip}
+----------------------------------------------------------
+  Query: ${JSON.stringify(logInfo.query || {}, null, 2)}
+  Body: ${JSON.stringify(logInfo.body || {}, null, 2)}
+  User: ${logInfo.user ? JSON.stringify(logInfo.user, null, 2) : 'Not authenticated'}
+==========================================================`;
 
         // 根据状态码选择日志级别
         if (res.statusCode >= 500) {
-            console.error('\nServer Error:', JSON.stringify(logInfo, null, 2));
+            console.error('\x1b[31m%s\x1b[0m', logMessage); // 红色
         } else if (res.statusCode >= 400) {
-            console.warn('\nClient Error:', JSON.stringify(logInfo, null, 2));
+            console.warn('\x1b[33m%s\x1b[0m', logMessage);  // 黄色
         } else {
-            console.log('\nRequest Info:', JSON.stringify(logInfo, null, 2));
+            console.log('\x1b[32m%s\x1b[0m', logMessage);   // 绿色
         }
     });
 
@@ -43,7 +76,7 @@ const sanitizeBody = (body) => {
             sanitized[field] = '******';
         }
     });
-    
+
     return sanitized;
 };
 

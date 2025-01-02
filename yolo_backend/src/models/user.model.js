@@ -97,10 +97,13 @@ userSchema.pre('save', async function(next) {
 
 // 验证密码
 userSchema.methods.comparePassword = async function(password) {
-  const hashedPassword = crypto.createHash('md5')
-    .update(password)
-    .digest('hex');
-  return this.password === hashedPassword;
+  
+  // const hashedPassword = crypto.createHash('md5')
+  //   .update(password)
+  //   .digest('hex');
+  //   console.log('Password:', password);
+  //   console.log('Hashed Password:', hashedPassword);
+  return this.password === password;
 };
 
 // 更新最后登录时间

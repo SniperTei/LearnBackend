@@ -17,6 +17,7 @@ const app = express();
 // 基础中间件
 app.use(cors());
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
 // 开发环境下使用 morgan 进行简单的请求日志
 if (process.env.NODE_ENV === 'development') {
