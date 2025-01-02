@@ -42,7 +42,7 @@ app.get('/', (req, res) => {
 });
 
 // API 路由
-app.use('/api/users', userRoutes);
+app.use('/api/v1/users', userRoutes);
 
 // 错误处理中间件
 app.use((err, req, res, next) => {

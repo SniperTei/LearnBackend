@@ -18,6 +18,12 @@ const userSchema = new mongoose.Schema({
     trim: true,
     lowercase: true
   },
+  mobile: {
+    type: String,
+    trim: true,
+    unique: true,
+    match: [/^1[3-9]\d{9}$/, 'Please enter a valid mobile number']
+  },
   password: {
     type: String,
     required: [true, 'Password is required'],
@@ -41,6 +47,19 @@ const userSchema = new mongoose.Schema({
   avatarUrl: {
     type: String,
     default: 'default-avatar.png'
+  },
+  createdBy: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    required: true
+  },
+  updatedBy: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User'
+  },
+  isAdmin: {
+    type: Boolean,
+    default: false
   },
   isDeleted: {
     type: Boolean,
