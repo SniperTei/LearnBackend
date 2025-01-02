@@ -49,13 +49,12 @@ const userSchema = new mongoose.Schema({
     default: 'default-avatar.png'
   },
   createdBy: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'User',
-    required: true
+    type: String,
+    default: 'SYSTEM'
   },
   updatedBy: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'User'
+    type: String,
+    default: 'SYSTEM'
   },
   isAdmin: {
     type: Boolean,
@@ -97,13 +96,17 @@ userSchema.pre('save', async function(next) {
 
 // 验证密码
 userSchema.methods.comparePassword = async function(password) {
+  // 对输入的密码进行加密
+  const hashedPassword = crypto.createHash('md5')
+    .update(password)
+    .digest('hex');
   
-  // const hashedPassword = crypto.createHash('md5')
-  //   .update(password)
-  //   .digest('hex');
-  //   console.log('Password:', password);
-  //   console.log('Hashed Password:', hashedPassword);
-  return this.password === password;
+  // 打印调试信息
+  console.log('Input Password Hash:', hashedPassword);
+  console.log('Stored Password Hash:', this.password);
+  
+  // 比较存储的密码哈希和输入密码的哈希
+  return this.password === hashedPassword;
 };
 
 // 更新最后登录时间
