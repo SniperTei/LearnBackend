@@ -1,9 +1,11 @@
-const User = require('../models/user.model');
-const Menu = require('../models/menu.model');
-const Permission = require('../models/permission.model');
 const jwt = require('jsonwebtoken');
+const User = require('../models/user.model');
+const Permission = require('../models/permission.model');
+const Menu = require('../models/menu.model');
+const ApiResponse = require('../utils/response');
 
 class UserController {
+  // 注册新用户
   static async register(req, res) {
     try {
       const { username, password, gender, birthDate, avatarUrl } = req.body;
@@ -11,10 +13,7 @@ class UserController {
       // 检查用户是否已存在
       const existingUser = await User.findOne({ username });
       if (existingUser) {
-        return res.status(400).json({
-          success: false,
-          message: 'Username already exists'
-        });
+        return res.status(400).json(ApiResponse.error('Username already exists'));
       }
 
       // 创建新用户
@@ -28,210 +27,171 @@ class UserController {
 
       await user.save();
 
-      res.status(201).json({
-        success: true,
-        message: 'User registered successfully',
-        data: user
+      // 创建默认权限
+      const permission = new Permission({
+        username: user.username,
+        menuCodes: []
       });
+      await permission.save();
+
+      return res.json(ApiResponse.success({
+        username: user.username,
+        email: user.email
+      }, 'User registered successfully'));
     } catch (error) {
-      res.status(400).json({
-        success: false,
-        message: error.message
-      });
+      return res.status(400).json(ApiResponse.error(error.message));
     }
   }
 
+  // 用户登录
   static async login(req, res) {
     try {
       const { username, password } = req.body;
       
-      // 调试日志
-      // console.log('Login Request:');
-      // console.log('Headers:', req.headers);
-      // console.log('Body:', req.body);
-      // console.log('Content-Type:', req.headers['content-type']);
-      
       // 检查用户名和密码是否为空
       if (!username || !password) {
-        return res.status(400).json({
-          success: false,
-          message: 'Username and password are required'
-        });
+        return res.status(400).json(ApiResponse.badRequest('Username and password are required'));
       }
 
       // 查找用户
       const user = await User.findOne({ username });
       if (!user) {
-        return res.status(401).json({
-          success: false,
-          message: 'Invalid username or password'
-        });
+        return res.status(401).json(ApiResponse.unauthorized('Invalid username or password'));
       }
-      // 打印password
-      console.log('Password:', user.password);
-      console.log('Password:', password);
+
       // 验证密码
       const isMatch = await user.comparePassword(password);
       if (!isMatch) {
-        return res.status(401).json({
-          success: false,
-          message: 'Invalid username or password2'
-        });
+        return res.status(401).json(ApiResponse.unauthorized('Invalid username or password'));
       }
 
       // 更新最后登录时间
       await user.updateLastLogin();
 
-      // 获取用户的菜单权限
+      // 生成 JWT token
+      const token = jwt.sign(
+        { userId: user._id, username: user.username },
+        process.env.JWT_SECRET,
+        { expiresIn: process.env.JWT_EXPIRES_IN || '24h' }
+      );
+
+      // 获取用户菜单权限
       let menus = [];
       if (user.isAdmin) {
         // 管理员获取所有菜单
-        menus = await Menu.find().sort({ code: 1 });
+        menus = await Menu.find({ isDeleted: false });
       } else {
-        // 普通用户获取其权限内的菜单
+        // 普通用户获取授权菜单
         const permission = await Permission.findOne({ username: user.username });
         if (permission) {
           menus = await Menu.find({
-            code: { $in: permission.menuCodes }
-          }).sort({ code: 1 });
+            code: { $in: permission.menuCodes },
+            isDeleted: false
+          });
         }
       }
 
       // 构建菜单树
       const menuTree = buildMenuTree(menus);
 
-      // 生成 JWT token
-      const token = jwt.sign(
-        { userId: user._id },
-        process.env.JWT_SECRET || 'your-secret-key',
-        { expiresIn: '7d' }
-      );
-
-      res.json({
-        success: true,
-        message: 'Login successful',
-        data: {
-          user,
-          token,
-          menus: menuTree
-        }
-      });
+      return res.json(ApiResponse.success({
+        token,
+        user: {
+          username: user.username,
+          email: user.email,
+          isAdmin: user.isAdmin,
+          lastLoginAt: user.lastLoginAt
+        },
+        menus: menuTree
+      }, 'Login successful'));
     } catch (error) {
-      res.status(500).json({
-        success: false,
-        message: error.message
-      });
+      return res.status(500).json(ApiResponse.error(error.message));
     }
   }
 
+  // 获取用户资料
   static async getProfile(req, res) {
     try {
       const user = await User.findById(req.user.userId);
       if (!user) {
-        return res.status(404).json({
-          success: false,
-          message: 'User not found'
-        });
+        return res.status(404).json(ApiResponse.notFound('User not found'));
       }
 
-      res.json({
-        success: true,
-        data: user
-      });
+      return res.json(ApiResponse.success({
+        username: user.username,
+        email: user.email,
+        gender: user.gender,
+        birthDate: user.birthDate,
+        mobile: user.mobile,
+        avatarUrl: user.avatarUrl,
+        lastLoginAt: user.lastLoginAt
+      }));
     } catch (error) {
-      res.status(500).json({
-        success: false,
-        message: error.message
-      });
+      return res.status(500).json(ApiResponse.error(error.message));
     }
   }
 
+  // 更新用户资料
   static async updateProfile(req, res) {
     try {
-      const updates = req.body;
-      const allowedUpdates = ['gender', 'birthDate', 'avatarUrl'];
-      
-      // 过滤不允许更新的字段
-      Object.keys(updates).forEach(key => {
-        if (!allowedUpdates.includes(key)) {
-          delete updates[key];
+      const user = await User.findById(req.user.userId);
+      if (!user) {
+        return res.status(404).json(ApiResponse.notFound('User not found'));
+      }
+
+      // 更新允许的字段
+      const allowedUpdates = ['email', 'gender', 'birthDate', 'mobile', 'avatarUrl'];
+      allowedUpdates.forEach(update => {
+        if (req.body[update] !== undefined) {
+          user[update] = req.body[update];
         }
       });
 
-      const user = await User.findByIdAndUpdate(
-        req.user.userId,
-        updates,
-        { new: true, runValidators: true }
-      );
-
-      if (!user) {
-        return res.status(404).json({
-          success: false,
-          message: 'User not found'
-        });
-      }
-
-      res.json({
-        success: true,
-        message: 'Profile updated successfully',
-        data: user
-      });
+      await user.save();
+      return res.json(ApiResponse.success({
+        username: user.username,
+        email: user.email,
+        gender: user.gender,
+        birthDate: user.birthDate,
+        mobile: user.mobile,
+        avatarUrl: user.avatarUrl
+      }, 'Profile updated successfully'));
     } catch (error) {
-      res.status(400).json({
-        success: false,
-        message: error.message
-      });
+      return res.status(400).json(ApiResponse.error(error.message));
     }
   }
 
+  // 软删除用户
   static async softDeleteUser(req, res) {
     try {
       const user = await User.findById(req.user.userId);
       if (!user) {
-        return res.status(404).json({
-          success: false,
-          message: 'User not found'
-        });
+        return res.status(404).json(ApiResponse.notFound('User not found'));
       }
 
       await user.softDelete();
-
-      res.json({
-        success: true,
-        message: 'User soft deleted successfully'
-      });
+      return res.json(ApiResponse.success(null, 'User soft deleted successfully'));
     } catch (error) {
-      res.status(500).json({
-        success: false,
-        message: error.message
-      });
+      return res.status(500).json(ApiResponse.error(error.message));
     }
   }
 
+  // 硬删除用户
   static async hardDeleteUser(req, res) {
     try {
       const user = await User.findByIdAndDelete(req.user.userId);
       if (!user) {
-        return res.status(404).json({
-          success: false,
-          message: 'User not found'
-        });
+        return res.status(404).json(ApiResponse.notFound('User not found'));
       }
 
-      res.json({
-        success: true,
-        message: 'User permanently deleted'
-      });
+      return res.json(ApiResponse.success(null, 'User permanently deleted'));
     } catch (error) {
-      res.status(500).json({
-        success: false,
-        message: error.message
-      });
+      return res.status(500).json(ApiResponse.error(error.message));
     }
   }
 }
 
-// 构建菜单树的辅助函数
+// 构建菜单树
 function buildMenuTree(menus) {
   const menuMap = {};
   const menuTree = [];
