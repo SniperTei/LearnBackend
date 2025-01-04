@@ -5,8 +5,8 @@ class DrinkService {
     return await drinkDAO.createDrink(drinkData);
   }
 
-  async getAllDrinks() {
-    return await drinkDAO.getAllDrinks();
+  async getAllDrinks(userId) {
+    return await drinkDAO.getAllDrinks(userId);
   }
 
   async getDrinkById(id) {

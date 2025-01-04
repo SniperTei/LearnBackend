@@ -8,10 +8,18 @@ const path = require('path');
 const envFile = process.env.NODE_ENV === 'production' ? '.env' : '.env.dev';
 require('dotenv').config({ path: path.join(__dirname, '..', envFile) });
 
-const connectDB = require('./config/database');
+// 设置默认环境为开发环境
+process.env.NODE_ENV = process.env.NODE_ENV || 'development';
+
+// 导入中间件
 const requestLogger = require('./middleware/logger');
+
+// 导入数据库连接
+const connectDB = require('./config/database');
+
+// 导入路由
 const userRoutes = require('./routes/user.routes');
-const drinkRoutes = require('./routes/drink.routes'); // 引入 drink 路由
+const drinkRoutes = require('./routes/drink.routes');
 
 const app = express();
 

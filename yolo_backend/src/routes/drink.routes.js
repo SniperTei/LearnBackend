@@ -1,12 +1,13 @@
 const express = require('express');
 const router = express.Router();
 const drinkController = require('../controllers/drink.controller');
+const auth = require('../middleware/auth');
 
-// 创建饮品
-router.post('/create', drinkController.createDrink);
+// 创建饮品（需要认证）
+router.post('/create', auth, drinkController.createDrink);
 
-// 获取所有饮品
-router.get('/list', drinkController.getAllDrinks);
+// 获取当前用户的所有饮品（需要认证）
+router.get('/list', auth, drinkController.getAllDrinks);
 
 // 获取单个饮品
 router.get('/:id', drinkController.getDrinkById);

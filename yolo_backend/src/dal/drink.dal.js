@@ -6,8 +6,9 @@ class DrinkDAO {
     return await drink.save();
   }
 
-  async getAllDrinks() {
-    return await Drink.find();
+  async getAllDrinks(userId) {
+    return await Drink.find({ userId })
+      .sort({ drinkTime: -1 }); // 按饮酒时间倒序排列，最新的记录在前
   }
 
   async getDrinkById(id) {
