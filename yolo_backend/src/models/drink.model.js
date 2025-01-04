@@ -34,6 +34,11 @@ const drinkSchema = new mongoose.Schema({
     ref: 'Alcohol',
     required: true
   },
+  amount: {
+    type: Number,
+    required: true,
+    min: 0
+  },
   mood: {
     type: String,
     enum: ['happy', 'sad', 'excited', 'relaxed', 'neutral']
