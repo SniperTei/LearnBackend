@@ -59,8 +59,8 @@ class UserController {
         return res.status(401).json(ApiResponse.unauthorized('Invalid username or password'));
       }
 
-      // 验证密码
-      const isMatch = await user.comparePassword(password);
+      // 直接比较客户端传来的 md5 加密密码
+      const isMatch = user.password === password;
       if (!isMatch) {
         return res.status(401).json(ApiResponse.unauthorized('Invalid username or password'));
       }
@@ -75,11 +75,11 @@ class UserController {
         { expiresIn: process.env.JWT_EXPIRES_IN || '24h' }
       );
 
-      // 获取用户菜单权限
+      // 获取用户菜单权限并按 sort 排序
       let menus = [];
       if (user.isAdmin) {
         // 管理员获取所有菜单
-        menus = await Menu.find({ isDeleted: false });
+        menus = await Menu.find({ isDeleted: false }).sort({ sort: 1 });
       } else {
         // 普通用户获取授权菜单
         const permission = await Permission.findOne({ username: user.username });
@@ -87,12 +87,12 @@ class UserController {
           menus = await Menu.find({
             code: { $in: permission.menuCodes },
             isDeleted: false
-          });
+          }).sort({ sort: 1 });
         }
       }
 
-      // 构建菜单树
-      const menuTree = buildMenuTree(menus);
+      // 确保返回的菜单按照 sort 字段排序
+      menus = menus.sort((a, b) => a.sort - b.sort);
 
       return res.json(ApiResponse.success({
         token,
@@ -102,7 +102,7 @@ class UserController {
           isAdmin: user.isAdmin,
           lastLoginAt: user.lastLoginAt
         },
-        menus: menuTree
+        menus: buildMenuTree(menus)
       }, 'Login successful'));
     } catch (error) {
       return res.status(500).json(ApiResponse.error(error.message));

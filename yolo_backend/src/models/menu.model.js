@@ -26,6 +26,10 @@ const menuSchema = new mongoose.Schema({
     type: Boolean,
     default: false
   },
+  sort: {
+    type: Number,
+    default: 1
+  },
   createdBy: {
     type: String,
     default: 'SYSTEM'
