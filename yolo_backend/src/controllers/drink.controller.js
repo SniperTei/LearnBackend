@@ -8,18 +8,23 @@ const ApiResponse = require('../utils/response');
  * POST /api/v1/drinks
  */
 exports.createDrink = async (req, res) => {
+  console.log('req.body:', req.body);
   try {
     // 验证必需字段
     const { alcoholId, amount, unit } = req.body;
     if (!alcoholId || !amount || !unit) {
       return res.status(400).json(ApiResponse.error('Missing required fields: alcoholId, amount, unit'));
     }
+    // 打印
+    console.log('alcoholId:', alcoholId);
 
     // 验证 alcoholId 是否存在
     const alcohol = await Alcohol.findById(alcoholId);
     if (!alcohol) {
       return res.status(404).json(ApiResponse.error('Alcohol not found'));
     }
+    // 打印
+    console.log('alcohol:', alcohol);
 
     // 构建饮品记录数据
     const drinkData = {
@@ -29,6 +34,8 @@ exports.createDrink = async (req, res) => {
       updatedBy: req.user.username,
       drinkTime: req.body.drinkTime || new Date()
     };
+
+    console.log('drinkData:', drinkData);
     
     const drink = await drinkService.createDrink(drinkData);
     await drink.populate('alcoholId');

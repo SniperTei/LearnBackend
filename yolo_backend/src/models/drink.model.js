@@ -33,7 +33,23 @@ const drinkSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Alcohol',
     required: true
-  }
+  },
+  mood: {
+    type: String,
+    enum: ['happy', 'sad', 'excited', 'relaxed', 'neutral']
+  },
+  occasion: {
+    type: String,
+    enum: ['party', 'dinner', 'social', 'alone', 'business']
+  },
+  location: {
+    type: String,
+    trim: true
+  },
+  companions: [{
+    type: String,
+    trim: true
+  }]
 }, {
   timestamps: true // 自动添加 createdAt 和 updatedAt 字段
 });

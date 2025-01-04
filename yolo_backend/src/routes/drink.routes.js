@@ -7,10 +7,10 @@ const auth = require('../middleware/auth');
 router.use(auth);
 
 // 创建饮品记录
-router.post('/', drinkController.createDrink);
+router.post('/create', drinkController.createDrink);
 
 // 获取当前用户的所有饮品记录，支持分页和过滤
-router.get('/', drinkController.getAllDrinks);
+router.get('/list', drinkController.getAllDrinks);
 
 // 获取单个饮品记录详情
 router.get('/:id', drinkController.getDrinkById);

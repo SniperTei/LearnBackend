@@ -208,162 +208,315 @@
 }
 ```
 
-## 饮品管理 API
+## 饮酒记录 API
 
-### 1. 创建饮品记录
+所有饮酒记录相关的 API 都需要在请求头中包含有效的 JWT token：
+```http
+Authorization: Bearer <your-token>
+```
 
-**请求**
-- 方法: `POST`
-- 路径: `/api/v1/drinks/create`
-- Headers: 
-  - Authorization: Bearer {token}
-- Content-Type: `application/json`
+### 创建饮酒记录
 
-**请求体**
+创建一个新的饮酒记录。
+
+- **URL**: `/api/v1/drinks/create`
+- **Method**: `POST`
+- **Auth Required**: Yes
+
+**Request Body**:
 ```json
 {
-  "drinkName": "青岛啤酒",
-  "alcoholType": "啤酒",
-  "unit": "瓶",
-  "drinkTime": "2025-01-04T14:00:00Z",
-  "reason": "朋友聚会"
+  "alcoholId": "5f7b5d7e9b8c2d1a3e4f5g6h",  // 酒类ID，必需
+  "drinkTime": "2025-01-04T15:30:00Z",      // 饮酒时间，必需
+  "amount": 2,                               // 饮酒数量，必需
+  "mood": "happy",                           // 心情，可选
+  "occasion": "party",                       // 场合，可选
+  "location": "家里",                        // 地点，可选
+  "companions": ["小明", "小红"],            // 同饮人，可选
+  "photos": ["url1", "url2"],               // 照片URL数组，可选
+  "note": "和朋友聚会很开心"                 // 备注，可选
 }
 ```
 
-**响应示例**
+**字段说明**:
+- `alcoholId`: 对应酒类记录的ID（必需）
+- `drinkTime`: ISO 8601 格式的时间字符串（必需）
+- `amount`: 饮酒数量（必需，单位为瓶/杯）
+- `mood`: 心情（可选），可选值：
+  - happy (开心)
+  - sad (难过)
+  - excited (兴奋)
+  - relaxed (放松)
+  - neutral (平静)
+- `occasion`: 场合（可选），可选值：
+  - party (聚会)
+  - dinner (晚餐)
+  - social (社交)
+  - alone (独饮)
+  - business (商务)
+- `location`: 饮酒地点（可选）
+- `companions`: 同饮人姓名数组（可选）
+- `photos`: 照片URL数组（可选）
+- `note`: 备注信息（可选）
+
+**Success Response**:
+- **Code**: 201
+- **Content**:
 ```json
 {
-  "code": "000000",
-  "statusCode": 200,
-  "msg": "Drink record created successfully",
+  "success": true,
   "data": {
-    "id": "65123456789abcdef1234567",
-    "drinkName": "青岛啤酒",
-    "alcoholType": "啤酒",
-    "unit": "瓶",
-    "drinkTime": "2025-01-04T14:00:00Z",
-    "reason": "朋友聚会",
-    "createdAt": "2025-01-04T14:00:00Z",
-    "updatedAt": "2025-01-04T14:00:00Z"
+    "_id": "5f7b5d7e9b8c2d1a3e4f5g6h",
+    "userId": "5f7b5d7e9b8c2d1a3e4f5g6h",
+    "alcoholId": {
+      "_id": "5f7b5d7e9b8c2d1a3e4f5g6h",
+      "name": "Asahi Super Dry",
+      "type": "beer",
+      "brand": "Asahi",
+      "alcoholContent": 5.2,
+      "volume": 330,
+      "volumeUnit": "ml"
+    },
+    "drinkTime": "2025-01-04T15:30:00Z",
+    "amount": 2,
+    "mood": "happy",
+    "occasion": "party",
+    "location": "家里",
+    "companions": ["小明", "小红"],
+    "photos": ["url1", "url2"],
+    "note": "和朋友聚会很开心",
+    "createdAt": "2025-01-04T15:32:12.000Z",
+    "updatedAt": "2025-01-04T15:32:12.000Z"
   },
-  "timestamp": "2025-01-04 14:00:00.123"
+  "message": "Drink record created successfully"
 }
 ```
 
-### 2. 获取饮品列表
+### 获取饮酒记录列表
 
-**请求**
-- 方法: `GET`
-- 路径: `/api/v1/drinks/list`
-- Headers: 
-  - Authorization: Bearer {token}
+获取当前用户的饮酒记录列表，支持分页和过滤。
 
-**响应示例**
+- **URL**: `/api/v1/drinks/list`
+- **Method**: `GET`
+- **Auth Required**: Yes
+
+**Query Parameters**:
+- `page` (可选): 页码，默认 1
+- `limit` (可选): 每页数量，默认 10
+- `startDate` (可选): 开始日期，ISO 8601 格式
+- `endDate` (可选): 结束日期，ISO 8601 格式
+- `mood` (可选): 按心情过滤
+- `occasion` (可选): 按场合过滤
+- `sortBy` (可选): 排序字段，默认 drinkTime
+- `order` (可选): 排序方向，asc 或 desc，默认 desc
+
+**Success Response**:
+- **Code**: 200
+- **Content**:
 ```json
 {
-  "code": "000000",
-  "statusCode": 200,
-  "msg": "Success",
-  "data": [
-    {
-      "id": "65123456789abcdef1234567",
-      "drinkName": "青岛啤酒",
-      "alcoholType": "啤酒",
-      "unit": "瓶",
-      "drinkTime": "2025-01-04T14:00:00Z",
-      "reason": "朋友聚会",
-      "createdAt": "2025-01-04T14:00:00Z",
-      "updatedAt": "2025-01-04T14:00:00Z"
+  "success": true,
+  "data": {
+    "drinks": [
+      {
+        "_id": "5f7b5d7e9b8c2d1a3e4f5g6h",
+        "userId": "5f7b5d7e9b8c2d1a3e4f5g6h",
+        "alcoholId": {
+          "_id": "5f7b5d7e9b8c2d1a3e4f5g6h",
+          "name": "Asahi Super Dry",
+          "type": "beer",
+          "brand": "Asahi",
+          "alcoholContent": 5.2,
+          "volume": 330,
+          "volumeUnit": "ml"
+        },
+        "drinkTime": "2025-01-04T15:30:00Z",
+        "amount": 2,
+        "mood": "happy",
+        "occasion": "party",
+        "location": "家里",
+        "companions": ["小明", "小红"],
+        "photos": ["url1", "url2"],
+        "note": "和朋友聚会很开心",
+        "createdAt": "2025-01-04T15:32:12.000Z",
+        "updatedAt": "2025-01-04T15:32:12.000Z"
+      }
+    ],
+    "pagination": {
+      "total": 50,
+      "totalPages": 5,
+      "currentPage": 1,
+      "limit": 10,
+      "hasNextPage": true,
+      "hasPrevPage": false
     }
-  ],
-  "timestamp": "2025-01-04 14:00:00.123"
+  }
 }
 ```
 
-### 3. 获取单个饮品详情
+### 获取单个饮酒记录
 
-**请求**
-- 方法: `GET`
-- 路径: `/api/v1/drinks/:id`
-- Headers: 
-  - Authorization: Bearer {token}
+获取单个饮酒记录的详细信息。
 
-**响应示例**
+- **URL**: `/api/v1/drinks/:id`
+- **Method**: `GET`
+- **Auth Required**: Yes
+
+**URL Parameters**:
+- `id`: 饮酒记录 ID
+
+**Success Response**:
+- **Code**: 200
+- **Content**:
 ```json
 {
-  "code": "000000",
-  "statusCode": 200,
-  "msg": "Success",
+  "success": true,
   "data": {
-    "id": "65123456789abcdef1234567",
-    "drinkName": "青岛啤酒",
-    "alcoholType": "啤酒",
-    "unit": "瓶",
-    "drinkTime": "2025-01-04T14:00:00Z",
-    "reason": "朋友聚会",
-    "createdAt": "2025-01-04T14:00:00Z",
-    "updatedAt": "2025-01-04T14:00:00Z"
-  },
-  "timestamp": "2025-01-04 14:00:00.123"
+    "_id": "5f7b5d7e9b8c2d1a3e4f5g6h",
+    "userId": "5f7b5d7e9b8c2d1a3e4f5g6h",
+    "alcoholId": {
+      "_id": "5f7b5d7e9b8c2d1a3e4f5g6h",
+      "name": "Asahi Super Dry",
+      "type": "beer",
+      "brand": "Asahi",
+      "alcoholContent": 5.2,
+      "volume": 330,
+      "volumeUnit": "ml"
+    },
+    "drinkTime": "2025-01-04T15:30:00Z",
+    "amount": 2,
+    "mood": "happy",
+    "occasion": "party",
+    "location": "家里",
+    "companions": ["小明", "小红"],
+    "photos": ["url1", "url2"],
+    "note": "和朋友聚会很开心",
+    "createdAt": "2025-01-04T15:32:12.000Z",
+    "updatedAt": "2025-01-04T15:32:12.000Z"
+  }
 }
 ```
 
-### 4. 更新饮品记录
+### 更新饮酒记录
 
-**请求**
-- 方法: `PUT`
-- 路径: `/api/v1/drinks/:id`
-- Headers: 
-  - Authorization: Bearer {token}
-- Content-Type: `application/json`
+更新现有饮酒记录的信息。
 
-**请求体**
+- **URL**: `/api/v1/drinks/:id`
+- **Method**: `PUT`
+- **Auth Required**: Yes
+
+**URL Parameters**:
+- `id`: 饮酒记录 ID
+
+**Request Body** (所有字段都是可选的):
 ```json
 {
-  "drinkName": "青岛啤酒",
-  "alcoholType": "啤酒",
-  "unit": "瓶",
-  "drinkTime": "2025-01-04T15:00:00Z",
-  "reason": "修改后的原因"
+  "alcoholId": "5f7b5d7e9b8c2d1a3e4f5g6h",
+  "drinkTime": "2025-01-04T15:30:00Z",
+  "amount": 3,
+  "mood": "relaxed",
+  "occasion": "dinner",
+  "location": "餐厅",
+  "companions": ["小王"],
+  "photos": ["url3"],
+  "note": "更新的备注"
 }
 ```
 
-**响应示例**
+**Success Response**:
+- **Code**: 200
+- **Content**:
 ```json
 {
-  "code": "000000",
-  "statusCode": 200,
-  "msg": "Drink record updated successfully",
+  "success": true,
   "data": {
-    "id": "65123456789abcdef1234567",
-    "drinkName": "青岛啤酒",
-    "alcoholType": "啤酒",
-    "unit": "瓶",
-    "drinkTime": "2025-01-04T15:00:00Z",
-    "reason": "修改后的原因",
-    "createdAt": "2025-01-04T14:00:00Z",
-    "updatedAt": "2025-01-04T15:00:00Z"
+    "_id": "5f7b5d7e9b8c2d1a3e4f5g6h",
+    "userId": "5f7b5d7e9b8c2d1a3e4f5g6h",
+    "alcoholId": {
+      "_id": "5f7b5d7e9b8c2d1a3e4f5g6h",
+      "name": "Asahi Super Dry",
+      "type": "beer",
+      "brand": "Asahi",
+      "alcoholContent": 5.2,
+      "volume": 330,
+      "volumeUnit": "ml"
+    },
+    "drinkTime": "2025-01-04T15:30:00Z",
+    "amount": 3,
+    "mood": "relaxed",
+    "occasion": "dinner",
+    "location": "餐厅",
+    "companions": ["小王"],
+    "photos": ["url3"],
+    "note": "更新的备注",
+    "createdAt": "2025-01-04T15:32:12.000Z",
+    "updatedAt": "2025-01-04T15:40:52.000Z"
   },
-  "timestamp": "2025-01-04 15:00:00.123"
+  "message": "Drink record updated successfully"
 }
 ```
 
-### 5. 删除饮品记录
+### 删除饮酒记录
 
-**请求**
-- 方法: `DELETE`
-- 路径: `/api/v1/drinks/:id`
-- Headers: 
-  - Authorization: Bearer {token}
+删除指定的饮酒记录。
 
-**响应示例**
+- **URL**: `/api/v1/drinks/:id`
+- **Method**: `DELETE`
+- **Auth Required**: Yes
+
+**URL Parameters**:
+- `id`: 饮酒记录 ID
+
+**Success Response**:
+- **Code**: 200
+- **Content**:
 ```json
 {
-  "code": "000000",
-  "statusCode": 200,
-  "msg": "Drink record deleted successfully",
+  "success": true,
   "data": null,
-  "timestamp": "2025-01-04 15:00:00.123"
+  "message": "Drink record deleted successfully"
+}
+```
+
+**Error Responses**:
+
+1. 记录不存在
+- **Code**: 404
+- **Content**:
+```json
+{
+  "success": false,
+  "message": "Drink record not found"
+}
+```
+
+2. 验证错误
+- **Code**: 400
+- **Content**:
+```json
+{
+  "success": false,
+  "message": "Validation failed: mood must be one of: happy, sad, excited, relaxed, neutral"
+}
+```
+
+3. 无效的酒类ID
+- **Code**: 400
+- **Content**:
+```json
+{
+  "success": false,
+  "message": "Invalid alcohol ID"
+}
+```
+
+4. 服务器错误
+- **Code**: 500
+- **Content**:
+```json
+{
+  "success": false,
+  "message": "Internal server error message"
 }
 ```
 
@@ -378,7 +531,7 @@ Authorization: Bearer <your-token>
 
 创建一个新的酒类记录。
 
-- **URL**: `/api/v1/alcohols`
+- **URL**: `/api/v1/alcohols/create`
 - **Method**: `POST`
 - **Auth Required**: Yes
 
@@ -437,7 +590,7 @@ Authorization: Bearer <your-token>
 
 获取酒类列表，支持分页、过滤和排序。
 
-- **URL**: `/api/v1/alcohols`
+- **URL**: `/api/v1/alcohols/list`
 - **Method**: `GET`
 - **Auth Required**: Yes
 
