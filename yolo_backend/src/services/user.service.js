@@ -3,10 +3,10 @@ const { generateToken } = require('../utils/jwt');
 
 class UserService {
   static async register(userData) {
-    const existingUser = await UserDAL.findByEmail(userData.email);
-    if (existingUser) {
-      throw new Error('Email already registered');
-    }
+    // const existingUser = await UserDAL.findByEmail(userData.email);
+    // if (existingUser) {
+    //   throw new Error('Email already registered');
+    // }
     
     const user = await UserDAL.create(userData);
     const token = generateToken(user._id);

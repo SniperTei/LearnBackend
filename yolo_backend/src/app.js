@@ -11,6 +11,7 @@ require('dotenv').config({ path: path.join(__dirname, '..', envFile) });
 const connectDB = require('./config/database');
 const requestLogger = require('./middleware/logger');
 const userRoutes = require('./routes/user.routes');
+const drinkRoutes = require('./routes/drink.routes'); // 引入 drink 路由
 
 const app = express();
 
@@ -44,6 +45,7 @@ app.get('/', (req, res) => {
 
 // API 路由
 app.use('/api/v1/users', userRoutes);
+app.use('/api/v1/drinks', drinkRoutes);
 
 // 错误处理中间件
 app.use((err, req, res, next) => {

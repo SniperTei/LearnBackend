@@ -25,11 +25,13 @@ const permissionSchema = new mongoose.Schema({
   // 审计字段
   createdBy: {
     type: String,
-    required: true
+    required: true,
+    default: 'SYSTEM'
   },
   updatedBy: {
     type: String,
-    required: true
+    required: true,
+    default: 'SYSTEM'
   }
 }, {
   timestamps: true,  // 自动添加 createdAt 和 updatedAt

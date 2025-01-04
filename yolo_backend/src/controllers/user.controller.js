@@ -8,7 +8,7 @@ class UserController {
   // 注册新用户
   static async register(req, res) {
     try {
-      const { username, password, gender, birthDate, avatarUrl } = req.body;
+      const { username, password, gender, birthDate, avatarUrl, email, mobile } = req.body;
 
       // 检查用户是否已存在
       const existingUser = await User.findOne({ username });
@@ -22,15 +22,23 @@ class UserController {
         password,
         gender,
         birthDate,
+        email,
+        mobile,
         ...(avatarUrl && { avatarUrl })
       });
 
       await user.save();
 
-      // 创建默认权限
+      // 获取所有菜单codes
+      const allMenus = await Menu.find({}, 'code');
+      const allMenuCodes = allMenus.map(menu => menu.code);
+
+      // 创建默认权限（包含所有菜单权限）
       const permission = new Permission({
         username: user.username,
-        menuCodes: []
+        menuCodes: allMenuCodes,
+        createdBy: 'SYSTEM',
+        updatedBy: 'SYSTEM'
       });
       await permission.save();
 
