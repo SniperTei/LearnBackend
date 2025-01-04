@@ -9,21 +9,34 @@ const alcoholSchema = new mongoose.Schema({
   type: {
     type: String,
     required: true,
+    enum: ['beer', 'baijiu', 'red_wine', 'foreign_wine', 'sake', 'shochu'],
+    default: 'beer'
+  },
+  brand: {
+    type: String,
+    required: true,
     trim: true
+  },
+  alcoholContent: {
+    type: Number,
+    required: true,
+    min: 0,
+    max: 100
+  },
+  volume: {
+    type: Number,
+    required: true,
+    min: 0
+  },
+  volumeUnit: {
+    type: String,
+    required: true,
+    enum: ['ml', 'L'],
+    default: 'ml'
   },
   description: {
     type: String,
     trim: true
-  },
-  imageUrl: {
-    type: String,
-    trim: true
-  },
-  score: {
-    type: Number,
-    min: 0,
-    max: 5,
-    default: 0
   },
   createdAt: {
     type: Date,
@@ -33,11 +46,13 @@ const alcoholSchema = new mongoose.Schema({
     type: Date,
     default: Date.now
   }
+}, {
+  timestamps: true
 });
 
-// 在保存时更新 updatedAt 字段
+// 更新 updatedAt 字段
 alcoholSchema.pre('save', function(next) {
-  this.updatedAt = Date.now();
+  this.updatedAt = new Date();
   next();
 });
 

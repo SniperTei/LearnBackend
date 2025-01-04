@@ -367,6 +367,275 @@
 }
 ```
 
+## 酒类管理 API
+
+所有酒类相关的 API 都需要在请求头中包含有效的 JWT token：
+```http
+Authorization: Bearer <your-token>
+```
+
+### 创建酒类
+
+创建一个新的酒类记录。
+
+- **URL**: `/api/v1/alcohols`
+- **Method**: `POST`
+- **Auth Required**: Yes
+
+**Request Body**:
+```json
+{
+  "name": "Asahi Super Dry",
+  "type": "beer",
+  "brand": "Asahi",
+  "alcoholContent": 5.2,
+  "volume": 330,
+  "volumeUnit": "ml",
+  "description": "日本顶级啤酒",
+  "imageUrl": "https://example.com/asahi.jpg"  // 可选
+}
+```
+
+**type 可选值**:
+- beer (啤酒)
+- baijiu (白酒)
+- red_wine (红酒)
+- foreign_wine (洋酒)
+- sake (清酒)
+- shochu (烧酒)
+
+**volumeUnit 可选值**:
+- ml (毫升)
+- L (升)
+
+**Success Response**:
+- **Code**: 201
+- **Content**:
+```json
+{
+  "success": true,
+  "data": {
+    "_id": "5f7b5d7e9b8c2d1a3e4f5g6h",
+    "name": "Asahi Super Dry",
+    "type": "beer",
+    "brand": "Asahi",
+    "alcoholContent": 5.2,
+    "volume": 330,
+    "volumeUnit": "ml",
+    "description": "日本顶级啤酒",
+    "imageUrl": "https://example.com/asahi.jpg",
+    "createdBy": "john_doe",
+    "updatedBy": "john_doe",
+    "createdAt": "2025-01-04T15:32:12.000Z",
+    "updatedAt": "2025-01-04T15:32:12.000Z"
+  },
+  "message": "Alcohol created successfully"
+}
+```
+
+### 获取酒类列表
+
+获取酒类列表，支持分页、过滤和排序。
+
+- **URL**: `/api/v1/alcohols`
+- **Method**: `GET`
+- **Auth Required**: Yes
+
+**Query Parameters**:
+- `page` (可选): 页码，默认 1
+- `limit` (可选): 每页数量，默认 10
+- `type` (可选): 酒类类型
+- `brand` (可选): 品牌名称（支持模糊搜索）
+- `minAlcoholContent` (可选): 最小酒精度数
+- `maxAlcoholContent` (可选): 最大酒精度数
+- `sortBy` (可选): 排序字段，默认 createdAt
+- `order` (可选): 排序方向，asc 或 desc，默认 desc
+
+**Success Response**:
+- **Code**: 200
+- **Content**:
+```json
+{
+  "success": true,
+  "data": {
+    "alcohols": [
+      {
+        "_id": "5f7b5d7e9b8c2d1a3e4f5g6h",
+        "name": "Asahi Super Dry",
+        "type": "beer",
+        "brand": "Asahi",
+        "alcoholContent": 5.2,
+        "volume": 330,
+        "volumeUnit": "ml",
+        "description": "日本顶级啤酒",
+        "imageUrl": "https://example.com/asahi.jpg",
+        "createdBy": "john_doe",
+        "updatedBy": "john_doe",
+        "createdAt": "2025-01-04T15:32:12.000Z",
+        "updatedAt": "2025-01-04T15:32:12.000Z"
+      }
+    ],
+    "pagination": {
+      "total": 50,
+      "totalPages": 5,
+      "currentPage": 1,
+      "limit": 10,
+      "hasNextPage": true,
+      "hasPrevPage": false
+    }
+  }
+}
+```
+
+### 获取单个酒类
+
+获取单个酒类的详细信息。
+
+- **URL**: `/api/v1/alcohols/:id`
+- **Method**: `GET`
+- **Auth Required**: Yes
+
+**URL Parameters**:
+- `id`: 酒类 ID
+
+**Success Response**:
+- **Code**: 200
+- **Content**:
+```json
+{
+  "success": true,
+  "data": {
+    "_id": "5f7b5d7e9b8c2d1a3e4f5g6h",
+    "name": "Asahi Super Dry",
+    "type": "beer",
+    "brand": "Asahi",
+    "alcoholContent": 5.2,
+    "volume": 330,
+    "volumeUnit": "ml",
+    "description": "日本顶级啤酒",
+    "imageUrl": "https://example.com/asahi.jpg",
+    "createdBy": "john_doe",
+    "updatedBy": "john_doe",
+    "createdAt": "2025-01-04T15:32:12.000Z",
+    "updatedAt": "2025-01-04T15:32:12.000Z"
+  }
+}
+```
+
+### 更新酒类
+
+更新现有酒类的信息。
+
+- **URL**: `/api/v1/alcohols/:id`
+- **Method**: `PUT`
+- **Auth Required**: Yes
+
+**URL Parameters**:
+- `id`: 酒类 ID
+
+**Request Body** (所有字段都是可选的):
+```json
+{
+  "name": "Updated Name",
+  "type": "beer",
+  "brand": "Updated Brand",
+  "alcoholContent": 5.5,
+  "volume": 350,
+  "volumeUnit": "ml",
+  "description": "Updated description",
+  "imageUrl": "https://example.com/updated.jpg"
+}
+```
+
+**Success Response**:
+- **Code**: 200
+- **Content**:
+```json
+{
+  "success": true,
+  "data": {
+    "_id": "5f7b5d7e9b8c2d1a3e4f5g6h",
+    "name": "Updated Name",
+    "type": "beer",
+    "brand": "Updated Brand",
+    "alcoholContent": 5.5,
+    "volume": 350,
+    "volumeUnit": "ml",
+    "description": "Updated description",
+    "imageUrl": "https://example.com/updated.jpg",
+    "createdBy": "john_doe",
+    "updatedBy": "john_doe",
+    "createdAt": "2025-01-04T15:32:12.000Z",
+    "updatedAt": "2025-01-04T15:40:52.000Z"
+  },
+  "message": "Alcohol updated successfully"
+}
+```
+
+### 删除酒类
+
+删除指定的酒类。如果该酒类已被饮品记录引用，则无法删除。
+
+- **URL**: `/api/v1/alcohols/:id`
+- **Method**: `DELETE`
+- **Auth Required**: Yes
+
+**URL Parameters**:
+- `id`: 酒类 ID
+
+**Success Response**:
+- **Code**: 200
+- **Content**:
+```json
+{
+  "success": true,
+  "data": null,
+  "message": "Alcohol deleted successfully"
+}
+```
+
+**Error Responses**:
+
+1. 记录不存在
+- **Code**: 404
+- **Content**:
+```json
+{
+  "success": false,
+  "message": "Alcohol not found"
+}
+```
+
+2. 验证错误
+- **Code**: 400
+- **Content**:
+```json
+{
+  "success": false,
+  "message": "Validation failed: type must be one of: beer, baijiu, red_wine, foreign_wine, sake, shochu"
+}
+```
+
+3. 无法删除（被引用）
+- **Code**: 400
+- **Content**:
+```json
+{
+  "success": false,
+  "message": "Cannot delete alcohol: it is referenced by drink records"
+}
+```
+
+4. 服务器错误
+- **Code**: 500
+- **Content**:
+```json
+{
+  "success": false,
+  "message": "Internal server error message"
+}
+```
+
 ## 错误响应示例
 
 ### 1. 未授权访问

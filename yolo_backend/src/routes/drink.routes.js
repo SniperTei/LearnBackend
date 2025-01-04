@@ -3,19 +3,22 @@ const router = express.Router();
 const drinkController = require('../controllers/drink.controller');
 const auth = require('../middleware/auth');
 
-// 创建饮品（需要认证）
-router.post('/create', auth, drinkController.createDrink);
+// 所有饮品相关的路由都需要认证
+router.use(auth);
 
-// 获取当前用户的所有饮品（需要认证）
-router.get('/list', auth, drinkController.getAllDrinks);
+// 创建饮品记录
+router.post('/', drinkController.createDrink);
 
-// 获取单个饮品
+// 获取当前用户的所有饮品记录，支持分页和过滤
+router.get('/', drinkController.getAllDrinks);
+
+// 获取单个饮品记录详情
 router.get('/:id', drinkController.getDrinkById);
 
-// 更新饮品
+// 更新饮品记录
 router.put('/:id', drinkController.updateDrink);
 
-// 删除饮品
+// 删除饮品记录
 router.delete('/:id', drinkController.deleteDrink);
 
 module.exports = router;

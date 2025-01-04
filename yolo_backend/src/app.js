@@ -20,6 +20,7 @@ const connectDB = require('./config/database');
 // 导入路由
 const userRoutes = require('./routes/user.routes');
 const drinkRoutes = require('./routes/drink.routes');
+const alcoholRoutes = require('./routes/alcohol.routes');
 
 const app = express();
 
@@ -54,6 +55,7 @@ app.get('/', (req, res) => {
 // API 路由
 app.use('/api/v1/users', userRoutes);
 app.use('/api/v1/drinks', drinkRoutes);
+app.use('/api/v1/alcohols', alcoholRoutes);
 
 // 错误处理中间件
 app.use((err, req, res, next) => {
