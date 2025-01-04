@@ -458,7 +458,7 @@ Authorization: Bearer <your-token>
 
 ### 删除饮酒记录
 
-删除指定的饮酒记录。
+删除指定的饮酒记录。只有记录的创建者可以删除自己的记录。
 
 - **URL**: `/api/v1/drinks/:id`
 - **Method**: `DELETE`
@@ -490,23 +490,23 @@ Authorization: Bearer <your-token>
 }
 ```
 
-2. 验证错误
-- **Code**: 400
+2. 权限不足
+- **Code**: 403
 - **Content**:
 ```json
 {
   "success": false,
-  "message": "Validation failed: mood must be one of: happy, sad, excited, relaxed, neutral"
+  "message": "You can only delete your own drink records"
 }
 ```
 
-3. 无效的酒类ID
+3. 无效的记录ID
 - **Code**: 400
 - **Content**:
 ```json
 {
   "success": false,
-  "message": "Invalid alcohol ID"
+  "message": "Invalid drink record ID"
 }
 ```
 

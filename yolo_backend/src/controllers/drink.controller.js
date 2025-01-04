@@ -178,10 +178,10 @@ exports.deleteDrink = async (req, res) => {
     if (!drink) {
       return res.status(404).json(ApiResponse.error('Drink record not found'));
     }
-    
-    // 验证是否是当前用户的记录
-    if (drink.userId.toString() !== req.user.userId) {
-      return res.status(403).json(ApiResponse.error('You do not have permission to delete this drink record'));
+
+    // 验证是否为创建者
+    if (drink.userId.toString() !== req.user.userId.toString()) {
+      return res.status(403).json(ApiResponse.error('You can only delete your own drink records'));
     }
 
     await drinkService.deleteDrink(req.params.id);
