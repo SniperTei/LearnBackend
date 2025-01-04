@@ -208,6 +208,165 @@
 }
 ```
 
+## 饮品管理 API
+
+### 1. 创建饮品记录
+
+**请求**
+- 方法: `POST`
+- 路径: `/api/v1/drinks/create`
+- Headers: 
+  - Authorization: Bearer {token}
+- Content-Type: `application/json`
+
+**请求体**
+```json
+{
+  "drinkName": "青岛啤酒",
+  "alcoholType": "啤酒",
+  "unit": "瓶",
+  "drinkTime": "2025-01-04T14:00:00Z",
+  "reason": "朋友聚会"
+}
+```
+
+**响应示例**
+```json
+{
+  "code": "000000",
+  "statusCode": 200,
+  "msg": "Drink record created successfully",
+  "data": {
+    "id": "65123456789abcdef1234567",
+    "drinkName": "青岛啤酒",
+    "alcoholType": "啤酒",
+    "unit": "瓶",
+    "drinkTime": "2025-01-04T14:00:00Z",
+    "reason": "朋友聚会",
+    "createdAt": "2025-01-04T14:00:00Z",
+    "updatedAt": "2025-01-04T14:00:00Z"
+  },
+  "timestamp": "2025-01-04 14:00:00.123"
+}
+```
+
+### 2. 获取饮品列表
+
+**请求**
+- 方法: `GET`
+- 路径: `/api/v1/drinks/list`
+- Headers: 
+  - Authorization: Bearer {token}
+
+**响应示例**
+```json
+{
+  "code": "000000",
+  "statusCode": 200,
+  "msg": "Success",
+  "data": [
+    {
+      "id": "65123456789abcdef1234567",
+      "drinkName": "青岛啤酒",
+      "alcoholType": "啤酒",
+      "unit": "瓶",
+      "drinkTime": "2025-01-04T14:00:00Z",
+      "reason": "朋友聚会",
+      "createdAt": "2025-01-04T14:00:00Z",
+      "updatedAt": "2025-01-04T14:00:00Z"
+    }
+  ],
+  "timestamp": "2025-01-04 14:00:00.123"
+}
+```
+
+### 3. 获取单个饮品详情
+
+**请求**
+- 方法: `GET`
+- 路径: `/api/v1/drinks/:id`
+- Headers: 
+  - Authorization: Bearer {token}
+
+**响应示例**
+```json
+{
+  "code": "000000",
+  "statusCode": 200,
+  "msg": "Success",
+  "data": {
+    "id": "65123456789abcdef1234567",
+    "drinkName": "青岛啤酒",
+    "alcoholType": "啤酒",
+    "unit": "瓶",
+    "drinkTime": "2025-01-04T14:00:00Z",
+    "reason": "朋友聚会",
+    "createdAt": "2025-01-04T14:00:00Z",
+    "updatedAt": "2025-01-04T14:00:00Z"
+  },
+  "timestamp": "2025-01-04 14:00:00.123"
+}
+```
+
+### 4. 更新饮品记录
+
+**请求**
+- 方法: `PUT`
+- 路径: `/api/v1/drinks/:id`
+- Headers: 
+  - Authorization: Bearer {token}
+- Content-Type: `application/json`
+
+**请求体**
+```json
+{
+  "drinkName": "青岛啤酒",
+  "alcoholType": "啤酒",
+  "unit": "瓶",
+  "drinkTime": "2025-01-04T15:00:00Z",
+  "reason": "修改后的原因"
+}
+```
+
+**响应示例**
+```json
+{
+  "code": "000000",
+  "statusCode": 200,
+  "msg": "Drink record updated successfully",
+  "data": {
+    "id": "65123456789abcdef1234567",
+    "drinkName": "青岛啤酒",
+    "alcoholType": "啤酒",
+    "unit": "瓶",
+    "drinkTime": "2025-01-04T15:00:00Z",
+    "reason": "修改后的原因",
+    "createdAt": "2025-01-04T14:00:00Z",
+    "updatedAt": "2025-01-04T15:00:00Z"
+  },
+  "timestamp": "2025-01-04 15:00:00.123"
+}
+```
+
+### 5. 删除饮品记录
+
+**请求**
+- 方法: `DELETE`
+- 路径: `/api/v1/drinks/:id`
+- Headers: 
+  - Authorization: Bearer {token}
+
+**响应示例**
+```json
+{
+  "code": "000000",
+  "statusCode": 200,
+  "msg": "Drink record deleted successfully",
+  "data": null,
+  "timestamp": "2025-01-04 15:00:00.123"
+}
+```
+
 ## 错误响应示例
 
 ### 1. 未授权访问
