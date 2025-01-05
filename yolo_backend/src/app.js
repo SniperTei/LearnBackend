@@ -22,6 +22,7 @@ const userRoutes = require('./routes/user.routes');
 const drinkRoutes = require('./routes/drink.routes');
 const alcoholRoutes = require('./routes/alcohol.routes');
 const commonRoutes = require('./routes/common.routes');
+const foodMenuRoutes = require('./routes/foodmenu.routes');
 
 const app = express();
 
@@ -61,6 +62,7 @@ app.use('/api/v1/users', userRoutes);
 app.use('/api/v1/drinks', drinkRoutes);
 app.use('/api/v1/alcohols', alcoholRoutes);
 app.use('/api/v1/common', commonRoutes);
+app.use('/api/v1/foodmenus', foodMenuRoutes);
 
 // 错误处理中间件
 app.use((err, req, res, next) => {

@@ -358,7 +358,7 @@ Authorization: Bearer <your-token>
 
 获取单个饮酒记录的详细信息。
 
-- **URL**: `/api/v1/drinks/:id`
+- **URL**: `/api/v1/drinks/query/:id`
 - **Method**: `GET`
 - **Auth Required**: Yes
 
@@ -401,7 +401,7 @@ Authorization: Bearer <your-token>
 
 更新现有饮酒记录的信息。
 
-- **URL**: `/api/v1/drinks/:id`
+- **URL**: `/api/v1/drinks/update/:id`
 - **Method**: `PUT`
 - **Auth Required**: Yes
 
@@ -460,7 +460,7 @@ Authorization: Bearer <your-token>
 
 删除指定的饮酒记录。只有记录的创建者可以删除自己的记录。
 
-- **URL**: `/api/v1/drinks/:id`
+- **URL**: `/api/v1/drinks/delete/:id`
 - **Method**: `DELETE`
 - **Auth Required**: Yes
 
@@ -644,7 +644,7 @@ Authorization: Bearer <your-token>
 
 获取单个酒类的详细信息。
 
-- **URL**: `/api/v1/alcohols/:id`
+- **URL**: `/api/v1/alcohols/query/:id`
 - **Method**: `GET`
 - **Auth Required**: Yes
 
@@ -679,7 +679,7 @@ Authorization: Bearer <your-token>
 
 更新现有酒类的信息。
 
-- **URL**: `/api/v1/alcohols/:id`
+- **URL**: `/api/v1/alcohols/update/:id`
 - **Method**: `PUT`
 - **Auth Required**: Yes
 
@@ -729,7 +729,7 @@ Authorization: Bearer <your-token>
 
 删除指定的酒类。如果该酒类已被饮品记录引用，则无法删除。
 
-- **URL**: `/api/v1/alcohols/:id`
+- **URL**: `/api/v1/alcohols/delete/:id`
 - **Method**: `DELETE`
 - **Auth Required**: Yes
 
@@ -786,6 +786,209 @@ Authorization: Bearer <your-token>
 {
   "success": false,
   "message": "Internal server error message"
+}
+```
+
+## 菜单管理 API
+
+所有菜单接口都需要在请求头中携带认证 token：
+```
+Authorization: Bearer <token>
+```
+
+### 1. 创建菜品
+
+**请求**
+- 方法: `POST`
+- URL: `/api/v1/foodmenus/create`
+- 请求头: 
+  ```
+  Authorization: Bearer <token>
+  Content-Type: application/json
+  ```
+- 请求体:
+  ```json
+  {
+    "name": "宫保鸡丁",
+    "type": "meat",
+    "imageUrl": "http://example.com/image.jpg",
+    "price": 38,
+    "chef": "张大厨"
+  }
+  ```
+- 参数说明:
+  - `name`: 菜品名称（必需）
+  - `type`: 菜品类型（必需），可选值：
+    - vegetarian (素菜)
+    - meat (荤菜)
+    - cold_dish (凉菜)
+    - soup (汤)
+    - side_dish (下饭菜)
+    - staple_food (主食)
+    - diet_food (减脂餐)
+  - `imageUrl`: 图片URL（可选）
+  - `price`: 价格（必需）
+  - `chef`: 厨师名（可选）
+
+**响应**
+```json
+{
+  "code": "000000",
+  "statusCode": 201,
+  "msg": "菜品创建成功",
+  "data": {
+    "_id": "5f7b5d7e9b8c2d1a3e4f5g6h",
+    "name": "宫保鸡丁",
+    "type": "meat",
+    "imageUrl": "http://example.com/image.jpg",
+    "price": 38,
+    "chef": "张大厨",
+    "createdBy": "jinyan",
+    "updatedBy": "jinyan",
+    "createdAt": "2025-01-05T08:23:42.123Z",
+    "updatedAt": "2025-01-05T08:23:42.123Z"
+  },
+  "timestamp": "2025-01-05 16:23:42.123"
+}
+```
+
+### 2. 获取菜品列表
+
+**请求**
+- 方法: `GET`
+- URL: `/api/v1/foodmenus/list`
+- 查询参数:
+  - `page`: 页码（可选，默认1）
+  - `limit`: 每页数量（可选，默认10）
+  - `type`: 菜品类型（可选）
+  - `minPrice`: 最低价格（可选）
+  - `maxPrice`: 最高价格（可选）
+  - `sortBy`: 排序字段（可选，默认createdAt）
+  - `order`: 排序方式（可选，默认desc）
+
+**响应**
+```json
+{
+  "code": "000000",
+  "statusCode": 200,
+  "msg": "Success",
+  "data": {
+    "foodMenus": [
+      {
+        "_id": "5f7b5d7e9b8c2d1a3e4f5g6h",
+        "name": "宫保鸡丁",
+        "type": "meat",
+        "imageUrl": "http://example.com/image.jpg",
+        "price": 38,
+        "chef": "张大厨",
+        "createdBy": "jinyan",
+        "updatedBy": "jinyan",
+        "createdAt": "2025-01-05T08:23:42.123Z",
+        "updatedAt": "2025-01-05T08:23:42.123Z"
+      }
+    ],
+    "pagination": {
+      "total": 100,
+      "totalPages": 10,
+      "currentPage": 1,
+      "limit": 10,
+      "hasNextPage": true,
+      "hasPrevPage": false
+    }
+  },
+  "timestamp": "2025-01-05 16:23:42.123"
+}
+```
+
+### 3. 获取单个菜品详情
+
+**请求**
+- 方法: `GET`
+- URL: `/api/v1/foodmenus/query/:id`
+
+**响应**
+```json
+{
+  "code": "000000",
+  "statusCode": 200,
+  "msg": "Success",
+  "data": {
+    "_id": "5f7b5d7e9b8c2d1a3e4f5g6h",
+    "name": "宫保鸡丁",
+    "type": "meat",
+    "imageUrl": "http://example.com/image.jpg",
+    "price": 38,
+    "chef": "张大厨",
+    "createdBy": "jinyan",
+    "updatedBy": "jinyan",
+    "createdAt": "2025-01-05T08:23:42.123Z",
+    "updatedAt": "2025-01-05T08:23:42.123Z"
+  },
+  "timestamp": "2025-01-05 16:23:42.123"
+}
+```
+
+### 4. 更新菜品
+
+**请求**
+- 方法: `PUT`
+- URL: `/api/v1/foodmenus/update/:id`
+- 请求头: 
+  ```
+  Authorization: Bearer <token>
+  Content-Type: application/json
+  ```
+- 请求体:
+  ```json
+  {
+    "name": "宫保鸡丁",
+    "type": "meat",
+    "imageUrl": "http://example.com/image.jpg",
+    "price": 42,
+    "chef": "李大厨"
+  }
+  ```
+
+**响应**
+```json
+{
+  "code": "000000",
+  "statusCode": 200,
+  "msg": "菜品更新成功",
+  "data": {
+    "_id": "5f7b5d7e9b8c2d1a3e4f5g6h",
+    "name": "宫保鸡丁",
+    "type": "meat",
+    "imageUrl": "http://example.com/image.jpg",
+    "price": 42,
+    "chef": "李大厨",
+    "createdBy": "jinyan",
+    "updatedBy": "jinyan",
+    "createdAt": "2025-01-05T08:23:42.123Z",
+    "updatedAt": "2025-01-05T08:24:42.123Z"
+  },
+  "timestamp": "2025-01-05 16:24:42.123"
+}
+```
+
+### 5. 删除菜品
+
+**请求**
+- 方法: `DELETE`
+- URL: `/api/v1/foodmenus/delete/:id`
+- 请求头: 
+  ```
+  Authorization: Bearer <token>
+  ```
+
+**响应**
+```json
+{
+  "code": "000000",
+  "statusCode": 200,
+  "msg": "菜品删除成功",
+  "data": null,
+  "timestamp": "2025-01-05 16:24:42.123"
 }
 ```
 

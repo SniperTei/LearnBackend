@@ -13,12 +13,12 @@ router.post('/create', drinkController.createDrink);
 router.get('/list', drinkController.getAllDrinks);
 
 // 获取单个饮品记录详情
-router.get('/:id', drinkController.getDrinkById);
+router.get('/query/:id', drinkController.getDrinkById);
 
 // 更新饮品记录
-router.put('/:id', drinkController.updateDrink);
+router.put('/update/:id', drinkController.updateDrink);
 
 // 删除饮品记录
-router.delete('/:id', drinkController.deleteDrink);
+router.delete('/delete/:id', drinkController.deleteDrink);
 
 module.exports = router;
