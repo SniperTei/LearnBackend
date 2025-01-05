@@ -12,6 +12,11 @@ const foodMenuSchema = new mongoose.Schema({
     enum: ['vegetarian', 'meat', 'cold_dish', 'soup', 'side_dish', 'staple_food', 'diet_food'],
     message: '{VALUE} 不是有效的菜品类型'
   },
+  description: {
+    type: String,
+    trim: true,
+    default: ''
+  },
   imageUrl: {
     type: String,
     trim: true
