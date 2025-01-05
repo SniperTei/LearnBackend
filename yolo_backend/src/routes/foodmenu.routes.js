@@ -13,4 +13,7 @@ router.get('/query/:id', foodMenuController.getFoodMenuById);
 router.put('/update/:id', foodMenuController.updateFoodMenu);
 router.delete('/delete/:id', foodMenuController.deleteFoodMenu);
 
+// 随机推荐菜品
+router.get('/random', foodMenuController.getRandomFoodMenus);
+
 module.exports = router;

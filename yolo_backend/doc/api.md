@@ -876,31 +876,23 @@ Authorization: Bearer <token>
   "statusCode": 200,
   "msg": "Success",
   "data": {
-    "foodMenus": [
+    "result": [
       {
-        "_id": "5f7b5d7e9b8c2d1a3e4f5g6h",
-        "name": "宫保鸡丁",
+        "_id": "5f9f1b9b9b9b9b9b9b9b9b9b",
+        "name": "锅包肉",
         "type": "meat",
-        "description": "一道闻名中外的特色传统名菜，选用鸡丁、干辣椒、花生米等炒制而成。",
-        "imageUrl": "http://example.com/image.jpg",
-        "price": 38,
-        "chef": "张大厨",
-        "createdBy": "jinyan",
-        "updatedBy": "jinyan",
-        "createdAt": "2025-01-05T08:23:42.123Z",
-        "updatedAt": "2025-01-05T08:23:42.123Z"
+        "description": "酥脆可口的锅包肉",
+        "imageUrl": "https://food-images.com/guobaorou.jpg",
+        "price": 48,
+        "chef": "朴金燕",
+        "createdBy": "admin",
+        "updatedBy": "admin",
+        "createdAt": "2025-01-05T11:19:59.000Z",
+        "updatedAt": "2025-01-05T11:19:59.000Z"
       }
-    ],
-    "pagination": {
-      "total": 100,
-      "totalPages": 10,
-      "currentPage": 1,
-      "limit": 10,
-      "hasNextPage": true,
-      "hasPrevPage": false
-    }
+    ]
   },
-  "timestamp": "2025-01-05 16:23:42.123"
+  "timestamp": "2025-01-05T11:19:59.000Z"
 }
 ```
 
@@ -917,19 +909,19 @@ Authorization: Bearer <token>
   "statusCode": 200,
   "msg": "Success",
   "data": {
-    "_id": "5f7b5d7e9b8c2d1a3e4f5g6h",
-    "name": "宫保鸡丁",
+    "_id": "5f9f1b9b9b9b9b9b9b9b9b9b",
+    "name": "锅包肉",
     "type": "meat",
-    "description": "一道闻名中外的特色传统名菜，选用鸡丁、干辣椒、花生米等炒制而成。",
-    "imageUrl": "http://example.com/image.jpg",
-    "price": 38,
-    "chef": "张大厨",
-    "createdBy": "jinyan",
-    "updatedBy": "jinyan",
-    "createdAt": "2025-01-05T08:23:42.123Z",
-    "updatedAt": "2025-01-05T08:23:42.123Z"
+    "description": "酥脆可口的锅包肉",
+    "imageUrl": "https://food-images.com/guobaorou.jpg",
+    "price": 48,
+    "chef": "朴金燕",
+    "createdBy": "admin",
+    "updatedBy": "admin",
+    "createdAt": "2025-01-05T11:19:59.000Z",
+    "updatedAt": "2025-01-05T11:19:59.000Z"
   },
-  "timestamp": "2025-01-05 16:23:42.123"
+  "timestamp": "2025-01-05T11:19:59.000Z"
 }
 ```
 
@@ -996,6 +988,56 @@ Authorization: Bearer <token>
   "msg": "菜品删除成功",
   "data": null,
   "timestamp": "2025-01-05 16:24:42.123"
+}
+```
+
+### 6. 随机推荐菜品
+
+**请求**
+- 方法: `GET`
+- URL: `/api/v1/foodmenus/random`
+- 请求头: 
+  ```
+  Authorization: Bearer <token>
+  ```
+- 查询参数:
+  - `foodCount`: 需要推荐的菜品数量（可选，默认1，最大10）
+
+**响应**
+```json
+{
+  "code": "000000",
+  "statusCode": 200,
+  "msg": "今晚吃这些！",
+  "data": {
+    "result": [
+      {
+        "_id": "5f9f1b9b9b9b9b9b9b9b9b9b",
+        "name": "锅包肉",
+        "type": "meat",
+        "description": "酥脆可口的锅包肉",
+        "imageUrl": "https://food-images.com/guobaorou.jpg",
+        "price": 48,
+        "chef": "朴金燕",
+        "createdBy": "admin",
+        "updatedBy": "admin",
+        "createdAt": "2025-01-05T11:19:59.000Z",
+        "updatedAt": "2025-01-05T11:19:59.000Z"
+      }
+    ]
+  },
+  "timestamp": "2025-01-05T11:19:59.000Z"
+}
+```
+
+**错误响应**
+```json
+{
+  "code": "1",
+  "statusCode": 400,
+  "msg": "错误信息",
+  "data": null,
+  "timestamp": "2025-01-05T11:19:59.000Z"
 }
 ```
 

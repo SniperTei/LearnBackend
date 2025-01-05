@@ -78,6 +78,23 @@ class FoodMenuController {
       res.status(400).json(ApiResponse.error(error.message));
     }
   }
+
+  /**
+   * 随机推荐菜品
+   */
+  static async getRandomFoodMenus(req, res) {
+    try {
+      const foodCount = parseInt(req.query.foodCount) || 1;
+      
+      // 限制最大返回数量为10
+      const count = Math.min(Math.max(1, foodCount), 10);
+      
+      const foodMenus = await FoodMenuService.getRandomFoodMenus(count);
+      res.json(ApiResponse.success({ result: foodMenus }, '今晚吃这些！'));
+    } catch (error) {
+      res.status(400).json(ApiResponse.error(error.message));
+    }
+  }
 }
 
 module.exports = FoodMenuController;

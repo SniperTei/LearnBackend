@@ -1,4 +1,5 @@
 const FoodMenuDAL = require('../dal/foodmenu.dal');
+const FoodMenu = require('../models/foodmenu.model');
 
 class FoodMenuService {
   /**
@@ -70,6 +71,24 @@ class FoodMenuService {
    */
   static async deleteFoodMenu(id) {
     return await FoodMenuDAL.delete(id);
+  }
+
+  /**
+   * 随机获取指定数量的菜品
+   * @param {number} count 需要获取的菜品数量
+   * @returns {Promise<Array>} 随机菜品列表
+   */
+  static async getRandomFoodMenus(count = 1) {
+    try {
+      // 直接使用 FoodMenu 模型调用 aggregate
+      const foodMenus = await FoodMenu.aggregate([
+        { $sample: { size: parseInt(count) } }
+      ]);
+      
+      return foodMenus;
+    } catch (error) {
+      throw error;
+    }
   }
 }
 
