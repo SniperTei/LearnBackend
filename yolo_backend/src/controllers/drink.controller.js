@@ -136,7 +136,7 @@ exports.updateDrink = async (req, res) => {
     }
     
     // 验证是否是当前用户的记录
-    if (drink.userId.toString() !== req.user.userId) {
+    if (drink.userId.toString() !== req.user.userId.toString()) {
       return res.status(403).json(ApiResponse.error('You do not have permission to update this drink record'));
     }
 
