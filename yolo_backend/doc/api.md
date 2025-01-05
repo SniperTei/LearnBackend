@@ -878,7 +878,7 @@ Authorization: Bearer <token>
   "data": {
     "result": [
       {
-        "_id": "5f9f1b9b9b9b9b9b9b9b9b9b",
+        "_id": "5f9f1b9b9b9b9b9b9b9b",
         "name": "锅包肉",
         "type": "meat",
         "description": "酥脆可口的锅包肉",
@@ -909,7 +909,7 @@ Authorization: Bearer <token>
   "statusCode": 200,
   "msg": "Success",
   "data": {
-    "_id": "5f9f1b9b9b9b9b9b9b9b9b9b",
+    "_id": "5f9f1b9b9b9b9b9b9b9b",
     "name": "锅包肉",
     "type": "meat",
     "description": "酥脆可口的锅包肉",
@@ -1012,7 +1012,7 @@ Authorization: Bearer <token>
   "data": {
     "result": [
       {
-        "_id": "5f9f1b9b9b9b9b9b9b9b9b9b",
+        "_id": "5f9f1b9b9b9b9b9b9b9b",
         "name": "锅包肉",
         "type": "meat",
         "description": "酥脆可口的锅包肉",
@@ -1038,6 +1038,208 @@ Authorization: Bearer <token>
   "msg": "错误信息",
   "data": null,
   "timestamp": "2025-01-05T11:19:59.000Z"
+}
+```
+
+## 餐厅管理 API
+
+所有餐厅接口都需要在请求头中携带认证 token：
+```
+Authorization: Bearer <token>
+```
+
+### 1. 创建餐厅
+
+**请求**
+- 方法: `POST`
+- URL: `/api/v1/restaurants/create`
+- 权限: 仅管理员
+- 请求头: 
+  ```
+  Authorization: Bearer <token>
+  Content-Type: application/json
+  ```
+- 请求体:
+```json
+{
+  "name": "金燕饭店",
+  "address": "延吉市公园路123号",
+  "rating": 4.5,
+  "imageUrls": [
+    "https://restaurant-images.com/jingyan1.jpg",
+    "https://restaurant-images.com/jingyan2.jpg"
+  ],
+  "description": "正宗朝鲜族料理，特色冷面和烤肉",
+  "priceLevel": "moderate"
+}
+```
+
+**响应**
+```json
+{
+  "code": "000000",
+  "statusCode": 201,
+  "msg": "餐厅创建成功",
+  "data": {
+    "name": "金燕饭店",
+    "address": "延吉市公园路123号",
+    "rating": 4.5,
+    "imageUrls": [
+      "https://restaurant-images.com/jingyan1.jpg",
+      "https://restaurant-images.com/jingyan2.jpg"
+    ],
+    "description": "正宗朝鲜族料理，特色冷面和烤肉",
+    "priceLevel": "moderate",
+    "createdBy": "admin",
+    "updatedBy": "admin",
+    "createdAt": "2025-01-05T14:29:13.000Z",
+    "updatedAt": "2025-01-05T14:29:13.000Z"
+  },
+  "timestamp": "2025-01-05T14:29:13.000Z"
+}
+```
+
+### 2. 获取餐厅列表
+
+**请求**
+- 方法: `GET`
+- URL: `/api/v1/restaurants/list`
+- 查询参数:
+  - `page`: 页码（可选，默认1）
+  - `limit`: 每页数量（可选，默认10）
+  - `name`: 餐厅名称关键词（可选）
+  - `minRating`: 最低评分（可选）
+  - `maxRating`: 最高评分（可选）
+  - `priceLevel`: 价位等级（可选，可选值：super_expensive/expensive/moderate/cheap）
+  - `sortBy`: 排序字段（可选，默认createdAt）
+  - `order`: 排序方式（可选，desc/asc，默认desc）
+
+**响应**
+```json
+{
+  "code": "000000",
+  "statusCode": 200,
+  "msg": "Success",
+  "data": {
+    "restaurants": [
+      {
+        "name": "金燕饭店",
+        "address": "延吉市公园路123号",
+        "rating": 4.5,
+        "imageUrls": [
+          "https://restaurant-images.com/jingyan1.jpg",
+          "https://restaurant-images.com/jingyan2.jpg"
+        ],
+        "description": "正宗朝鲜族料理，特色冷面和烤肉",
+        "priceLevel": "moderate",
+        "createdBy": "admin",
+        "updatedBy": "admin",
+        "createdAt": "2025-01-05T14:29:13.000Z",
+        "updatedAt": "2025-01-05T14:29:13.000Z"
+      }
+    ],
+    "total": 100,
+    "page": 1,
+    "totalPages": 10
+  },
+  "timestamp": "2025-01-05T14:29:13.000Z"
+}
+```
+
+### 3. 获取单个餐厅
+
+**请求**
+- 方法: `GET`
+- URL: `/api/v1/restaurants/query/:id`
+
+**响应**
+```json
+{
+  "code": "000000",
+  "statusCode": 200,
+  "msg": "Success",
+  "data": {
+    "name": "金燕饭店",
+    "address": "延吉市公园路123号",
+    "rating": 4.5,
+    "imageUrls": [
+      "https://restaurant-images.com/jingyan1.jpg",
+      "https://restaurant-images.com/jingyan2.jpg"
+    ],
+    "description": "正宗朝鲜族料理，特色冷面和烤肉",
+    "priceLevel": "moderate",
+    "createdBy": "admin",
+    "updatedBy": "admin",
+    "createdAt": "2025-01-05T14:29:13.000Z",
+    "updatedAt": "2025-01-05T14:29:13.000Z"
+  },
+  "timestamp": "2025-01-05T14:29:13.000Z"
+}
+```
+
+### 4. 更新餐厅
+
+**请求**
+- 方法: `PUT`
+- URL: `/api/v1/restaurants/update/:id`
+- 权限: 仅管理员
+- 请求头: 
+  ```
+  Authorization: Bearer <token>
+  Content-Type: application/json
+  ```
+- 请求体:
+```json
+{
+  "rating": 4.8,
+  "description": "正宗朝鲜族料理，特色冷面和烤肉，新增特色火锅"
+}
+```
+
+**响应**
+```json
+{
+  "code": "000000",
+  "statusCode": 200,
+  "msg": "餐厅更新成功",
+  "data": {
+    "name": "金燕饭店",
+    "address": "延吉市公园路123号",
+    "rating": 4.8,
+    "imageUrls": [
+      "https://restaurant-images.com/jingyan1.jpg",
+      "https://restaurant-images.com/jingyan2.jpg"
+    ],
+    "description": "正宗朝鲜族料理，特色冷面和烤肉，新增特色火锅",
+    "priceLevel": "moderate",
+    "createdBy": "admin",
+    "updatedBy": "admin",
+    "createdAt": "2025-01-05T14:29:13.000Z",
+    "updatedAt": "2025-01-05T14:29:13.000Z"
+  },
+  "timestamp": "2025-01-05T14:29:13.000Z"
+}
+```
+
+### 5. 删除餐厅
+
+**请求**
+- 方法: `DELETE`
+- URL: `/api/v1/restaurants/delete/:id`
+- 权限: 仅管理员
+- 请求头: 
+  ```
+  Authorization: Bearer <token>
+  ```
+
+**响应**
+```json
+{
+  "code": "000000",
+  "statusCode": 200,
+  "msg": "餐厅删除成功",
+  "data": null,
+  "timestamp": "2025-01-05T14:29:13.000Z"
 }
 ```
 
@@ -1157,6 +1359,75 @@ if (result.code === '000000') {
 } else {
   // 处理错误
   console.error(result.msg);
+}
+```
+
+## 字典接口
+
+### 获取字典数据
+
+获取指定分组的字典数据，支持同时获取多个分组的数据。
+
+**请求**
+- 方法: `GET`
+- URL: `/api/v1/dictionary`
+- 认证: 需要 Bearer Token
+- 查询参数:
+  - `groups`: 字典分组，多个分组用逗号分隔（例如：RESTAURANT_PRICE_LEVEL,OTHER_GROUP）
+
+**成功响应**:
+- 状态码: `200 OK`
+- 响应体:
+```json
+{
+  "code": "000000",
+  "statusCode": 200,
+  "msg": "Success",
+  "data": {
+    "RESTAURANT_PRICE_LEVEL": [
+      {
+        "key": "super_expensive",
+        "value": "爆贵"
+      },
+      {
+        "key": "expensive",
+        "value": "很贵"
+      },
+      {
+        "key": "moderate",
+        "value": "正常"
+      },
+      {
+        "key": "cheap",
+        "value": "便宜"
+      }
+    ]
+  },
+  "timestamp": "2025-01-05T15:45:48.000Z"
+}
+```
+
+**错误响应**:
+
+1. 未指定分组
+```json
+{
+  "code": "400000",
+  "statusCode": 400,
+  "msg": "请指定字典分组",
+  "data": null,
+  "timestamp": "2025-01-05T15:45:48.000Z"
+}
+```
+
+2. 未认证或认证失败
+```json
+{
+  "code": "401000",
+  "statusCode": 401,
+  "msg": "未认证或认证失败",
+  "data": null,
+  "timestamp": "2025-01-05T15:45:48.000Z"
 }
 ```
 

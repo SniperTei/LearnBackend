@@ -23,6 +23,8 @@ const drinkRoutes = require('./routes/drink.routes');
 const alcoholRoutes = require('./routes/alcohol.routes');
 const commonRoutes = require('./routes/common.routes');
 const foodMenuRoutes = require('./routes/foodmenu.routes');
+const restaurantRoutes = require('./routes/restaurant.routes');
+const dictionaryRoutes = require('./routes/dictionary.routes');
 
 const app = express();
 
@@ -63,6 +65,8 @@ app.use('/api/v1/drinks', drinkRoutes);
 app.use('/api/v1/alcohols', alcoholRoutes);
 app.use('/api/v1/common', commonRoutes);
 app.use('/api/v1/foodmenus', foodMenuRoutes);
+app.use('/api/v1/restaurants', restaurantRoutes);
+app.use('/api/v1/dictionaries', dictionaryRoutes);
 
 // 错误处理中间件
 app.use((err, req, res, next) => {
