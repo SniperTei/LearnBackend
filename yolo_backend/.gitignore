@@ -4,3 +4,7 @@ node_modules/
 npm-debug.log*
 coverage/
 .vscode/
+
+# Uploads directory
+public/uploads/
+public/uploads/**/*
