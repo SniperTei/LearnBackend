@@ -34,6 +34,10 @@ const alcoholSchema = new mongoose.Schema({
     enum: ['ml', 'L'],
     default: 'ml'
   },
+  imageUrl: {
+    type: String,
+    trim: true
+  },
   description: {
     type: String,
     trim: true

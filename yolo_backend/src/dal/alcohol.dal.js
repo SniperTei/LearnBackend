@@ -18,13 +18,16 @@ class AlcoholDAO {
    * @returns {Promise<Array>} 酒类列表
    */
   async getAllAlcohols(filter, options) {
-    const { page, limit, sort } = options;
-    const skip = (page - 1) * limit;
+    const { page = 1, limit = 10, sort } = options;
+    // 确保 page 和 limit 是数字
+    const pageNum = parseInt(page);
+    const limitNum = parseInt(limit);
+    const skip = (pageNum - 1) * limitNum;
 
     return await Alcohol.find(filter)
       .sort(sort)
       .skip(skip)
-      .limit(limit);
+      .limit(limitNum);
   }
 
   /**
