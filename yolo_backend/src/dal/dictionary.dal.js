@@ -1,4 +1,4 @@
-const { Dictionary } = require('../models/dictionary.model');
+const Dictionary = require('../models/dictionary.model');
 
 class DictionaryDAL {
   /**
