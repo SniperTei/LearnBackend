@@ -789,6 +789,125 @@ Authorization: Bearer <your-token>
 }
 ```
 
+## 通用接口
+
+### 上传图片
+
+上传图片文件，支持同时上传多张图片。
+
+- **接口URL**: `/api/v1/common/uploadImg`
+- **请求方式**: `POST`
+- **认证要求**: 需要登录认证，请在 Header 中携带 token
+- **Content-Type**: `multipart/form-data`
+
+**请求参数**:
+
+| 参数名 | 类型 | 必填 | 说明 |
+|--------|------|------|------|
+| files | File[] | 是 | 图片文件数组，最多支持9张图片 |
+
+**图片要求**:
+- 支持的格式：jpeg, png, gif, webp
+- 单个文件大小限制：5MB
+- 最大上传数量：9张
+
+**成功响应**:
+```json
+{
+  "code": "000000",
+  "statusCode": 200,
+  "msg": "Success",
+  "data": {
+    "urls": [
+      {
+        "url": "http://your-domain.com/uploads/2025/01/05/1641345678912-123456789.jpg",
+        "filename": "1641345678912-123456789.jpg"
+      }
+    ]
+  },
+  "timestamp": "2025-01-05 15:04:14.123"
+}
+```
+
+**错误响应**:
+
+1. 未上传文件
+```json
+{
+  "code": "A00400",
+  "statusCode": 400,
+  "msg": "No files uploaded",
+  "timestamp": "2025-01-05 15:04:14.123"
+}
+```
+
+2. 文件类型错误
+```json
+{
+  "code": "A00400",
+  "statusCode": 400,
+  "msg": "Invalid file type. Only images are allowed.",
+  "timestamp": "2025-01-05 15:04:14.123"
+}
+```
+
+3. 超出文件数量限制
+```json
+{
+  "code": "A00400",
+  "statusCode": 400,
+  "msg": "Too many files. Maximum allowed is 9",
+  "timestamp": "2025-01-05 15:04:14.123"
+}
+```
+
+4. 文件大小超限
+```json
+{
+  "code": "A00400",
+  "statusCode": 400,
+  "msg": "File too large. Maximum size is 5MB",
+  "timestamp": "2025-01-05 15:04:14.123"
+}
+```
+
+5. 未登录或 token 无效
+```json
+{
+  "code": "A00401",
+  "statusCode": 401,
+  "msg": "Unauthorized",
+  "timestamp": "2025-01-05 15:04:14.123"
+}
+```
+
+**使用示例**:
+
+```javascript
+// 前端代码示例
+const formData = new FormData();
+imageFiles.forEach(file => {
+  formData.append('files', file);
+});
+
+const response = await fetch('/api/v1/common/uploadImg', {
+  method: 'POST',
+  headers: {
+    'Authorization': `Bearer ${token}`
+  },
+  body: formData
+});
+
+const result = await response.json();
+if (result.code === '000000') {
+  const imageUrls = result.data.urls;
+  // 处理上传成功的图片URL
+} else {
+  // 处理错误
+  console.error(result.msg);
+}
+```
+
 ## 错误响应示例
 
 ### 1. 未授权访问

@@ -21,6 +21,7 @@ const connectDB = require('./config/database');
 const userRoutes = require('./routes/user.routes');
 const drinkRoutes = require('./routes/drink.routes');
 const alcoholRoutes = require('./routes/alcohol.routes');
+const commonRoutes = require('./routes/common.routes');
 
 const app = express();
 
@@ -43,6 +44,9 @@ app.use((req, res, next) => {
   next();
 });
 
+// 静态文件服务
+app.use(express.static('public'));
+
 // 基础路由
 app.get('/', (req, res) => {
   res.json({ 
@@ -56,6 +60,7 @@ app.get('/', (req, res) => {
 app.use('/api/v1/users', userRoutes);
 app.use('/api/v1/drinks', drinkRoutes);
 app.use('/api/v1/alcohols', alcoholRoutes);
+app.use('/api/v1/common', commonRoutes);
 
 // 错误处理中间件
 app.use((err, req, res, next) => {
