@@ -1243,6 +1243,203 @@ Authorization: Bearer <token>
 }
 ```
 
+## 运动记录接口
+
+### 1. 创建运动记录
+
+**请求**
+- 方法: `POST`
+- URL: `/api/v1/fitness/create`
+- Headers:
+  - `Authorization`: Bearer token
+- Body:
+```json
+{
+  "exerciseType": "跑步",
+  "exerciseDate": "2025-01-06T14:00:00.000Z",
+  "duration": 30,
+  "caloriesBurned": 300,
+  "intensity": "moderate",
+  "location": "公园"
+}
+```
+
+**响应**
+```json
+{
+  "code": "000000",
+  "statusCode": 201,
+  "msg": "运动记录创建成功",
+  "data": {
+    "exerciseType": "跑步",
+    "userId": "5f7b5d6b3f6a8c2a1c9e4b7d",
+    "exerciseDate": "2025-01-06T14:00:00.000Z",
+    "duration": 30,
+    "caloriesBurned": 300,
+    "intensity": "moderate",
+    "location": "公园",
+    "createdBy": "john_doe",
+    "updatedBy": "john_doe",
+    "createdAt": "2025-01-06T14:29:13.000Z",
+    "updatedAt": "2025-01-06T14:29:13.000Z"
+  },
+  "timestamp": "2025-01-06T14:29:13.000Z"
+}
+```
+
+### 2. 获取运动记录列表
+
+**请求**
+- 方法: `GET`
+- URL: `/api/v1/fitness/list`
+- Headers:
+  - `Authorization`: Bearer token
+- Query Parameters:
+  - `page`: 页码（默认：1）
+  - `limit`: 每页数量（默认：10）
+  - `startDate`: 开始日期（可选）
+  - `endDate`: 结束日期（可选）
+  - `exerciseType`: 运动类型（可选）
+  - `intensity`: 运动强度（可选）
+  - `sortBy`: 排序字段（默认：exerciseDate）
+  - `order`: 排序方式（asc/desc，默认：desc）
+
+**响应**
+```json
+{
+  "code": "000000",
+  "statusCode": 200,
+  "msg": "Success",
+  "data": {
+    "records": [
+      {
+        "_id": "5f7b5d6b3f6a8c2a1c9e4b7e",
+        "exerciseType": "跑步",
+        "userId": {
+          "_id": "5f7b5d6b3f6a8c2a1c9e4b7d",
+          "username": "john_doe"
+        },
+        "exerciseDate": "2025-01-06T14:00:00.000Z",
+        "duration": 30,
+        "caloriesBurned": 300,
+        "intensity": "moderate",
+        "location": "公园",
+        "createdBy": "john_doe",
+        "updatedBy": "john_doe",
+        "createdAt": "2025-01-06T14:29:13.000Z",
+        "updatedAt": "2025-01-06T14:29:13.000Z"
+      }
+    ],
+    "pagination": {
+      "total": 1,
+      "totalPages": 1,
+      "currentPage": 1,
+      "limit": 10,
+      "hasNextPage": false,
+      "hasPrevPage": false
+    }
+  },
+  "timestamp": "2025-01-06T14:29:13.000Z"
+}
+```
+
+### 3. 获取单个运动记录
+
+**请求**
+- 方法: `GET`
+- URL: `/api/v1/fitness/query/:id`
+- Headers:
+  - `Authorization`: Bearer token
+
+**响应**
+```json
+{
+  "code": "000000",
+  "statusCode": 200,
+  "msg": "Success",
+  "data": {
+    "_id": "5f7b5d6b3f6a8c2a1c9e4b7e",
+    "exerciseType": "跑步",
+    "userId": {
+      "_id": "5f7b5d6b3f6a8c2a1c9e4b7d",
+      "username": "john_doe"
+    },
+    "exerciseDate": "2025-01-06T14:00:00.000Z",
+    "duration": 30,
+    "caloriesBurned": 300,
+    "intensity": "moderate",
+    "location": "公园",
+    "createdBy": "john_doe",
+    "updatedBy": "john_doe",
+    "createdAt": "2025-01-06T14:29:13.000Z",
+    "updatedAt": "2025-01-06T14:29:13.000Z"
+  },
+  "timestamp": "2025-01-06T14:29:13.000Z"
+}
+```
+
+### 4. 更新运动记录
+
+**请求**
+- 方法: `PUT`
+- URL: `/api/v1/fitness/update/:id`
+- Headers:
+  - `Authorization`: Bearer token
+- Body:
+```json
+{
+  "duration": 45,
+  "caloriesBurned": 450,
+  "intensity": "vigorous"
+}
+```
+
+**响应**
+```json
+{
+  "code": "000000",
+  "statusCode": 200,
+  "msg": "运动记录更新成功",
+  "data": {
+    "_id": "5f7b5d6b3f6a8c2a1c9e4b7e",
+    "exerciseType": "跑步",
+    "userId": {
+      "_id": "5f7b5d6b3f6a8c2a1c9e4b7d",
+      "username": "john_doe"
+    },
+    "exerciseDate": "2025-01-06T14:00:00.000Z",
+    "duration": 45,
+    "caloriesBurned": 450,
+    "intensity": "vigorous",
+    "location": "公园",
+    "createdBy": "john_doe",
+    "updatedBy": "john_doe",
+    "createdAt": "2025-01-06T14:29:13.000Z",
+    "updatedAt": "2025-01-06T14:35:13.000Z"
+  },
+  "timestamp": "2025-01-06T14:35:13.000Z"
+}
+```
+
+### 5. 删除运动记录
+
+**请求**
+- 方法: `DELETE`
+- URL: `/api/v1/fitness/delete/:id`
+- Headers:
+  - `Authorization`: Bearer token
+
+**响应**
+```json
+{
+  "code": "000000",
+  "statusCode": 200,
+  "msg": "运动记录删除成功",
+  "data": null,
+  "timestamp": "2025-01-06T14:36:13.000Z"
+}
+```
+
 ## 通用接口
 
 ### 上传图片
@@ -1279,7 +1476,7 @@ Authorization: Bearer <token>
       }
     ]
   },
-  "timestamp": "2025-01-05 15:04:14.123"
+  "timestamp": "2025-01-05T15:45:48.000Z"
 }
 ```
 
@@ -1291,7 +1488,7 @@ Authorization: Bearer <token>
   "code": "A00400",
   "statusCode": 400,
   "msg": "No files uploaded",
-  "timestamp": "2025-01-05 15:04:14.123"
+  "timestamp": "2025-01-05T15:45:48.000Z"
 }
 ```
 
@@ -1301,7 +1498,7 @@ Authorization: Bearer <token>
   "code": "A00400",
   "statusCode": 400,
   "msg": "Invalid file type. Only images are allowed.",
-  "timestamp": "2025-01-05 15:04:14.123"
+  "timestamp": "2025-01-05T15:45:48.000Z"
 }
 ```
 
@@ -1311,7 +1508,7 @@ Authorization: Bearer <token>
   "code": "A00400",
   "statusCode": 400,
   "msg": "Too many files. Maximum allowed is 9",
-  "timestamp": "2025-01-05 15:04:14.123"
+  "timestamp": "2025-01-05T15:45:48.000Z"
 }
 ```
 
@@ -1321,7 +1518,7 @@ Authorization: Bearer <token>
   "code": "A00400",
   "statusCode": 400,
   "msg": "File too large. Maximum size is 5MB",
-  "timestamp": "2025-01-05 15:04:14.123"
+  "timestamp": "2025-01-05T15:45:48.000Z"
 }
 ```
 
@@ -1331,7 +1528,7 @@ Authorization: Bearer <token>
   "code": "A00401",
   "statusCode": 401,
   "msg": "Unauthorized",
-  "timestamp": "2025-01-05 15:04:14.123"
+  "timestamp": "2025-01-05T15:45:48.000Z"
 }
 ```
 
