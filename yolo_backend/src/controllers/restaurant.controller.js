@@ -1,4 +1,5 @@
 const RestaurantService = require('../services/restaurant.service');
+const UserService = require('../services/user.service');
 const ApiResponse = require('../utils/response');
 
 class RestaurantController {
@@ -7,8 +8,10 @@ class RestaurantController {
    */
   static async createRestaurant(req, res) {
     try {
+      // 通过req.user 从users里找user
+      const user = await UserService.getUserById(req.user.userId);
       // 检查管理员权限
-      if (!req.user.isAdmin) {
+      if (!user.isAdmin) {
         return res.status(403).json(ApiResponse.error('只有管理员才能创建餐厅'));
       }
 
@@ -51,8 +54,10 @@ class RestaurantController {
    */
   static async updateRestaurant(req, res) {
     try {
+      // 通过req.user 从users里找user
+      const user = await UserService.getUserById(req.user.userId);
       // 检查管理员权限
-      if (!req.user.isAdmin) {
+      if (!user.isAdmin) {
         return res.status(403).json(ApiResponse.error('只有管理员才能更新餐厅'));
       }
 
@@ -75,8 +80,10 @@ class RestaurantController {
    */
   static async deleteRestaurant(req, res) {
     try {
+      // 通过req.user 从users里找user
+      const user = await UserService.getUserById(req.user.userId);
       // 检查管理员权限
-      if (!req.user.isAdmin) {
+      if (!user.isAdmin) {
         return res.status(403).json(ApiResponse.error('只有管理员才能删除餐厅'));
       }
 
