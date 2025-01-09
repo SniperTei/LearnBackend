@@ -26,6 +26,7 @@ const foodMenuRoutes = require('./routes/foodmenu.routes');
 const restaurantRoutes = require('./routes/restaurant.routes');
 const dictionaryRoutes = require('./routes/dictionary.routes');
 const fitnessRoutes = require('./routes/fitness.routes');
+const travelPlanRoutes = require('./routes/travelPlan.routes');
 
 const app = express();
 
@@ -69,6 +70,7 @@ app.use('/api/v1/foodmenus', foodMenuRoutes);
 app.use('/api/v1/restaurants', restaurantRoutes);
 app.use('/api/v1/dictionaries', dictionaryRoutes);
 app.use('/api/v1/fitness', fitnessRoutes);
+app.use('/api/v1/travel-plans', travelPlanRoutes);
 
 // 错误处理中间件
 app.use((err, req, res, next) => {

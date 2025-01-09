@@ -588,7 +588,7 @@ Authorization: Bearer <your-token>
 
 ### 获取酒类列表
 
-获取酒类列表，支持分页、过滤和排序。
+获取酒类列表，支持分页和过滤。
 
 - **URL**: `/api/v1/alcohols/list`
 - **Method**: `GET`
@@ -807,30 +807,16 @@ Authorization: Bearer <token>
   Content-Type: application/json
   ```
 - 请求体:
-  ```json
-  {
-    "name": "宫保鸡丁",
-    "type": "meat",
-    "description": "一道闻名中外的特色传统名菜，选用鸡丁、干辣椒、花生米等炒制而成。",
-    "imageUrl": "http://example.com/image.jpg",
-    "price": 38,
-    "chef": "张大厨"
-  }
-  ```
-- 参数说明:
-  - `name`: 菜品名称（必需）
-  - `type`: 菜品类型（必需），可选值：
-    - vegetarian (素菜)
-    - meat (荤菜)
-    - cold_dish (凉菜)
-    - soup (汤)
-    - side_dish (下饭菜)
-    - staple_food (主食)
-    - diet_food (减脂餐)
-  - `description`: 菜品描述（可选）
-  - `imageUrl`: 图片URL（可选）
-  - `price`: 价格（必需）
-  - `chef`: 厨师名（可选）
+```json
+{
+  "name": "宫保鸡丁",
+  "type": "meat",
+  "description": "一道闻名中外的特色传统名菜，选用鸡丁、干辣椒、花生米等炒制而成。",
+  "imageUrl": "http://example.com/image.jpg",
+  "price": 38,
+  "chef": "张大厨"
+}
+```
 
 **响应**
 ```json
@@ -936,16 +922,16 @@ Authorization: Bearer <token>
   Content-Type: application/json
   ```
 - 请求体:
-  ```json
-  {
-    "name": "宫保鸡丁",
-    "type": "meat",
-    "description": "一道闻名中外的特色传统名菜，选用鸡丁、干辣椒、花生米等炒制而成。",
-    "imageUrl": "http://example.com/image.jpg",
-    "price": 42,
-    "chef": "李大厨"
-  }
-  ```
+```json
+{
+  "name": "宫保鸡丁",
+  "type": "meat",
+  "description": "一道闻名中外的特色传统名菜，选用鸡丁、干辣椒、花生米等炒制而成。",
+  "imageUrl": "http://example.com/image.jpg",
+  "price": 42,
+  "chef": "李大厨"
+}
+```
 
 **响应**
 ```json
@@ -1677,3 +1663,390 @@ if (result.code === '000000') {
 4. 管理员用户可以访问所有菜单，普通用户只能访问被授权的菜单
 
 5. token 有效期为 24 小时
+
+## 旅行计划 API
+
+### 1. 创建旅行计划
+
+**请求**
+- 方法: `POST`
+- URL: `/api/v1/travel-plans/create`
+- 认证: 需要 Bearer Token
+- 请求体:
+```json
+{
+  "title": "京都温泉之旅",
+  "description": "体验日本传统温泉文化",
+  "startDate": "2025-04-01",
+  "endDate": "2025-04-05",
+  "destination": {
+    "country": "日本",
+    "city": "京都",
+    "locations": ["岚山温泉", "嵐山竹林", "金阁寺"]
+  },
+  "itinerary": [
+    {
+      "day": 1,
+      "date": "2025-04-01",
+      "activities": [
+        {
+          "time": "14:00",
+          "location": "岚山温泉",
+          "activity": "泡温泉",
+          "duration": "3小时"
+        }
+      ]
+    }
+  ]
+}
+```
+
+**响应**
+```json
+{
+  "code": "000000",
+  "statusCode": 201,
+  "msg": "旅行计划创建成功",
+  "data": {
+    "_id": "677f63b5f93fa973677950a9",
+    "title": "京都温泉之旅",
+    "description": "体验日本传统温泉文化",
+    "startDate": "2025-04-01T00:00:00.000Z",
+    "endDate": "2025-04-05T00:00:00.000Z",
+    "destination": {
+      "country": "日本",
+      "city": "京都",
+      "locations": ["岚山温泉", "嵐山竹林", "金阁寺"]
+    },
+    "itinerary": [...],
+    "status": "draft",
+    "createdBy": "677f5f65523623b6f1a9ebfa",
+    "updatedBy": "677f5f65523623b6f1a9ebfa",
+    "createdAt": "2025-01-09T05:50:45.867Z",
+    "updatedAt": "2025-01-09T05:50:45.867Z"
+  }
+}
+```
+
+### 2. 获取旅行计划列表
+
+**请求**
+- 方法: `GET`
+- URL: `/api/v1/travel-plans/list`
+- 认证: 需要 Bearer Token
+- 查询参数:
+  - `page`: 页码（可选，默认1）
+  - `limit`: 每页数量（可选，默认10）
+  - `status`: 过滤状态（可选）
+
+**响应**
+```json
+{
+  "code": "000000",
+  "statusCode": 200,
+  "msg": "Success",
+  "data": {
+    "travelPlans": [
+      {
+        "_id": "677f63b5f93fa973677950a9",
+        "title": "京都温泉之旅",
+        "description": "体验日本传统温泉文化",
+        "destination": {...},
+        "itinerary": [...],
+        "status": "draft",
+        "createdBy": {
+          "_id": "677f5f65523623b6f1a9ebfa",
+          "username": "tester"
+        },
+        "updatedBy": {
+          "_id": "677f5f65523623b6f1a9ebfa",
+          "username": "tester"
+        },
+        "createdAt": "2025-01-09T05:50:45.867Z",
+        "updatedAt": "2025-01-09T05:50:45.867Z"
+      }
+    ],
+    "totalPages": 1,
+    "currentPage": 1
+  }
+}
+```
+
+### 3. 获取单个旅行计划
+
+**请求**
+- 方法: `GET`
+- URL: `/api/v1/travel-plans/query/:id`
+- 认证: 需要 Bearer Token
+
+**响应**
+```json
+{
+  "code": "000000",
+  "statusCode": 200,
+  "msg": "Success",
+  "data": {
+    "_id": "677f63b5f93fa973677950a9",
+    "title": "京都温泉之旅",
+    "description": "体验日本传统温泉文化",
+    "destination": {...},
+    "itinerary": [...],
+    "status": "draft",
+    "createdBy": {
+      "_id": "677f5f65523623b6f1a9ebfa",
+      "username": "tester"
+    },
+    "updatedBy": {
+      "_id": "677f5f65523623b6f1a9ebfa",
+      "username": "tester"
+    }
+  }
+}
+```
+
+### 4. 更新旅行计划
+
+**请求**
+- 方法: `PUT`
+- URL: `/api/v1/travel-plans/update/:id`
+- 认证: 需要 Bearer Token
+- 请求体:
+```json
+{
+  "title": "京都温泉和文化之旅",
+  "description": "体验日本传统温泉文化",
+  "status": "published",
+  "destination": {...},
+  "itinerary": [...]
+}
+```
+
+**响应**
+```json
+{
+  "code": "000000",
+  "statusCode": 200,
+  "msg": "旅行计划更新成功",
+  "data": {
+    "_id": "677f63b5f93fa973677950a9",
+    "title": "京都温泉和文化之旅",
+    "status": "published",
+    "updatedAt": "2025-01-09T05:51:15.367Z",
+    ...
+  }
+}
+```
+
+### 5. 删除旅行计划
+
+**请求**
+- 方法: `DELETE`
+- URL: `/api/v1/travel-plans/delete/:id`
+- 认证: 需要 Bearer Token
+
+**响应**
+```json
+{
+  "code": "000000",
+  "statusCode": 200,
+  "msg": "旅行计划删除成功",
+  "data": null
+}
+```
+
+### 6. 发布旅行计划
+
+**请求**
+- 方法: `POST`
+- URL: `/api/v1/travel-plans/publish/:id`
+- 认证: 需要 Bearer Token
+
+**响应**
+```json
+{
+  "code": "000000",
+  "statusCode": 200,
+  "msg": "旅行计划发布成功",
+  "data": {
+    "_id": "677f63b5f93fa973677950a9",
+    "status": "published",
+    "updatedAt": "2025-01-09T05:51:15.367Z",
+    ...
+  }
+}
+```
+
+### 7. 取消发布旅行计划
+
+**请求**
+- 方法: `POST`
+- URL: `/api/v1/travel-plans/unpublish/:id`
+- 认证: 需要 Bearer Token
+
+**响应**
+```json
+{
+  "code": "000000",
+  "statusCode": 200,
+  "msg": "旅行计划取消发布成功",
+  "data": {
+    "_id": "677f63b5f93fa973677950a9",
+    "status": "draft",
+    "updatedAt": "2025-01-09T05:51:15.367Z",
+    ...
+  }
+}
+```
+
+### 8. 获取旅行计划日程
+
+**请求**
+- 方法: `GET`
+- URL: `/api/v1/travel-plans/itinerary/:id`
+- 认证: 需要 Bearer Token
+
+**响应**
+```json
+{
+  "code": "000000",
+  "statusCode": 200,
+  "msg": "Success",
+  "data": {
+    "itinerary": [
+      {
+        "day": 1,
+        "date": "2025-04-01",
+        "activities": [
+          {
+            "time": "14:00",
+            "location": "岚山温泉",
+            "activity": "泡温泉",
+            "duration": "3小时"
+          }
+        ]
+      }
+    ]
+  }
+}
+```
+
+### 9. 更新旅行计划日程
+
+**请求**
+- 方法: `PUT`
+- URL: `/api/v1/travel-plans/itinerary/:id`
+- 认证: 需要 Bearer Token
+- 请求体:
+```json
+{
+  "itinerary": [
+    {
+      "day": 1,
+      "date": "2025-04-01",
+      "activities": [
+        {
+          "time": "14:00",
+          "location": "岚山温泉",
+          "activity": "泡温泉",
+          "duration": "3小时"
+        }
+      ]
+    }
+  ]
+}
+```
+
+**响应**
+```json
+{
+  "code": "000000",
+  "statusCode": 200,
+  "msg": "旅行计划日程更新成功",
+  "data": {
+    "_id": "677f63b5f93fa973677950a9",
+    "itinerary": [...],
+    "updatedAt": "2025-01-09T05:51:15.367Z",
+    ...
+  }
+}
+```
+
+### 10. 删除旅行计划日程
+
+**请求**
+- 方法: `DELETE`
+- URL: `/api/v1/travel-plans/itinerary/:id`
+- 认证: 需要 Bearer Token
+
+**响应**
+```json
+{
+  "code": "000000",
+  "statusCode": 200,
+  "msg": "旅行计划日程删除成功",
+  "data": null
+}
+```
+
+### 错误响应
+
+1. 记录不存在
+```json
+{
+  "code": "404000",
+  "statusCode": 404,
+  "msg": "未找到旅行计划"
+}
+```
+
+2. 权限不足
+```json
+{
+  "code": "403000",
+  "statusCode": 403,
+  "msg": "没有权限操作此旅行计划"
+}
+```
+
+3. 验证错误
+```json
+{
+  "code": "400000",
+  "statusCode": 400,
+  "msg": "验证错误信息"
+}
+```
+
+4. 服务器错误
+```json
+{
+  "code": "500000",
+  "statusCode": 500,
+  "msg": "内部服务器错误"
+}
+```
+
+### 注意事项
+
+1. 所有需要认证的接口都需要在请求头中包含 JWT token：
+   ```
+   Authorization: Bearer eyJhbGciOiJIUzI1NiIs...
+   ```
+
+2. 日期字段使用 ISO 8601 格式
+
+3. 创建和更新操作会自动记录操作用户和时间
+
+4. 只有创建者可以更新和删除旅行计划
+
+5. 状态字段可选值：draft（草稿）、published（已发布）
+
+6. 发布和取消发布操作会更新状态字段
+
+7. 删除操作会删除整个旅行计划，包括日程
+
+8. 更新日程操作会覆盖原有的日程
+
+9. 删除日程操作会删除整个日程
+
+10. 所有接口都支持分页和过滤
