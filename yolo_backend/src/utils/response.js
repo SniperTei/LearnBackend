@@ -4,10 +4,10 @@ const moment = require('moment');
  * 统一API响应格式
  */
 class ApiResponse {
-  static success(data = null, msg = 'Success') {
+  static success(data = null, msg = 'Success', statusCode = 200) {
     return {
       code: '000000',
-      statusCode: 200,
+      statusCode,
       msg,
       data,
       timestamp: moment().format('YYYY-MM-DD HH:mm:ss.SSS')
