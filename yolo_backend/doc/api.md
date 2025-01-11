@@ -1649,6 +1649,464 @@ if (result.code === '000000') {
 }
 ```
 
+## 电影模块 API
+
+### 电影管理
+
+#### 创建电影
+
+```http
+POST /api/v1/movies/create
+```
+
+请求头：
+```
+Authorization: Bearer <token>
+```
+
+请求体：
+```json
+{
+  "title": "电影标题",
+  "actors": ["演员1", "演员2"],
+  "genres": ["动作", "冒险"],
+  "director": "导演名称",
+  "imageUrl": "http://example.com/image.jpg",
+  "movieUni": "MOVIE001",
+  "country": "国家",
+  "publishDate": "2024-01-01",
+  "rating": 8.5,
+  "eflag": "N",
+  "devFlag": "N",
+  "desc": "电影描述",
+  "synopsis": "剧情简介"
+}
+```
+
+响应：
+```json
+{
+  "code": "000000",
+  "statusCode": 201,
+  "msg": "电影创建成功",
+  "data": {
+    "id": "movie_id",
+    "title": "电影标题",
+    ...
+  }
+}
+```
+
+#### 获取电影列表
+
+```http
+GET /api/v1/movies/list
+```
+
+查询参数：
+- `page`: 页码（默认1）
+- `limit`: 每页数量（默认10）
+- `title`: 按标题筛选
+- `director`: 按导演筛选
+- `country`: 按国家筛选
+- `genres`: 按类型筛选
+- `actors`: 按演员筛选
+
+响应：
+```json
+{
+  "code": "000000",
+  "msg": "获取电影列表成功",
+  "data": {
+    "movies": [{
+      "id": "movie_id",
+      "title": "电影标题",
+      ...
+    }],
+    "total": 100,
+    "totalPages": 10,
+    "currentPage": 1
+  }
+}
+```
+
+#### 获取电影详情
+
+```http
+GET /api/v1/movies/query/:id
+```
+
+响应：
+```json
+{
+  "code": "000000",
+  "msg": "获取电影详情成功",
+  "data": {
+    "id": "movie_id",
+    "title": "电影标题",
+    ...,
+    "stats": {
+      "watchCount": 10,
+      "wantToWatchCount": 5,
+      "likeCount": 8,
+      "averageRating": 4.5,
+      "reviewCount": 6
+    }
+  }
+}
+```
+
+#### 更新电影
+
+```http
+PUT /api/v1/movies/update/:id
+```
+
+请求头：
+```
+Authorization: Bearer <token>
+```
+
+请求体：
+```json
+{
+  "title": "新电影标题",
+  "synopsis": "新剧情简介"
+}
+```
+
+响应：
+```json
+{
+  "code": "000000",
+  "msg": "更新电影成功",
+  "data": {
+    "id": "movie_id",
+    "title": "新电影标题",
+    ...
+  }
+}
+```
+
+#### 删除电影
+
+```http
+DELETE /api/v1/movies/delete/:id
+```
+
+请求头：
+```
+Authorization: Bearer <token>
+```
+
+响应：
+```json
+{
+  "code": "000000",
+  "msg": "删除电影成功",
+  "data": {
+    "id": "movie_id",
+    "title": "电影标题",
+    ...
+  }
+}
+```
+
+#### 搜索电影
+
+```http
+GET /api/v1/movies/search
+```
+
+查询参数：
+- `page`: 页码（默认1）
+- `limit`: 每页数量（默认10）
+- `keyword`: 搜索关键词
+- `genres`: 电影类型
+- `actors`: 演员
+- `director`: 导演
+
+响应：
+```json
+{
+  "code": "000000",
+  "msg": "搜索电影成功",
+  "data": {
+    "movies": [{
+      "id": "movie_id",
+      "title": "电影标题",
+      ...
+    }],
+    "total": 100,
+    "totalPages": 10,
+    "currentPage": 1
+  }
+}
+```
+
+### 用户观影记录
+
+#### 获取用户观影记录
+
+```http
+GET /api/v1/user-movies/:movieId
+```
+
+请求头：
+```
+Authorization: Bearer <token>
+```
+
+响应：
+```json
+{
+  "code": "000000",
+  "msg": "获取观影记录成功",
+  "data": {
+    "userId": "user_id",
+    "movieId": "movie_id",
+    "watchStatus": "watched",
+    "wantToWatchStatus": "N",
+    "likeStatus": "Y",
+    "rating": 4,
+    "review": "很好看的电影"
+  }
+}
+```
+
+#### 获取用户观影列表
+
+```http
+GET /api/v1/user-movies
+```
+
+请求头：
+```
+Authorization: Bearer <token>
+```
+
+查询参数：
+- `page`: 页码（默认1）
+- `limit`: 每页数量（默认10）
+- `status`: 状态筛选（watched/want_to_watch/liked）
+
+响应：
+```json
+{
+  "code": "000000",
+  "msg": "获取观影列表成功",
+  "data": {
+    "userMovies": [{
+      "userId": "user_id",
+      "movieId": {
+        "id": "movie_id",
+        "title": "电影标题",
+        ...
+      },
+      "watchStatus": "watched",
+      "rating": 4,
+      "review": "很好看的电影"
+    }],
+    "total": 100,
+    "totalPages": 10,
+    "currentPage": 1
+  }
+}
+```
+
+#### 标记为已看
+
+```http
+POST /api/v1/user-movies/:movieId/watch
+```
+
+请求头：
+```
+Authorization: Bearer <token>
+```
+
+请求体：
+```json
+{
+  "rating": 4,
+  "review": "很好看的电影"
+}
+```
+
+响应：
+```json
+{
+  "code": "000000",
+  "msg": "标记为已看成功",
+  "data": {
+    "userId": "user_id",
+    "movieId": "movie_id",
+    "watchStatus": "watched",
+    "rating": 4,
+    "review": "很好看的电影"
+  }
+}
+```
+
+#### 添加到想看
+
+```http
+POST /api/v1/user-movies/:movieId/want-to-watch
+```
+
+请求头：
+```
+Authorization: Bearer <token>
+```
+
+响应：
+```json
+{
+  "code": "000000",
+  "msg": "添加到想看列表成功",
+  "data": {
+    "userId": "user_id",
+    "movieId": "movie_id",
+    "wantToWatchStatus": "Y"
+  }
+}
+```
+
+#### 从想看移除
+
+```http
+DELETE /api/v1/user-movies/:movieId/want-to-watch
+```
+
+请求头：
+```
+Authorization: Bearer <token>
+```
+
+响应：
+```json
+{
+  "code": "000000",
+  "msg": "从想看列表移除成功",
+  "data": {
+    "userId": "user_id",
+    "movieId": "movie_id",
+    "wantToWatchStatus": "N"
+  }
+}
+```
+
+#### 收藏/取消收藏
+
+```http
+POST /api/v1/user-movies/:movieId/toggle-like
+```
+
+请求头：
+```
+Authorization: Bearer <token>
+```
+
+响应：
+```json
+{
+  "code": "000000",
+  "msg": "收藏电影成功",
+  "data": {
+    "userId": "user_id",
+    "movieId": "movie_id",
+    "likeStatus": "Y"
+  }
+}
+```
+
+#### 更新评分
+
+```http
+PUT /api/v1/user-movies/:movieId/rating
+```
+
+请求头：
+```
+Authorization: Bearer <token>
+```
+
+请求体：
+```json
+{
+  "rating": 5
+}
+```
+
+响应：
+```json
+{
+  "code": "000000",
+  "msg": "更新评分成功",
+  "data": {
+    "userId": "user_id",
+    "movieId": "movie_id",
+    "rating": 5
+  }
+}
+```
+
+#### 更新评论
+
+```http
+PUT /api/v1/user-movies/:movieId/review
+```
+
+请求头：
+```
+Authorization: Bearer <token>
+```
+
+请求体：
+```json
+{
+  "review": "这是一部非常棒的电影"
+}
+```
+
+响应：
+```json
+{
+  "code": "000000",
+  "msg": "更新评论成功",
+  "data": {
+    "userId": "user_id",
+    "movieId": "movie_id",
+    "review": "这是一部非常棒的电影"
+  }
+}
+```
+
+#### 获取用户观影统计
+
+```http
+GET /api/v1/user-movies/stats
+```
+
+请求头：
+```
+Authorization: Bearer <token>
+```
+
+响应：
+```json
+{
+  "code": "000000",
+  "msg": "获取用户观影统计成功",
+  "data": {
+    "watchedCount": 10,
+    "wantToWatchCount": 5,
+    "likedCount": 8,
+    "reviewCount": 6
+  }
+}
+```
+
 ## 游记 API
 
 ### 创建游记
@@ -1745,7 +2203,7 @@ if (result.code === '000000') {
   }
   ```
 
-### 获取游记详情
+### 获取单个游记详情
 - **URL**: `/api/v1/travel-diaries/query/:id`
 - **Method**: `GET`
 - **Auth**: Required
