@@ -4,7 +4,6 @@ const MovieController = require('../controllers/movie.controller');
 const auth = require('../middleware/auth');
 
 // 公开路由
-router.get('/search', MovieController.searchMovies);
 router.get('/list', MovieController.listMovies);
 router.get('/query/:id', MovieController.getMovie);
 

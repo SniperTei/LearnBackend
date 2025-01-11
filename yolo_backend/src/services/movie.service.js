@@ -21,7 +21,23 @@ class MovieService {
   }
 
   static async listMovies(query, options) {
-    const { movies, total } = await MovieDAL.findAll(query, options);
+    const { keyword, genres, actors, director, ...otherQuery } = query;
+    let result;
+
+    // 根据不同的查询参数使用不同的查询方法
+    if (keyword) {
+      result = await MovieDAL.search(keyword, options);
+    } else if (genres) {
+      result = await MovieDAL.findByGenres(genres, options);
+    } else if (actors) {
+      result = await MovieDAL.findByActors(actors, options);
+    } else if (director) {
+      result = await MovieDAL.findByDirector(director, options);
+    } else {
+      result = await MovieDAL.findAll(otherQuery, options);
+    }
+
+    const { movies, total } = result;
     const totalPages = Math.ceil(total / options.limit);
     const currentPage = Math.floor(options.skip / options.limit) + 1;
 
@@ -78,34 +94,6 @@ class MovieService {
 
     await MovieDAL.delete(id);
     return movie;
-  }
-
-  static async searchMovies(params, options) {
-    const { keyword, genres, actors, director } = params;
-    let result;
-
-    if (keyword) {
-      result = await MovieDAL.search(keyword, options);
-    } else if (genres) {
-      result = await MovieDAL.findByGenres(genres, options);
-    } else if (actors) {
-      result = await MovieDAL.findByActors(actors, options);
-    } else if (director) {
-      result = await MovieDAL.findByDirector(director, options);
-    } else {
-      result = await MovieDAL.findAll({}, options);
-    }
-
-    const { movies, total } = result;
-    const totalPages = Math.ceil(total / options.limit);
-    const currentPage = Math.floor(options.skip / options.limit) + 1;
-
-    return {
-      movies,
-      total,
-      totalPages,
-      currentPage
-    };
   }
 }
 

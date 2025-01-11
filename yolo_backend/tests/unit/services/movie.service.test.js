@@ -65,32 +65,106 @@ describe('Movie Service Tests', () => {
   });
 
   describe('listMovies', () => {
-    it('should return movies with pagination', async () => {
-      const mockMovies = [mockMovie, { ...mockMovie, _id: 'movie456' }];
-      MovieDAL.findAll.mockResolvedValue({
-        movies: mockMovies,
-        total: 2
-      });
+    const mockListResult = {
+      movies: [mockMovie],
+      total: 1
+    };
 
-      const options = { skip: 0, limit: 10 };
-      const result = await MovieService.listMovies({}, options);
+    it('should list movies with default query', async () => {
+      MovieDAL.findAll.mockResolvedValue(mockListResult);
+
+      const result = await MovieService.listMovies(
+        {},
+        { skip: 0, limit: 10 }
+      );
 
       expect(result).toEqual({
-        movies: mockMovies,
-        total: 2,
+        movies: mockListResult.movies,
+        total: 1,
         totalPages: 1,
         currentPage: 1
       });
+      expect(MovieDAL.findAll).toHaveBeenCalledWith({}, { skip: 0, limit: 10 });
+    });
+
+    it('should search movies by keyword', async () => {
+      MovieDAL.search.mockResolvedValue(mockListResult);
+
+      const result = await MovieService.listMovies(
+        { keyword: '测试' },
+        { skip: 0, limit: 10 }
+      );
+
+      expect(result).toEqual({
+        movies: mockListResult.movies,
+        total: 1,
+        totalPages: 1,
+        currentPage: 1
+      });
+      expect(MovieDAL.search).toHaveBeenCalledWith('测试', { skip: 0, limit: 10 });
+    });
+
+    it('should search movies by genres', async () => {
+      MovieDAL.findByGenres.mockResolvedValue(mockListResult);
+
+      const result = await MovieService.listMovies(
+        { genres: ['动作'] },
+        { skip: 0, limit: 10 }
+      );
+
+      expect(result).toEqual({
+        movies: mockListResult.movies,
+        total: 1,
+        totalPages: 1,
+        currentPage: 1
+      });
+      expect(MovieDAL.findByGenres).toHaveBeenCalledWith(['动作'], { skip: 0, limit: 10 });
+    });
+
+    it('should search movies by actors', async () => {
+      MovieDAL.findByActors.mockResolvedValue(mockListResult);
+
+      const result = await MovieService.listMovies(
+        { actors: ['演员1'] },
+        { skip: 0, limit: 10 }
+      );
+
+      expect(result).toEqual({
+        movies: mockListResult.movies,
+        total: 1,
+        totalPages: 1,
+        currentPage: 1
+      });
+      expect(MovieDAL.findByActors).toHaveBeenCalledWith(['演员1'], { skip: 0, limit: 10 });
+    });
+
+    it('should search movies by director', async () => {
+      MovieDAL.findByDirector.mockResolvedValue(mockListResult);
+
+      const result = await MovieService.listMovies(
+        { director: '导演1' },
+        { skip: 0, limit: 10 }
+      );
+
+      expect(result).toEqual({
+        movies: mockListResult.movies,
+        total: 1,
+        totalPages: 1,
+        currentPage: 1
+      });
+      expect(MovieDAL.findByDirector).toHaveBeenCalledWith('导演1', { skip: 0, limit: 10 });
     });
   });
 
   describe('getMovie', () => {
-    it('should return movie with stats', async () => {
+    it('should get movie by id with stats', async () => {
       MovieDAL.findById.mockResolvedValue(mockMovie);
       UserMovieDAL.findMovieStats.mockResolvedValue(mockMovieStats);
 
       const result = await MovieService.getMovie(mockMovieId);
 
+      expect(MovieDAL.findById).toHaveBeenCalledWith(mockMovieId);
+      expect(UserMovieDAL.findMovieStats).toHaveBeenCalledWith(mockMovieId);
       expect(result).toEqual({
         ...mockMovie,
         stats: mockMovieStats
@@ -100,17 +174,21 @@ describe('Movie Service Tests', () => {
     it('should throw error if movie not found', async () => {
       MovieDAL.findById.mockResolvedValue(null);
 
-      await expect(
-        MovieService.getMovie(mockMovieId)
-      ).rejects.toThrow('未找到电影');
+      await expect(MovieService.getMovie(mockMovieId))
+        .rejects
+        .toThrow('未找到电影');
     });
   });
 
   describe('updateMovie', () => {
-    const updateData = { title: '更新后的电影' };
+    const updateData = {
+      title: '更新的电影',
+      movieUni: 'MOVIE002'
+    };
 
     it('should update movie', async () => {
       MovieDAL.findById.mockResolvedValue(mockMovie);
+      MovieDAL.findByMovieUni.mockResolvedValue(null);
       MovieDAL.update.mockResolvedValue({ ...mockMovie, ...updateData });
 
       const result = await MovieService.updateMovie(mockMovieId, updateData, mockUserId);
@@ -119,15 +197,25 @@ describe('Movie Service Tests', () => {
         ...updateData,
         updatedBy: mockUserId
       });
-      expect(result.title).toBe(updateData.title);
+      expect(result).toEqual({ ...mockMovie, ...updateData });
     });
 
     it('should throw error if movie not found', async () => {
       MovieDAL.findById.mockResolvedValue(null);
 
-      await expect(
-        MovieService.updateMovie(mockMovieId, updateData, mockUserId)
-      ).rejects.toThrow('未找到电影');
+      await expect(MovieService.updateMovie(mockMovieId, updateData, mockUserId))
+        .rejects
+        .toThrow('未找到电影');
+    });
+
+    it('should throw error if new movieUni already exists', async () => {
+      const existingMovie = { ...mockMovie, _id: 'other123', movieUni: 'MOVIE002' };
+      MovieDAL.findById.mockResolvedValue(mockMovie);
+      MovieDAL.findByMovieUni.mockResolvedValue(existingMovie);
+
+      await expect(MovieService.updateMovie(mockMovieId, updateData, mockUserId))
+        .rejects
+        .toThrow('电影ID已存在');
     });
   });
 
@@ -145,48 +233,9 @@ describe('Movie Service Tests', () => {
     it('should throw error if movie not found', async () => {
       MovieDAL.findById.mockResolvedValue(null);
 
-      await expect(
-        MovieService.deleteMovie(mockMovieId)
-      ).rejects.toThrow('未找到电影');
-    });
-  });
-
-  describe('searchMovies', () => {
-    const mockSearchResult = {
-      movies: [mockMovie],
-      total: 1
-    };
-
-    it('should search movies by keyword', async () => {
-      MovieDAL.search.mockResolvedValue(mockSearchResult);
-
-      const result = await MovieService.searchMovies(
-        { keyword: '测试' },
-        { skip: 0, limit: 10 }
-      );
-
-      expect(result).toEqual({
-        movies: mockSearchResult.movies,
-        total: 1,
-        totalPages: 1,
-        currentPage: 1
-      });
-    });
-
-    it('should search movies by genres', async () => {
-      MovieDAL.findByGenres.mockResolvedValue(mockSearchResult);
-
-      const result = await MovieService.searchMovies(
-        { genres: ['动作'] },
-        { skip: 0, limit: 10 }
-      );
-
-      expect(result).toEqual({
-        movies: mockSearchResult.movies,
-        total: 1,
-        totalPages: 1,
-        currentPage: 1
-      });
+      await expect(MovieService.deleteMovie(mockMovieId))
+        .rejects
+        .toThrow('未找到电影');
     });
   });
 });

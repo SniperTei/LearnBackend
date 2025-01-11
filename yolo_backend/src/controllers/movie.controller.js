@@ -17,12 +17,23 @@ class MovieController {
 
   static async listMovies(req, res, next) {
     try {
-      const { page = 1, limit = 10, ...query } = req.query;
+      const { page = 1, limit = 10, title, keyword, genres, actors, director, ...query } = req.query;
       const options = {
         skip: (page - 1) * limit,
         limit: parseInt(limit)
       };
-      const result = await MovieService.listMovies(query, options);
+
+      // 过滤掉空字符串参数，只保留有效的搜索条件
+      const searchParams = {
+        ...query,
+        ...(title && title.trim() && { title: title.trim() }),
+        ...(keyword && keyword.trim() && { keyword: keyword.trim() }),
+        ...(genres && genres.trim() && { genres: genres.trim().split(',').filter(Boolean) }),
+        ...(actors && actors.trim() && { actors: actors.trim().split(',').filter(Boolean) }),
+        ...(director && director.trim() && { director: director.trim() })
+      };
+
+      const result = await MovieService.listMovies(searchParams, options);
       const response = ApiResponse.success(result, '获取电影列表成功', 200);
       res.status(200).json(response);
     } catch (error) {
@@ -48,7 +59,7 @@ class MovieController {
       const userId = req.user._id;
 
       const movie = await MovieService.updateMovie(id, updateData, userId);
-      const response = ApiResponse.success(movie, '更新电影成功', 200);
+      const response = ApiResponse.success(movie, '电影更新成功', 200);
       res.status(200).json(response);
     } catch (error) {
       next(error);
@@ -59,24 +70,7 @@ class MovieController {
     try {
       const { id } = req.params;
       const movie = await MovieService.deleteMovie(id);
-      const response = ApiResponse.success(movie, '删除电影成功', 200);
-      res.status(200).json(response);
-    } catch (error) {
-      next(error);
-    }
-  }
-
-  static async searchMovies(req, res, next) {
-    try {
-      const { page = 1, limit = 10, keyword, genres, actors, director } = req.query;
-      const options = {
-        skip: (page - 1) * limit,
-        limit: parseInt(limit)
-      };
-
-      const params = { keyword, genres, actors, director };
-      const result = await MovieService.searchMovies(params, options);
-      const response = ApiResponse.success(result, '搜索电影成功', 200);
+      const response = ApiResponse.success(movie, '电影删除成功', 200);
       res.status(200).json(response);
     } catch (error) {
       next(error);
