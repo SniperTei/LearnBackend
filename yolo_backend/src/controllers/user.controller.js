@@ -82,7 +82,7 @@ class UserController {
         process.env.JWT_SECRET,
         { expiresIn: process.env.JWT_EXPIRES_IN || '24h' }
       );
-
+      console.log('token: ', token);
       // 获取用户菜单权限并按 sort 排序
       let menus = [];
       if (user.isAdmin) {
