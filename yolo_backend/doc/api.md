@@ -1730,7 +1730,7 @@ GET /api/v1/movies/list
 }
 ```
 
-#### 获取电影详情
+#### 获取单个电影
 
 ```http
 GET /api/v1/movies/query/:id
@@ -1849,7 +1849,7 @@ GET /api/v1/movies/search
 #### 获取用户观影记录
 
 ```http
-GET /api/v1/user-movies/:movieId
+GET /api/v1/user-movies/query/:movieId
 ```
 
 请求头：
@@ -1877,7 +1877,7 @@ Authorization: Bearer <token>
 #### 获取用户观影列表
 
 ```http
-GET /api/v1/user-movies
+GET /api/v1/user-movies/list
 ```
 
 请求头：
@@ -1917,7 +1917,7 @@ Authorization: Bearer <token>
 #### 标记为已看
 
 ```http
-POST /api/v1/user-movies/:movieId/watch
+POST /api/v1/user-movies/watch/:movieId
 ```
 
 请求头：
@@ -1951,7 +1951,7 @@ Authorization: Bearer <token>
 #### 添加到想看
 
 ```http
-POST /api/v1/user-movies/:movieId/want-to-watch
+POST /api/v1/user-movies/want-to-watch/:movieId
 ```
 
 请求头：
@@ -1975,7 +1975,7 @@ Authorization: Bearer <token>
 #### 从想看移除
 
 ```http
-DELETE /api/v1/user-movies/:movieId/want-to-watch
+DELETE /api/v1/user-movies/want-to-watch/:movieId
 ```
 
 请求头：
@@ -1999,7 +1999,7 @@ Authorization: Bearer <token>
 #### 收藏/取消收藏
 
 ```http
-POST /api/v1/user-movies/:movieId/toggle-like
+POST /api/v1/user-movies/toggle-like/:movieId
 ```
 
 请求头：
@@ -2023,7 +2023,7 @@ Authorization: Bearer <token>
 #### 更新评分
 
 ```http
-PUT /api/v1/user-movies/:movieId/rating
+PUT /api/v1/user-movies/rating/:movieId
 ```
 
 请求头：
@@ -2054,7 +2054,7 @@ Authorization: Bearer <token>
 #### 更新评论
 
 ```http
-PUT /api/v1/user-movies/:movieId/review
+PUT /api/v1/user-movies/review/:movieId
 ```
 
 请求头：
@@ -2687,3 +2687,5 @@ Authorization: Bearer <token>
 8. 更新日程操作会覆盖原有的日程
 9. 删除日程操作会删除整个日程
 10. 所有接口都支持分页和过滤
+
+```

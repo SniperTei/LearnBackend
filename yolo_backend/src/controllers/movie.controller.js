@@ -1,5 +1,5 @@
 const MovieService = require('../services/movie.service');
-const { ApiResponse } = require('../utils/response');
+const ApiResponse = require('../utils/response');
 
 class MovieController {
   static async createMovie(req, res, next) {
@@ -8,11 +8,8 @@ class MovieController {
       const userId = req.user._id;
 
       const movie = await MovieService.createMovie(movieData, userId);
-      
-      return ApiResponse.success(res, {
-        msg: '电影创建成功',
-        data: movie
-      }, 201);
+      const response = ApiResponse.success(movie, '电影创建成功', 201);
+      res.status(201).json(response);
     } catch (error) {
       next(error);
     }
@@ -25,13 +22,9 @@ class MovieController {
         skip: (page - 1) * limit,
         limit: parseInt(limit)
       };
-
       const result = await MovieService.listMovies(query, options);
-      
-      return ApiResponse.success(res, {
-        msg: '获取电影列表成功',
-        data: result
-      });
+      const response = ApiResponse.success(result, '获取电影列表成功', 200);
+      res.status(200).json(response);
     } catch (error) {
       next(error);
     }
@@ -41,11 +34,8 @@ class MovieController {
     try {
       const { id } = req.params;
       const movie = await MovieService.getMovie(id);
-      
-      return ApiResponse.success(res, {
-        msg: '获取电影详情成功',
-        data: movie
-      });
+      const response = ApiResponse.success(movie, '获取电影详情成功', 200);
+      res.status(200).json(response);
     } catch (error) {
       next(error);
     }
@@ -58,11 +48,8 @@ class MovieController {
       const userId = req.user._id;
 
       const movie = await MovieService.updateMovie(id, updateData, userId);
-      
-      return ApiResponse.success(res, {
-        msg: '更新电影成功',
-        data: movie
-      });
+      const response = ApiResponse.success(movie, '更新电影成功', 200);
+      res.status(200).json(response);
     } catch (error) {
       next(error);
     }
@@ -72,11 +59,8 @@ class MovieController {
     try {
       const { id } = req.params;
       const movie = await MovieService.deleteMovie(id);
-      
-      return ApiResponse.success(res, {
-        msg: '删除电影成功',
-        data: movie
-      });
+      const response = ApiResponse.success(movie, '删除电影成功', 200);
+      res.status(200).json(response);
     } catch (error) {
       next(error);
     }
@@ -92,11 +76,8 @@ class MovieController {
 
       const params = { keyword, genres, actors, director };
       const result = await MovieService.searchMovies(params, options);
-      
-      return ApiResponse.success(res, {
-        msg: '搜索电影成功',
-        data: result
-      });
+      const response = ApiResponse.success(result, '搜索电影成功', 200);
+      res.status(200).json(response);
     } catch (error) {
       next(error);
     }

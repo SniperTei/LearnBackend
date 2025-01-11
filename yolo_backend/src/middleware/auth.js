@@ -40,7 +40,7 @@ const auth = async (req, res, next) => {
 
     // 将用户信息添加到请求对象
     req.user = {
-      userId: user._id,
+      _id: user._id,
       username: user.username
     };
 

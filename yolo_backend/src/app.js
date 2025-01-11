@@ -28,6 +28,8 @@ const dictionaryRoutes = require('./routes/dictionary.routes');
 const fitnessRoutes = require('./routes/fitness.routes');
 const travelPlanRoutes = require('./routes/travelPlan.routes');
 const travelDiaryRoutes = require('./routes/travelDiary.routes');
+const movieRoute = require('./routes/movie.route');
+// const userMovieRoute = require('./routes/userMovie.route');
 
 const app = express();
 
@@ -73,6 +75,8 @@ app.use('/api/v1/dictionaries', dictionaryRoutes);
 app.use('/api/v1/fitness', fitnessRoutes);
 app.use('/api/v1/travel-plans', travelPlanRoutes);
 app.use('/api/v1/travel-diaries', travelDiaryRoutes);
+app.use('/api/v1/movies', movieRoute);
+// app.use('/api/v1/user-movies', userMovieRoute);
 
 // 错误处理中间件
 app.use((err, req, res, next) => {
