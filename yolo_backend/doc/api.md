@@ -1812,38 +1812,6 @@ Authorization: Bearer <token>
 }
 ```
 
-#### 搜索电影
-
-```http
-GET /api/v1/movies/search
-```
-
-查询参数：
-- `page`: 页码（默认1）
-- `limit`: 每页数量（默认10）
-- `keyword`: 搜索关键词
-- `genres`: 电影类型
-- `actors`: 演员
-- `director`: 导演
-
-响应：
-```json
-{
-  "code": "000000",
-  "msg": "搜索电影成功",
-  "data": {
-    "movies": [{
-      "id": "movie_id",
-      "title": "电影标题",
-      ...
-    }],
-    "total": 100,
-    "totalPages": 10,
-    "currentPage": 1
-  }
-}
-```
-
 ### 用户观影记录
 
 #### 获取用户观影记录
