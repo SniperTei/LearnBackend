@@ -17,7 +17,7 @@ class MovieService {
       updatedBy: userId
     });
 
-    return movie;
+    return this._formatMovie(movie);
   }
 
   static async listMovies(query, options) {
@@ -42,7 +42,7 @@ class MovieService {
     const currentPage = Math.floor(options.skip / options.limit) + 1;
 
     return {
-      movies,
+      movies: movies.map(movie => this._formatMovie(movie)),
       total,
       totalPages,
       currentPage
@@ -55,11 +55,11 @@ class MovieService {
       throw new Error('未找到电影');
     }
 
-    // 获取电影统计信息
     const stats = await UserMovieDAL.findMovieStats(id);
-    
+    const formattedMovie = this._formatMovie(movie);
+
     return {
-      ...movie.toObject(),
+      ...formattedMovie,
       stats
     };
   }
@@ -70,7 +70,7 @@ class MovieService {
       throw new Error('未找到电影');
     }
 
-    // 如果更新包含movieUni，检查是否与其他电影冲突
+    // 如果更新了movieUni，检查是否与其他电影冲突
     if (updateData.movieUni && updateData.movieUni !== movie.movieUni) {
       const existingMovie = await MovieDAL.findByMovieUni(updateData.movieUni);
       if (existingMovie && existingMovie._id.toString() !== id) {
@@ -83,7 +83,7 @@ class MovieService {
       updatedBy: userId
     });
 
-    return updatedMovie;
+    return this._formatMovie(updatedMovie);
   }
 
   static async deleteMovie(id) {
@@ -92,8 +92,21 @@ class MovieService {
       throw new Error('未找到电影');
     }
 
-    await MovieDAL.delete(id);
-    return movie;
+    const deletedMovie = await MovieDAL.delete(id);
+    return this._formatMovie(deletedMovie);
+  }
+
+  // 格式化电影数据，将_id转换为movieId
+  static _formatMovie(movie) {
+    if (!movie) return null;
+
+    const movieObj = movie.toObject ? movie.toObject() : movie;
+    const { _id, ...rest } = movieObj;
+
+    return {
+      movieId: _id.toString(),
+      ...rest
+    };
   }
 }
 
