@@ -1,9 +1,9 @@
-const drinkDAO = require('../dal/drink.dal');
+const DrinkDAO = require('../dal/drink.dal');
 
 class DrinkService {
 
   constructor() {
-    this.drinkDAO = new drinkDAO();
+    this.drinkDAO = new DrinkDAO();
   }
 
   /**
@@ -12,7 +12,8 @@ class DrinkService {
    * @returns {Promise<Object>} 创建的饮品记录
    */
   async createDrink(drinkData) {
-    return await this.drinkDAO.createDrink(drinkData);
+    const drink = await this.drinkDAO.createDrink(drinkData);
+    return this._formatDrink(drink);
   }
 
   /**
@@ -22,21 +23,28 @@ class DrinkService {
    * @returns {Promise<Object>} 包含分页信息的饮品记录列表
    */
   async getAllDrinks(filter, options) {
-    const drinks = await drinkDAO.getAllDrinks(filter, options);
-    const total = await drinkDAO.countDrinks(filter);
-    const totalPages = Math.ceil(total / options.limit);
+    const result = await this.drinkDAO.getAllDrinks(filter, options);
+    const drinks = result.map(drink => this._formatDrink(drink));
 
     return {
       drinks,
-      pagination: {
-        total,
-        totalPages,
-        currentPage: options.page,
-        limit: options.limit,
-        hasNextPage: options.page < totalPages,
-        hasPrevPage: options.page > 1
-      }
+      pagination: result.pagination
     };
+
+    // const total = await drinkDAO.countDrinks(filter);
+    // const totalPages = Math.ceil(total / options.limit);
+
+    // return {
+    //   drinks,
+    //   pagination: {
+    //     total,
+    //     totalPages,
+    //     currentPage: options.page,
+    //     limit: options.limit,
+    //     hasNextPage: options.page < totalPages,
+    //     hasPrevPage: options.page > 1
+    //   }
+    // };
   }
 
   /**
@@ -65,6 +73,22 @@ class DrinkService {
    */
   async deleteDrink(id) {
     return await drinkDAO.deleteDrink(id);
+  }
+
+  /**
+   * 格式化菜品数据，将_id转换为drinkId
+   * @private
+   */
+  _formatDrink(drink) {
+    if (!drink) return null;
+
+    const drinkObj = drink.toObject ? drink.toObject() : drink;
+    const { _id, ...rest } = drinkObj;
+
+    return {
+      drinkId: _id.toString(),
+      ...rest
+    };
   }
 }
 

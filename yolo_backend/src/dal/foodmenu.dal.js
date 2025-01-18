@@ -1,17 +1,13 @@
 const FoodMenu = require('../models/foodmenu.model');
 
 class FoodMenuDAL {
-  constructor() {
-    this.FoodMenu = FoodMenu;
-  }
-
   /**
    * 创建菜品
    * @param {Object} foodMenuData 菜品数据
    * @returns {Promise<Object>} 创建的菜品
    */
   async create(foodMenuData) {
-    const foodMenu = new this.FoodMenu(foodMenuData);
+    const foodMenu = new FoodMenu(foodMenuData);
     return await foodMenu.save();
   }
 
@@ -33,11 +29,12 @@ class FoodMenuDAL {
     const sort = { [sortBy]: order === 'desc' ? -1 : 1 };
 
     const [foodMenus, total] = await Promise.all([
-      this.FoodMenu.find(filter)
+      FoodMenu.find(filter)
         .sort(sort)
         .skip(skip)
-        .limit(limit),
-      this.FoodMenu.countDocuments(filter)
+        .limit(limit)
+        .lean(),
+      FoodMenu.countDocuments(filter)
     ]);
 
     return {
@@ -59,7 +56,7 @@ class FoodMenuDAL {
    * @returns {Promise<Object>} 菜品信息
    */
   async findById(id) {
-    return await this.FoodMenu.findById(id);
+    return await FoodMenu.findById(id).lean();
   }
 
   /**
@@ -69,11 +66,11 @@ class FoodMenuDAL {
    * @returns {Promise<Object>} 更新后的菜品
    */
   async update(id, updateData) {
-    return await this.FoodMenu.findByIdAndUpdate(
+    return await FoodMenu.findByIdAndUpdate(
       id,
       updateData,
       { new: true, runValidators: true }
-    );
+    ).lean();
   }
 
   /**
@@ -82,7 +79,7 @@ class FoodMenuDAL {
    * @returns {Promise<Object>} 删除的菜品
    */
   async delete(id) {
-    return await this.FoodMenu.findByIdAndDelete(id);
+    return await FoodMenu.findByIdAndDelete(id).lean();
   }
 
   /**
@@ -91,7 +88,7 @@ class FoodMenuDAL {
    * @returns {Promise<Array>} 随机菜品列表
    */
   async getRandom(count) {
-    return await this.FoodMenu.aggregate([
+    return await FoodMenu.aggregate([
       { $sample: { size: parseInt(count) } }
     ]);
   }

@@ -1,19 +1,42 @@
 const UserDAL = require('../dal/user.dal');
 const { generateToken } = require('../utils/jwt');
+const Permission = require('../models/permission.model');
+const Menu = require('../models/menu.model');
 
 class UserService {
   constructor() {
     this.userDAL = new UserDAL();
   }
 
+  /**
+   * 用户注册
+   */
   async register(userData) {
-    // const existingUser = await this.userDAL.findByEmail(userData.email);
-    // if (existingUser) {
-    //   throw new Error('Email already registered');
-    // }
+    const existingUser = await this.userDAL.findByUsername(userData.username);
+    if (existingUser) {
+      throw new Error('Username already exists');
+    }
     
+    // Create user
     const user = await this.userDAL.create(userData);
-    const token = generateToken(user._id);
+
+    // Get all menu codes
+    const allMenus = await Menu.find({}, 'code');
+    const allMenuCodes = allMenus.map(menu => menu.code);
+
+    // Create default permissions
+    const defaultPermissions = {
+      userId: user._id,
+      username: user.username,
+      menuCodes: allMenuCodes,
+      isAdmin: false,
+      createdBy: 'SYSTEM',
+      updatedBy: 'SYSTEM'
+    };
+    await Permission.create(defaultPermissions);
+
+    // Generate token
+    const token = generateToken(user._id, user.isAdmin, user.username);
     
     return { 
       user: this._formatUser(user), 
@@ -21,32 +44,114 @@ class UserService {
     };
   }
 
-  async login(email, password) {
-    const user = await this.userDAL.findByEmail(email);
-    if (!user || !(await user.comparePassword(password))) {
+  /**
+   * 用户登录
+   */
+  async login(username, password) {
+    // Get the original Mongoose document
+    const user = await this.userDAL.findByUsername(username);
+    
+    if (!user) {
       throw new Error('Invalid login credentials');
     }
 
-    const token = generateToken(user._id);
+    // 直接比较客户端传来的 md5 加密密码
+    if (user.password !== password) {
+      throw new Error('Invalid login credentials');
+    }
+
+    // Get user permissions
+    let permissions = await Permission.findOne({ userId: user._id });
+    
+    if (!permissions) {
+      // Try finding by username as fallback
+      permissions = await Permission.findOne({ username: user.username });
+      
+      if (permissions) {
+        // Update the existing permission with userId
+        permissions.userId = user._id;
+        await permissions.save();
+      } else {
+        // Create new permissions if none exist
+        const allMenus = await Menu.find({}, 'code');
+        const allMenuCodes = allMenus.map(menu => menu.code);
+        
+        permissions = await Permission.create({
+          userId: user._id,
+          username: user.username,
+          menuCodes: allMenuCodes,
+          isAdmin: false,
+          createdBy: 'SYSTEM',
+          updatedBy: 'SYSTEM'
+        });
+      }
+    }
+
+    // Update last login time
+    await user.updateLastLogin();
+
+    const token = generateToken(user._id, user.isAdmin, user.username);
     return { 
-      user: this._formatUser(user), 
+      user: this._formatUser(user),
+      permissions,
       token 
     };
   }
 
-  async deleteUser(userId, hardDelete = false) {
-    const deletedUser = hardDelete 
-      ? await this.userDAL.hardDelete(userId)
-      : await this.userDAL.softDelete(userId);
-    return this._formatUser(deletedUser);
+  /**
+   * 获取用户信息
+   */
+  async getUserById(userId) {
+    console.log('Finding user by ID:', userId);
+    const user = await this.userDAL.findById(userId);
+    if (!user) {
+      console.log('User not found for ID:', userId);
+      throw new Error('User not found');
+    }
+    return this._formatUser(user);
   }
 
-  async getUserById(userId) {
+  /**
+   * 根据用户名获取用户
+   */
+  async getUserByUsername(username) {
+    const user = await this.userDAL.findByUsername(username);
+    return user ? this._formatUser(user) : null;
+  }
+
+  /**
+   * 更新用户信息
+   */
+  async updateUser(userId, updateData) {
     const user = await this.userDAL.findById(userId);
     if (!user) {
       throw new Error('User not found');
     }
-    return this._formatUser(user);
+
+    // Update user fields
+    Object.assign(user, updateData);
+    const updatedUser = await user.save();
+    
+    return this._formatUser(updatedUser);
+  }
+
+  /**
+   * 删除用户
+   */
+  async deleteUser(userId, hardDelete = false) {
+    const user = await this.userDAL.findById(userId);
+    if (!user) {
+      throw new Error('User not found');
+    }
+
+    const deletedUser = hardDelete 
+      ? await this.userDAL.hardDelete(userId)
+      : await this.userDAL.softDelete(userId);
+
+    // Delete user permissions
+    await Permission.deleteOne({ userId: user._id });
+
+    return this._formatUser(deletedUser);
   }
 
   /**
@@ -57,7 +162,7 @@ class UserService {
     if (!user) return null;
 
     const userObj = user.toObject ? user.toObject() : user;
-    const { _id, password, ...rest } = userObj;
+    const { _id, ...rest } = userObj;
 
     return {
       userId: _id.toString(),

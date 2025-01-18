@@ -1,17 +1,14 @@
 const { Restaurant } = require('../models/restaurant.model');
 
 class RestaurantDAL {
-  constructor() {
-    this.Restaurant = Restaurant;
-  }
-
   /**
    * 创建餐厅
    * @param {Object} restaurantData 餐厅数据
    * @returns {Promise<Object>} 创建的餐厅文档
    */
   async create(restaurantData) {
-    return await Restaurant.create(restaurantData);
+    const restaurant = new Restaurant(restaurantData);
+    return await restaurant.save();
   }
 
   /**
@@ -26,7 +23,8 @@ class RestaurantDAL {
     const restaurants = await Restaurant.find(filter)
       .sort(sort)
       .skip(skip)
-      .limit(limit);
+      .limit(limit)
+      .lean();
 
     return {
       restaurants,
@@ -42,7 +40,7 @@ class RestaurantDAL {
    * @returns {Promise<Object>} 餐厅文档
    */
   async findById(id) {
-    return await Restaurant.findById(id);
+    return await Restaurant.findById(id).lean();
   }
 
   /**
@@ -56,7 +54,7 @@ class RestaurantDAL {
       id,
       updateData,
       { new: true, runValidators: true }
-    );
+    ).lean();
   }
 
   /**
@@ -65,7 +63,7 @@ class RestaurantDAL {
    * @returns {Promise<Object>} 删除的餐厅文档
    */
   async delete(id) {
-    return await Restaurant.findByIdAndDelete(id);
+    return await Restaurant.findByIdAndDelete(id).lean();
   }
 }
 

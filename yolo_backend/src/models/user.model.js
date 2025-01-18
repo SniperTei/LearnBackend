@@ -111,6 +111,7 @@ userSchema.methods.comparePassword = async function(password) {
 
 // 更新最后登录时间
 userSchema.methods.updateLastLogin = async function() {
+  console.log('Updating last login time for user:', this.username);
   this.lastLoginAt = new Date();
   await this.save();
 };

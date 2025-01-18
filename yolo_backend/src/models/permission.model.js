@@ -1,7 +1,15 @@
 const mongoose = require('mongoose');
 
 const permissionSchema = new mongoose.Schema({
-  // 关联用户
+  // 关联用户ID
+  userId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    required: [true, 'User ID is required'],
+    unique: true
+  },
+
+  // 关联用户名
   username: {
     type: String,
     required: [true, 'Username is required'],
@@ -49,7 +57,7 @@ const permissionSchema = new mongoose.Schema({
 // 查询中间件：自动排除已删除的权限记录
 permissionSchema.pre(/^find/, function(next) {
   if (!this.getQuery().includeDeleted) {
-    this.find({ isDeleted: { $ne: true } });
+    this.where({ isDeleted: false });
   }
   next();
 });
@@ -62,9 +70,7 @@ permissionSchema.methods.softDelete = async function() {
 
 // 添加菜单权限
 permissionSchema.methods.addMenuCodes = async function(menuCodes) {
-  // 确保没有重复的菜单代码
-  const uniqueCodes = [...new Set([...this.menuCodes, ...menuCodes])];
-  this.menuCodes = uniqueCodes;
+  this.menuCodes = [...new Set([...this.menuCodes, ...menuCodes])];
   return await this.save();
 };
 

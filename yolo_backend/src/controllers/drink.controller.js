@@ -1,4 +1,3 @@
-const Drink = require('../models/drink.model');
 const Alcohol = require('../models/alcohol.model');
 const DrinkService = require('../services/drink.service');
 const ApiResponse = require('../utils/response');
@@ -74,7 +73,7 @@ class DrinkController {
 
       // 构建过滤条件
       const filter = { userId: req.user.userId };
-      
+      console.log('filter:', filter);
       // 时间范围过滤
       if (startDate || endDate) {
         filter.drinkTime = {};
@@ -200,4 +199,4 @@ class DrinkController {
   }
 }
 
-module.exports = new DrinkController();
+module.exports = DrinkController;

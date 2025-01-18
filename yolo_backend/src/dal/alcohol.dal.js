@@ -1,9 +1,6 @@
 const Alcohol = require('../models/alcohol.model');
 
 class AlcoholDAO {
-  constructor() {
-    this.Alcohol = Alcohol;
-  }
 
   /**
    * 创建酒类
@@ -11,7 +8,7 @@ class AlcoholDAO {
    * @returns {Promise<Object>} 创建的酒类记录
    */
   async createAlcohol(alcoholData) {
-    const alcohol = new this.Alcohol(alcoholData);
+    const alcohol = new Alcohol(alcoholData);
     return await alcohol.save();
   }
 
@@ -26,13 +23,13 @@ class AlcoholDAO {
     const skip = (page - 1) * limit;
 
     const [alcohols, total] = await Promise.all([
-      this.Alcohol
+      Alcohol
         .find(filter)
         .sort(sort)
         .skip(skip)
         .limit(limit)
         .lean(),
-      this.Alcohol.countDocuments(filter)
+      Alcohol.countDocuments(filter)
     ]);
 
     const totalPages = Math.ceil(total / limit);
@@ -56,7 +53,7 @@ class AlcoholDAO {
    * @returns {Promise<Object>} 酒类记录
    */
   async getAlcoholById(id) {
-    return await this.Alcohol.findById(id).lean();
+    return await Alcohol.findById(id).lean();
   }
 
   /**
@@ -79,7 +76,7 @@ class AlcoholDAO {
    * @returns {Promise<Object>} 删除的酒类记录
    */
   async deleteAlcohol(id) {
-    return await this.Alcohol.findByIdAndDelete(id).lean();
+    return await Alcohol.findByIdAndDelete(id).lean();
   }
 }
 

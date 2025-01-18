@@ -1,9 +1,6 @@
 const Drink = require('../models/drink.model');
 
 class DrinkDAO {
-  constructor() {
-    this.Drink = Drink;
-  }
 
   /**
    * 创建饮品记录

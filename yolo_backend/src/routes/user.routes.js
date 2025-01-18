@@ -3,14 +3,17 @@ const router = express.Router();
 const UserController = require('../controllers/user.controller');
 const auth = require('../middleware/auth');
 
+// Create a new instance of the controller
+const userController = new UserController();
+
 // 公开路由
-router.post('/register', UserController.register);
-router.post('/login', UserController.login);
+router.post('/register', userController.register.bind(userController));
+router.post('/login', userController.login.bind(userController));
 
 // 需要认证的路由
-router.get('/profile', auth, UserController.getProfile);
-router.patch('/profile', auth, UserController.updateProfile);
-router.delete('/soft-delete', auth, UserController.softDeleteUser);
-router.delete('/hard-delete', auth, UserController.hardDeleteUser);
+router.get('/profile', auth, userController.getProfile.bind(userController));
+// router.patch('/profile', auth, userController.updateProfile.bind(userController));
+router.delete('/soft-delete', auth, userController.softDeleteUser.bind(userController));
+// router.delete('/hard-delete', auth, userController.hardDeleteUser.bind(userController));
 
 module.exports = router;

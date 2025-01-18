@@ -1,69 +1,42 @@
 const jwt = require('jsonwebtoken');
 const User = require('../models/user.model');
+const ApiResponse = require('../utils/response');
 
 const auth = async (req, res, next) => {
   try {
-    // 从请求头获取 token
+    // 从请求头获取token
     const token = req.header('Authorization')?.replace('Bearer ', '');
-    
     if (!token) {
-      return res.status(401).json({
-        success: false,
-        message: 'No authentication token provided'
-      });
+      return res.status(401).json(ApiResponse.unauthorized('No authentication token'));
     }
 
-    // 验证 token
-    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'your-secret-key');
+    // 验证token
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
     if (!decoded) {
-      return res.status(401).json({
-        success: false,
+      return res.status(401).json(ApiResponse.unauthorized({
         message: 'Invalid authentication token'
-      });
+      }));
     }
+    console.log('Token payload:', decoded);
 
     // 检查用户是否存在且未被删除
     const user = await User.findById(decoded.userId).select('+isDeleted');
-    if (!user) {
-      return res.status(401).json({
-        success: false,
-        message: 'User not found'
-      });
-    }
-
-    if (user.isDeleted) {
-      return res.status(401).json({
-        success: false,
-        message: 'User account has been deleted'
-      });
+    if (!user || user.isDeleted) {
+      return res.status(401).json(ApiResponse.unauthorized('User not found or deleted'));
     }
 
     // 将用户信息添加到请求对象
     req.user = {
-      _id: user._id,
-      username: user.username
+      userId: user._id,
+      username: user.username,
+      isAdmin: user.isAdmin
     };
+    req.token = token;
 
     next();
   } catch (error) {
-    if (error.name === 'JsonWebTokenError') {
-      return res.status(401).json({
-        success: false,
-        message: 'Invalid authentication token'
-      });
-    }
-    
-    if (error.name === 'TokenExpiredError') {
-      return res.status(401).json({
-        success: false,
-        message: 'Authentication token has expired'
-      });
-    }
-
-    res.status(500).json({
-      success: false,
-      message: 'Authentication error'
-    });
+    console.error('Auth middleware error:', error);
+    return res.status(401).json(ApiResponse.unauthorized('Please authenticate'));
   }
 };
 

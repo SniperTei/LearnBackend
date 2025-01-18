@@ -20,11 +20,15 @@ describe('RestaurantDAL', () => {
       };
       const mockCreatedRestaurant = { ...mockRestaurantData, _id: '123' };
 
-      Restaurant.create = jest.fn().mockResolvedValue(mockCreatedRestaurant);
+      const mockSave = jest.fn().mockResolvedValue(mockCreatedRestaurant);
+      Restaurant.mockImplementation(() => ({
+        save: mockSave
+      }));
 
       const result = await restaurantDAL.create(mockRestaurantData);
 
-      expect(Restaurant.create).toHaveBeenCalledWith(mockRestaurantData);
+      expect(Restaurant).toHaveBeenCalledWith(mockRestaurantData);
+      expect(mockSave).toHaveBeenCalled();
       expect(result).toEqual(mockCreatedRestaurant);
     });
   });
@@ -44,21 +48,22 @@ describe('RestaurantDAL', () => {
       const mockTotal = 2;
 
       // Mock the find operation with query chain
-      const findQuery = {
-        sort: jest.fn().mockReturnThis(),
-        skip: jest.fn().mockReturnThis(),
-        limit: jest.fn().mockResolvedValue(mockRestaurants)
-      };
+      const mockLean = jest.fn().mockResolvedValue(mockRestaurants);
+      const mockLimit = jest.fn().mockReturnValue({ lean: mockLean });
+      const mockSkip = jest.fn().mockReturnValue({ limit: mockLimit });
+      const mockSort = jest.fn().mockReturnValue({ skip: mockSkip });
+      const mockFind = jest.fn().mockReturnValue({ sort: mockSort });
 
-      Restaurant.find = jest.fn().mockReturnValue(findQuery);
+      Restaurant.find = mockFind;
       Restaurant.countDocuments = jest.fn().mockResolvedValue(mockTotal);
 
       const result = await restaurantDAL.find(mockFilter, mockOptions);
 
-      expect(Restaurant.find).toHaveBeenCalledWith(mockFilter);
-      expect(findQuery.sort).toHaveBeenCalledWith(mockOptions.sort);
-      expect(findQuery.skip).toHaveBeenCalledWith(mockOptions.skip);
-      expect(findQuery.limit).toHaveBeenCalledWith(mockOptions.limit);
+      expect(mockFind).toHaveBeenCalledWith(mockFilter);
+      expect(mockSort).toHaveBeenCalledWith(mockOptions.sort);
+      expect(mockSkip).toHaveBeenCalledWith(mockOptions.skip);
+      expect(mockLimit).toHaveBeenCalledWith(mockOptions.limit);
+      expect(mockLean).toHaveBeenCalled();
       expect(Restaurant.countDocuments).toHaveBeenCalledWith(mockFilter);
 
       expect(result).toEqual({
@@ -79,11 +84,13 @@ describe('RestaurantDAL', () => {
         address: 'Test Address'
       };
 
-      Restaurant.findById = jest.fn().mockResolvedValue(mockRestaurant);
+      const mockLean = jest.fn().mockResolvedValue(mockRestaurant);
+      Restaurant.findById = jest.fn().mockReturnValue({ lean: mockLean });
 
       const result = await restaurantDAL.findById(mockId);
 
       expect(Restaurant.findById).toHaveBeenCalledWith(mockId);
+      expect(mockLean).toHaveBeenCalled();
       expect(result).toEqual(mockRestaurant);
     });
   });
@@ -100,7 +107,8 @@ describe('RestaurantDAL', () => {
         ...mockUpdateData
       };
 
-      Restaurant.findByIdAndUpdate = jest.fn().mockResolvedValue(mockUpdatedRestaurant);
+      const mockLean = jest.fn().mockResolvedValue(mockUpdatedRestaurant);
+      Restaurant.findByIdAndUpdate = jest.fn().mockReturnValue({ lean: mockLean });
 
       const result = await restaurantDAL.update(mockId, mockUpdateData);
 
@@ -109,6 +117,7 @@ describe('RestaurantDAL', () => {
         mockUpdateData,
         { new: true, runValidators: true }
       );
+      expect(mockLean).toHaveBeenCalled();
       expect(result).toEqual(mockUpdatedRestaurant);
     });
   });
@@ -122,11 +131,13 @@ describe('RestaurantDAL', () => {
         address: 'Deleted Address'
       };
 
-      Restaurant.findByIdAndDelete = jest.fn().mockResolvedValue(mockDeletedRestaurant);
+      const mockLean = jest.fn().mockResolvedValue(mockDeletedRestaurant);
+      Restaurant.findByIdAndDelete = jest.fn().mockReturnValue({ lean: mockLean });
 
       const result = await restaurantDAL.delete(mockId);
 
       expect(Restaurant.findByIdAndDelete).toHaveBeenCalledWith(mockId);
+      expect(mockLean).toHaveBeenCalled();
       expect(result).toEqual(mockDeletedRestaurant);
     });
   });
