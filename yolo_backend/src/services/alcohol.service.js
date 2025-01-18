@@ -12,7 +12,9 @@ class AlcoholService {
    * @returns {Promise<Object>} 创建的酒类记录
    */
   async createAlcohol(alcoholData) {
-    return await this.alcoholDAO.createAlcohol(alcoholData);
+    const alcohol = await this.alcoholDAO.createAlcohol(alcoholData);
+
+    return this.formatAlcohol(alcohol);
   }
 
   /**
@@ -23,7 +25,12 @@ class AlcoholService {
    */
   async getAllAlcohols(filter = {}, options = {}) {
     const result = await this.alcoholDAO.getAllAlcohols(filter, options);
-    return result;
+    console.log('result : ', result);
+    const alcohols = result.alcohols.map(alcohol => this.formatAlcohol(alcohol));
+    return {
+      alcohols,
+      pagination: result.pagination
+    };
   }
 
   /**
@@ -32,7 +39,9 @@ class AlcoholService {
    * @returns {Promise<Object>} 酒类记录
    */
   async getAlcoholById(id) {
-    return await this.alcoholDAO.getAlcoholById(id);
+    const alcohol = await this.alcoholDAO.getAlcoholById(id);
+
+    return this.formatAlcohol(alcohol);
   }
 
   /**
@@ -42,7 +51,9 @@ class AlcoholService {
    * @returns {Promise<Object>} 更新后的酒类记录
    */
   async updateAlcohol(id, alcoholData) {
-    return await this.alcoholDAO.updateAlcohol(id, alcoholData);
+    const alcohol = await this.alcoholDAO.updateAlcohol(id, alcoholData);
+
+    return this.formatAlcohol(alcohol);
   }
 
   /**
@@ -61,7 +72,22 @@ class AlcoholService {
    * @returns {Promise<Object>} 删除的酒类记录
    */
   async deleteAlcohol(id) {
-    return await this.alcoholDAO.deleteAlcohol(id);
+    const alcohol = await this.alcoholDAO.deleteAlcohol(id);
+    return this.formatAlcohol(alcohol);
+  }
+
+  /**
+   * 格式化alcohol数据，将_id转换为alcoholId
+   * @private
+   */
+  formatAlcohol(alcohol) {
+    if (!alcohol) return null;
+
+    const { _id, __v, ...rest } = alcohol;
+    return {
+      alcoholId: _id.toString(),
+      ...rest
+    };
   }
 }
 

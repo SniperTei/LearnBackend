@@ -30,16 +30,22 @@ class AlcoholDAO {
         .find(filter)
         .sort(sort)
         .skip(skip)
-        .limit(limit),
+        .limit(limit)
+        .lean(),
       this.Alcohol.countDocuments(filter)
     ]);
+
+    const totalPages = Math.ceil(total / limit);
 
     return {
       alcohols,
       pagination: {
         total,
-        page: parseInt(page),
-        pages: Math.ceil(total / limit)
+        totalPages,
+        currentPage: parseInt(page),
+        limit: parseInt(limit),
+        hasNextPage: page < totalPages,
+        hasPrevPage: page > 1
       }
     };
   }
@@ -50,7 +56,7 @@ class AlcoholDAO {
    * @returns {Promise<Object>} 酒类记录
    */
   async getAlcoholById(id) {
-    return await this.Alcohol.findById(id);
+    return await this.Alcohol.findById(id).lean();
   }
 
   /**
@@ -63,7 +69,7 @@ class AlcoholDAO {
     return await this.Alcohol.findByIdAndUpdate(
       id,
       updateData,
-      { new: true, runValidators: true }
+      { new: true, runValidators: true, lean: true }
     );
   }
 
@@ -73,7 +79,7 @@ class AlcoholDAO {
    * @returns {Promise<Object>} 删除的酒类记录
    */
   async deleteAlcohol(id) {
-    return await this.Alcohol.findByIdAndDelete(id);
+    return await this.Alcohol.findByIdAndDelete(id).lean();
   }
 }
 
