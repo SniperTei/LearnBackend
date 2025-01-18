@@ -101,4 +101,4 @@ class FoodMenuController {
   }
 }
 
-module.exports = new FoodMenuController();
+module.exports = FoodMenuController;

@@ -25,7 +25,6 @@ class AlcoholService {
    */
   async getAllAlcohols(filter = {}, options = {}) {
     const result = await this.alcoholDAO.getAllAlcohols(filter, options);
-    console.log('result : ', result);
     const alcohols = result.alcohols.map(alcohol => this.formatAlcohol(alcohol));
     return {
       alcohols,

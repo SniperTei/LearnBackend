@@ -51,15 +51,11 @@ class FoodMenuService {
     };
 
     const result = await this.foodMenuDAL.find(filter, options);
-    const { foodMenus, total } = result;
-    const totalPages = Math.ceil(total / options.limit);
-    const currentPage = options.page || 1;
+    const foodMenus = result.foodMenus.map(foodMenu => this._formatFoodMenu(foodMenu));
 
     return {
-      foodMenus: foodMenus.map(foodMenu => this._formatFoodMenu(foodMenu)),
-      total,
-      totalPages,
-      currentPage
+      foodMenus,
+      pagination: result.pagination
     };
   }
 
