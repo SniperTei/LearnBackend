@@ -61,14 +61,12 @@ class RestaurantService {
       sort
     };
 
-    const { restaurants, total } = await this.restaurantDAL.find(filter, options);
-    const totalPages = Math.ceil(total / limit);
+    const result = await this.restaurantDAL.find(filter, options);
+    const restaurants = result.restaurants.map(restaurant => this._formatRestaurant(restaurant));
 
     return {
-      restaurants: restaurants.map(restaurant => this._formatRestaurant(restaurant)),
-      total,
-      totalPages,
-      currentPage: page
+      restaurants,
+      pagination: result.pagination
     };
   }
 

@@ -26,4 +26,4 @@ class DictionaryController {
   }
 }
 
-module.exports = new DictionaryController();
+module.exports = DictionaryController;
