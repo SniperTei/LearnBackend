@@ -18,6 +18,10 @@ const movieSchema = new mongoose.Schema({
     type: String,
     trim: true
   },
+  duration: {
+    type: String,
+    trim: true
+  },
   imageUrl: {
     type: String
   },
