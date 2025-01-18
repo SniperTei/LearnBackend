@@ -1,11 +1,15 @@
-const fitnessService = require('../services/fitness.service');
+const FitnessService = require('../services/fitness.service');
 const ApiResponse = require('../utils/response');
 
 class FitnessController {
+  constructor() {
+    this.fitnessService = new FitnessService();
+  }
+
   /**
    * 创建运动记录
    */
-  static async createFitness(req, res) {
+  async createFitness(req, res) {
     try {
       const fitnessData = {
         ...req.body,
@@ -15,7 +19,7 @@ class FitnessController {
         exerciseDate: req.body.exerciseDate || new Date()
       };
 
-      const fitness = await fitnessService.createFitness(fitnessData);
+      const fitness = await this.fitnessService.createFitness(fitnessData);
       res.status(201).json(ApiResponse.success(fitness, '运动记录创建成功'));
     } catch (error) {
       if (error.name === 'ValidationError') {
@@ -28,7 +32,7 @@ class FitnessController {
   /**
    * 获取运动记录列表
    */
-  static async getAllFitness(req, res) {
+  async getAllFitness(req, res) {
     try {
       const {
         page = 1,
@@ -58,7 +62,7 @@ class FitnessController {
       // 构建排序条件
       const sort = { [sortBy]: order === 'desc' ? -1 : 1 };
 
-      const result = await fitnessService.getAllFitness(
+      const result = await this.fitnessService.getAllFitness(
         filter,
         {
           page: parseInt(page),
@@ -76,9 +80,9 @@ class FitnessController {
   /**
    * 获取单个运动记录
    */
-  static async getFitnessById(req, res) {
+  async getFitnessById(req, res) {
     try {
-      const fitness = await fitnessService.getFitnessById(req.params.id);
+      const fitness = await this.fitnessService.getFitnessById(req.params.id);
       
       if (!fitness) {
         return res.status(404).json(ApiResponse.error('运动记录不存在'));
@@ -98,9 +102,9 @@ class FitnessController {
   /**
    * 更新运动记录
    */
-  static async updateFitness(req, res) {
+  async updateFitness(req, res) {
     try {
-      const fitness = await fitnessService.getFitnessById(req.params.id);
+      const fitness = await this.fitnessService.getFitnessById(req.params.id);
       
       if (!fitness) {
         return res.status(404).json(ApiResponse.error('运动记录不存在'));
@@ -116,7 +120,7 @@ class FitnessController {
         updatedBy: req.user.username
       };
 
-      const updatedFitness = await fitnessService.updateFitness(req.params.id, updateData);
+      const updatedFitness = await this.fitnessService.updateFitness(req.params.id, updateData);
       res.json(ApiResponse.success(updatedFitness, '运动记录更新成功'));
     } catch (error) {
       if (error.name === 'ValidationError') {
@@ -129,9 +133,9 @@ class FitnessController {
   /**
    * 删除运动记录
    */
-  static async deleteFitness(req, res) {
+  async deleteFitness(req, res) {
     try {
-      const fitness = await fitnessService.getFitnessById(req.params.id);
+      const fitness = await this.fitnessService.getFitnessById(req.params.id);
       
       if (!fitness) {
         return res.status(404).json(ApiResponse.error('运动记录不存在'));
@@ -142,7 +146,7 @@ class FitnessController {
         return res.status(403).json(ApiResponse.error('无权删除此运动记录'));
       }
 
-      await fitnessService.deleteFitness(req.params.id);
+      await this.fitnessService.deleteFitness(req.params.id);
       res.json(ApiResponse.success(null, '运动记录删除成功'));
     } catch (error) {
       res.status(500).json(ApiResponse.error('删除运动记录失败: ' + error.message));
@@ -150,4 +154,4 @@ class FitnessController {
   }
 }
 
-module.exports = FitnessController;
+module.exports = new FitnessController();

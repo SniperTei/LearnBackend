@@ -1,13 +1,18 @@
 const drinkDAO = require('../dal/drink.dal');
 
 class DrinkService {
+
+  constructor() {
+    this.drinkDAO = new drinkDAO();
+  }
+
   /**
    * 创建饮品记录
    * @param {Object} drinkData - 饮品记录数据
    * @returns {Promise<Object>} 创建的饮品记录
    */
   async createDrink(drinkData) {
-    return await drinkDAO.createDrink(drinkData);
+    return await this.drinkDAO.createDrink(drinkData);
   }
 
   /**
@@ -63,4 +68,4 @@ class DrinkService {
   }
 }
 
-module.exports = new DrinkService();
+module.exports = DrinkService;

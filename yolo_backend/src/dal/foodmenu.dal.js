@@ -1,13 +1,17 @@
 const FoodMenu = require('../models/foodmenu.model');
 
 class FoodMenuDAL {
+  constructor() {
+    this.FoodMenu = FoodMenu;
+  }
+
   /**
    * 创建菜品
    * @param {Object} foodMenuData 菜品数据
    * @returns {Promise<Object>} 创建的菜品
    */
-  static async create(foodMenuData) {
-    const foodMenu = new FoodMenu(foodMenuData);
+  async create(foodMenuData) {
+    const foodMenu = new this.FoodMenu(foodMenuData);
     return await foodMenu.save();
   }
 
@@ -17,7 +21,7 @@ class FoodMenuDAL {
    * @param {Object} options 选项（分页、排序等）
    * @returns {Promise<Object>} 菜品列表和分页信息
    */
-  static async find(filter = {}, options = {}) {
+  async find(filter = {}, options = {}) {
     const {
       page = 1,
       limit = 10,
@@ -29,11 +33,11 @@ class FoodMenuDAL {
     const sort = { [sortBy]: order === 'desc' ? -1 : 1 };
 
     const [foodMenus, total] = await Promise.all([
-      FoodMenu.find(filter)
+      this.FoodMenu.find(filter)
         .sort(sort)
         .skip(skip)
         .limit(limit),
-      FoodMenu.countDocuments(filter)
+      this.FoodMenu.countDocuments(filter)
     ]);
 
     return {
@@ -54,8 +58,8 @@ class FoodMenuDAL {
    * @param {string} id 菜品ID
    * @returns {Promise<Object>} 菜品信息
    */
-  static async findById(id) {
-    return await FoodMenu.findById(id);
+  async findById(id) {
+    return await this.FoodMenu.findById(id);
   }
 
   /**
@@ -64,8 +68,8 @@ class FoodMenuDAL {
    * @param {Object} updateData 更新数据
    * @returns {Promise<Object>} 更新后的菜品
    */
-  static async update(id, updateData) {
-    return await FoodMenu.findByIdAndUpdate(
+  async update(id, updateData) {
+    return await this.FoodMenu.findByIdAndUpdate(
       id,
       updateData,
       { new: true, runValidators: true }
@@ -77,8 +81,19 @@ class FoodMenuDAL {
    * @param {string} id 菜品ID
    * @returns {Promise<Object>} 删除的菜品
    */
-  static async delete(id) {
-    return await FoodMenu.findByIdAndDelete(id);
+  async delete(id) {
+    return await this.FoodMenu.findByIdAndDelete(id);
+  }
+
+  /**
+   * 随机获取菜品
+   * @param {number} count 需要获取的菜品数量
+   * @returns {Promise<Array>} 随机菜品列表
+   */
+  async getRandom(count) {
+    return await this.FoodMenu.aggregate([
+      { $sample: { size: parseInt(count) } }
+    ]);
   }
 }
 

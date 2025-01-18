@@ -2,22 +2,27 @@ const FoodMenuDAL = require('../dal/foodmenu.dal');
 const FoodMenu = require('../models/foodmenu.model');
 
 class FoodMenuService {
+  constructor() {
+    this.foodMenuDAL = new FoodMenuDAL();
+  }
+
   /**
    * 创建菜品
    */
-  static async createFoodMenu(foodMenuData, username) {
+  async createFoodMenu(foodMenuData, username) {
     const data = {
       ...foodMenuData,
       createdBy: username,
       updatedBy: username
     };
-    return await FoodMenuDAL.create(data);
+    const foodMenu = await this.foodMenuDAL.create(data);
+    return this._formatFoodMenu(foodMenu);
   }
 
   /**
    * 获取菜品列表
    */
-  static async getFoodMenus(query = {}) {
+  async getFoodMenus(query = {}) {
     const {
       page,
       limit,
@@ -45,32 +50,45 @@ class FoodMenuService {
       order
     };
 
-    return await FoodMenuDAL.find(filter, options);
+    const result = await this.foodMenuDAL.find(filter, options);
+    const { foodMenus, total } = result;
+    const totalPages = Math.ceil(total / options.limit);
+    const currentPage = options.page || 1;
+
+    return {
+      foodMenus: foodMenus.map(foodMenu => this._formatFoodMenu(foodMenu)),
+      total,
+      totalPages,
+      currentPage
+    };
   }
 
   /**
    * 获取单个菜品
    */
-  static async getFoodMenuById(id) {
-    return await FoodMenuDAL.findById(id);
+  async getFoodMenuById(id) {
+    const foodMenu = await this.foodMenuDAL.findById(id);
+    return this._formatFoodMenu(foodMenu);
   }
 
   /**
    * 更新菜品
    */
-  static async updateFoodMenu(id, updateData, username) {
+  async updateFoodMenu(id, updateData, username) {
     const data = {
       ...updateData,
       updatedBy: username
     };
-    return await FoodMenuDAL.update(id, data);
+    const foodMenu = await this.foodMenuDAL.update(id, data);
+    return this._formatFoodMenu(foodMenu);
   }
 
   /**
    * 删除菜品
    */
-  static async deleteFoodMenu(id) {
-    return await FoodMenuDAL.delete(id);
+  async deleteFoodMenu(id) {
+    const foodMenu = await this.foodMenuDAL.delete(id);
+    return this._formatFoodMenu(foodMenu);
   }
 
   /**
@@ -78,17 +96,29 @@ class FoodMenuService {
    * @param {number} count 需要获取的菜品数量
    * @returns {Promise<Array>} 随机菜品列表
    */
-  static async getRandomFoodMenus(count = 1) {
+  async getRandomFoodMenus(count = 1) {
     try {
-      // 直接使用 FoodMenu 模型调用 aggregate
-      const foodMenus = await FoodMenu.aggregate([
-        { $sample: { size: parseInt(count) } }
-      ]);
-      
-      return foodMenus;
+      const foodMenus = await this.foodMenuDAL.getRandom(count);
+      return foodMenus.map(foodMenu => this._formatFoodMenu(foodMenu));
     } catch (error) {
       throw error;
     }
+  }
+
+  /**
+   * 格式化菜品数据，将_id转换为foodMenuId
+   * @private
+   */
+  _formatFoodMenu(foodMenu) {
+    if (!foodMenu) return null;
+
+    const foodMenuObj = foodMenu.toObject ? foodMenu.toObject() : foodMenu;
+    const { _id, ...rest } = foodMenuObj;
+
+    return {
+      foodMenuId: _id.toString(),
+      ...rest
+    };
   }
 }
 

@@ -2,12 +2,16 @@ const UserMovieService = require('../services/userMovie.service');
 const { ApiResponse } = require('../utils/response');
 
 class UserMovieController {
-  static async getUserMovie(req, res, next) {
+  constructor() {
+    this.userMovieService = new UserMovieService();
+  }
+
+  async getUserMovie(req, res, next) {
     try {
       const userId = req.user._id;
       const { movieId } = req.params;
 
-      const userMovie = await UserMovieService.getUserMovie(userId, movieId);
+      const userMovie = await this.userMovieService.getUserMovie(userId, movieId);
       
       return ApiResponse.success(res, {
         msg: '获取观影记录成功',
@@ -18,7 +22,7 @@ class UserMovieController {
     }
   }
 
-  static async listUserMovies(req, res, next) {
+  async listUserMovies(req, res, next) {
     try {
       const userId = req.user._id;
       const { page = 1, limit = 10, status } = req.query;
@@ -27,7 +31,7 @@ class UserMovieController {
         limit: parseInt(limit)
       };
 
-      const result = await UserMovieService.listUserMovies(userId, { status }, options);
+      const result = await this.userMovieService.listUserMovies(userId, { status }, options);
       
       return ApiResponse.success(res, {
         msg: '获取观影列表成功',
@@ -38,10 +42,10 @@ class UserMovieController {
     }
   }
 
-  static async getUserStats(req, res, next) {
+  async getUserStats(req, res, next) {
     try {
       const userId = req.user._id;
-      const stats = await UserMovieService.getUserStats(userId);
+      const stats = await this.userMovieService.getUserStats(userId);
       
       return ApiResponse.success(res, {
         msg: '获取用户观影统计成功',
@@ -52,13 +56,13 @@ class UserMovieController {
     }
   }
 
-  static async markAsWatched(req, res, next) {
+  async markAsWatched(req, res, next) {
     try {
       const userId = req.user._id;
       const { movieId } = req.params;
       const { rating, review } = req.body;
 
-      const userMovie = await UserMovieService.markAsWatched(userId, movieId, rating, review);
+      const userMovie = await this.userMovieService.markAsWatched(userId, movieId, rating, review);
       
       return ApiResponse.success(res, {
         msg: '标记为已看成功',
@@ -69,12 +73,12 @@ class UserMovieController {
     }
   }
 
-  static async markAsWantToWatch(req, res, next) {
+  async markAsWantToWatch(req, res, next) {
     try {
       const userId = req.user._id;
       const { movieId } = req.params;
 
-      const userMovie = await UserMovieService.markAsWantToWatch(userId, movieId);
+      const userMovie = await this.userMovieService.markAsWantToWatch(userId, movieId);
       
       return ApiResponse.success(res, {
         msg: '添加到想看列表成功',
@@ -85,12 +89,12 @@ class UserMovieController {
     }
   }
 
-  static async removeFromWantToWatch(req, res, next) {
+  async removeFromWantToWatch(req, res, next) {
     try {
       const userId = req.user._id;
       const { movieId } = req.params;
 
-      const userMovie = await UserMovieService.removeFromWantToWatch(userId, movieId);
+      const userMovie = await this.userMovieService.removeFromWantToWatch(userId, movieId);
       
       return ApiResponse.success(res, {
         msg: '从想看列表移除成功',
@@ -101,12 +105,12 @@ class UserMovieController {
     }
   }
 
-  static async toggleLike(req, res, next) {
+  async toggleLike(req, res, next) {
     try {
       const userId = req.user._id;
       const { movieId } = req.params;
 
-      const userMovie = await UserMovieService.toggleLike(userId, movieId);
+      const userMovie = await this.userMovieService.toggleLike(userId, movieId);
       
       return ApiResponse.success(res, {
         msg: userMovie.likeStatus === 'Y' ? '收藏电影成功' : '取消收藏成功',
@@ -117,13 +121,13 @@ class UserMovieController {
     }
   }
 
-  static async updateRating(req, res, next) {
+  async updateRating(req, res, next) {
     try {
       const userId = req.user._id;
       const { movieId } = req.params;
       const { rating } = req.body;
 
-      const userMovie = await UserMovieService.updateRating(userId, movieId, rating);
+      const userMovie = await this.userMovieService.updateRating(userId, movieId, rating);
       
       return ApiResponse.success(res, {
         msg: '更新评分成功',
@@ -134,13 +138,13 @@ class UserMovieController {
     }
   }
 
-  static async updateReview(req, res, next) {
+  async updateReview(req, res, next) {
     try {
       const userId = req.user._id;
       const { movieId } = req.params;
       const { review } = req.body;
 
-      const userMovie = await UserMovieService.updateReview(userId, movieId, review);
+      const userMovie = await this.userMovieService.updateReview(userId, movieId, review);
       
       return ApiResponse.success(res, {
         msg: '更新评论成功',
@@ -152,4 +156,4 @@ class UserMovieController {
   }
 }
 
-module.exports = UserMovieController;
+module.exports = new UserMovieController();

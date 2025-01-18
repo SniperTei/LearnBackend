@@ -2,20 +2,25 @@ const TravelPlanDAL = require('../dal/travelPlan.dal');
 const createError = require('http-errors');
 
 class TravelPlanService {
+  constructor() {
+    this.travelPlanDAL = new TravelPlanDAL();
+  }
+
   /**
    * 创建旅行计划
    * @param {Object} travelPlanData - 旅行计划数据
    * @param {string} userId - 用户ID
    * @returns {Promise<Object>} 创建的旅行计划
    */
-  static async createTravelPlan(travelPlanData, userId) {
+  async createTravelPlan(travelPlanData, userId) {
     const data = {
       ...travelPlanData,
       userId,
       createdBy: userId,
       updatedBy: userId
     };
-    return await TravelPlanDAL.create(data);
+    const travelPlan = await this.travelPlanDAL.create(data);
+    return this._formatTravelPlan(travelPlan);
   }
 
   /**
@@ -25,19 +30,20 @@ class TravelPlanService {
    * @param {string} userId - 用户ID
    * @returns {Promise<{travelPlans: Array, totalPages: Number, currentPage: Number}>} 旅行计划列表和分页信息
    */
-  static async listTravelPlans(filters, options, userId) {
+  async listTravelPlans(filters, options, userId) {
     const query = { userId, ...filters };
     const { page = 1, limit = 10 } = options;
     const skip = (page - 1) * limit;
 
-    const { travelPlans, total } = await TravelPlanDAL.findAll(query, {
+    const { travelPlans, total } = await this.travelPlanDAL.findAll(query, {
       skip,
       limit,
       sort: { createdAt: -1 }
     });
 
     return {
-      travelPlans,
+      travelPlans: travelPlans.map(plan => this._formatTravelPlan(plan)),
+      total,
       totalPages: Math.ceil(total / limit),
       currentPage: page
     };
@@ -49,12 +55,12 @@ class TravelPlanService {
    * @returns {Promise<Object>} 旅行计划
    * @throws {Error} 未找到旅行计划时抛出错误
    */
-  static async getTravelPlan(id) {
-    const travelPlan = await TravelPlanDAL.findById(id);
+  async getTravelPlan(id) {
+    const travelPlan = await this.travelPlanDAL.findById(id);
     if (!travelPlan) {
       throw createError(404, '未找到旅行计划');
     }
-    return travelPlan;
+    return this._formatTravelPlan(travelPlan);
   }
 
   /**
@@ -65,8 +71,8 @@ class TravelPlanService {
    * @returns {Promise<Object>} 更新后的旅行计划
    * @throws {Error} 未找到旅行计划或无权限时抛出错误
    */
-  static async updateTravelPlan(id, updateData, userId) {
-    const travelPlan = await TravelPlanDAL.findById(id);
+  async updateTravelPlan(id, updateData, userId) {
+    const travelPlan = await this.travelPlanDAL.findById(id);
     if (!travelPlan) {
       throw createError(404, '未找到旅行计划');
     }
@@ -80,7 +86,8 @@ class TravelPlanService {
       updatedBy: userId
     };
 
-    return await TravelPlanDAL.update(id, data);
+    const updatedPlan = await this.travelPlanDAL.update(id, data);
+    return this._formatTravelPlan(updatedPlan);
   }
 
   /**
@@ -90,8 +97,8 @@ class TravelPlanService {
    * @returns {Promise<void>}
    * @throws {Error} 未找到旅行计划或无权限时抛出错误
    */
-  static async deleteTravelPlan(id, userId) {
-    const travelPlan = await TravelPlanDAL.findById(id);
+  async deleteTravelPlan(id, userId) {
+    const travelPlan = await this.travelPlanDAL.findById(id);
     if (!travelPlan) {
       throw createError(404, '未找到旅行计划');
     }
@@ -100,7 +107,24 @@ class TravelPlanService {
       throw createError(403, '没有权限删除此旅行计划');
     }
 
-    await TravelPlanDAL.delete(id);
+    await this.travelPlanDAL.delete(id);
+    return this._formatTravelPlan(travelPlan);
+  }
+
+  /**
+   * 格式化旅行计划数据，将_id转换为travelPlanId
+   * @private
+   */
+  _formatTravelPlan(travelPlan) {
+    if (!travelPlan) return null;
+
+    const travelPlanObj = travelPlan.toObject ? travelPlan.toObject() : travelPlan;
+    const { _id, ...rest } = travelPlanObj;
+
+    return {
+      travelPlanId: _id.toString(),
+      ...rest
+    };
   }
 }
 

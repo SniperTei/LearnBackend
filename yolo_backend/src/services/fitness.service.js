@@ -1,6 +1,10 @@
 const fitnessDAL = require('../dal/fitness.dal');
 
 class FitnessService {
+  constructor() {
+    this.fitnessDAL = new fitnessDAL();
+  }
+
   /**
    * 创建运动记录
    * @param {Object} fitnessData - 运动记录数据
@@ -63,4 +67,4 @@ class FitnessService {
   }
 }
 
-module.exports = new FitnessService();
+module.exports = FitnessService;

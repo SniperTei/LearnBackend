@@ -1,6 +1,10 @@
 const Drink = require('../models/drink.model');
 
 class DrinkDAO {
+  constructor() {
+    this.Drink = Drink;
+  }
+
   /**
    * 创建饮品记录
    * @param {Object} drinkData - 饮品记录数据
@@ -73,4 +77,4 @@ class DrinkDAO {
   }
 }
 
-module.exports = new DrinkDAO();
+module.exports = DrinkDAO;

@@ -2,18 +2,23 @@ const UserMovieDAL = require('../dal/userMovie.dal');
 const MovieDAL = require('../dal/movie.dal');
 
 class UserMovieService {
-  static async updateUserMovie(userId, movieId, updateData) {
+  constructor() {
+    this.userMovieDAL = new UserMovieDAL();
+    this.movieDAL = new MovieDAL();
+  }
+
+  async updateUserMovie(userId, movieId, updateData) {
     // 检查电影是否存在
-    const movie = await MovieDAL.findById(movieId);
+    const movie = await this.movieDAL.findById(movieId);
     if (!movie) {
       throw new Error('未找到电影');
     }
 
     // 查找或创建用户电影记录
-    let userMovie = await UserMovieDAL.findOne(userId, movieId);
+    let userMovie = await this.userMovieDAL.findOne(userId, movieId);
     
     if (!userMovie) {
-      userMovie = await UserMovieDAL.create({
+      userMovie = await this.userMovieDAL.create({
         userId,
         movieId,
         ...updateData,
@@ -21,49 +26,49 @@ class UserMovieService {
         updatedBy: userId
       });
     } else {
-      userMovie = await UserMovieDAL.update(userId, movieId, {
+      userMovie = await this.userMovieDAL.update(userId, movieId, {
         ...updateData,
         updatedBy: userId
       });
     }
 
-    return userMovie;
+    return this._formatUserMovie(userMovie);
   }
 
-  static async getUserMovie(userId, movieId) {
-    const userMovie = await UserMovieDAL.findOne(userId, movieId);
+  async getUserMovie(userId, movieId) {
+    const userMovie = await this.userMovieDAL.findOne(userId, movieId);
     if (!userMovie) {
       throw new Error('未找到观影记录');
     }
-    return userMovie;
+    return this._formatUserMovie(userMovie);
   }
 
-  static async deleteUserMovie(userId, movieId) {
-    const userMovie = await UserMovieDAL.findOne(userId, movieId);
+  async deleteUserMovie(userId, movieId) {
+    const userMovie = await this.userMovieDAL.findOne(userId, movieId);
     if (!userMovie) {
       throw new Error('未找到观影记录');
     }
 
-    await UserMovieDAL.delete(userId, movieId);
-    return userMovie;
+    await this.userMovieDAL.delete(userId, movieId);
+    return this._formatUserMovie(userMovie);
   }
 
-  static async listUserMovies(userId, params, options) {
+  async listUserMovies(userId, params, options) {
     const { status } = params;
     let result;
 
     switch (status) {
       case 'watched':
-        result = await UserMovieDAL.findWatchedMovies(userId, options);
+        result = await this.userMovieDAL.findWatchedMovies(userId, options);
         break;
       case 'want_to_watch':
-        result = await UserMovieDAL.findWantToWatchMovies(userId, options);
+        result = await this.userMovieDAL.findWantToWatchMovies(userId, options);
         break;
       case 'liked':
-        result = await UserMovieDAL.findLikedMovies(userId, options);
+        result = await this.userMovieDAL.findLikedMovies(userId, options);
         break;
       default:
-        result = await UserMovieDAL.findUserMovies(userId, {}, options);
+        result = await this.userMovieDAL.findUserMovies(userId, {}, options);
     }
 
     const { userMovies, total } = result;
@@ -71,19 +76,19 @@ class UserMovieService {
     const currentPage = Math.floor(options.skip / options.limit) + 1;
 
     return {
-      userMovies,
+      userMovies: userMovies.map(userMovie => this._formatUserMovie(userMovie)),
       total,
       totalPages,
       currentPage
     };
   }
 
-  static async getUserStats(userId) {
-    const stats = await UserMovieDAL.findUserMovieStats(userId);
+  async getUserStats(userId) {
+    const stats = await this.userMovieDAL.findUserMovieStats(userId);
     return stats;
   }
 
-  static async markAsWatched(userId, movieId, rating, review) {
+  async markAsWatched(userId, movieId, rating, review) {
     return await this.updateUserMovie(userId, movieId, {
       watchStatus: 'watched',
       rating,
@@ -91,20 +96,20 @@ class UserMovieService {
     });
   }
 
-  static async markAsWantToWatch(userId, movieId) {
+  async markAsWantToWatch(userId, movieId) {
     return await this.updateUserMovie(userId, movieId, {
       wantToWatchStatus: 'Y'
     });
   }
 
-  static async removeFromWantToWatch(userId, movieId) {
+  async removeFromWantToWatch(userId, movieId) {
     return await this.updateUserMovie(userId, movieId, {
       wantToWatchStatus: 'N'
     });
   }
 
-  static async toggleLike(userId, movieId) {
-    const userMovie = await UserMovieDAL.findOne(userId, movieId);
+  async toggleLike(userId, movieId) {
+    const userMovie = await this.userMovieDAL.findOne(userId, movieId);
     const newLikeStatus = userMovie && userMovie.likeStatus === 'Y' ? 'N' : 'Y';
     
     return await this.updateUserMovie(userId, movieId, {
@@ -112,16 +117,20 @@ class UserMovieService {
     });
   }
 
-  static async updateRating(userId, movieId, rating) {
-    return await this.updateUserMovie(userId, movieId, {
-      rating
-    });
-  }
+  /**
+   * 格式化用户电影数据，将_id转换为userMovieId
+   * @private
+   */
+  _formatUserMovie(userMovie) {
+    if (!userMovie) return null;
 
-  static async updateReview(userId, movieId, review) {
-    return await this.updateUserMovie(userId, movieId, {
-      review
-    });
+    const userMovieObj = userMovie.toObject ? userMovie.toObject() : userMovie;
+    const { _id, ...rest } = userMovieObj;
+
+    return {
+      userMovieId: _id.toString(),
+      ...rest
+    };
   }
 }
 

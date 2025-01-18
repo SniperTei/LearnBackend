@@ -2,44 +2,50 @@ const TravelDiaryDAL = require('../dal/travelDiary.dal');
 const createError = require('http-errors');
 
 class TravelDiaryService {
-  static async createDiary(diaryData, userId) {
+  constructor() {
+    this.travelDiaryDAL = new TravelDiaryDAL();
+  }
+
+  async createDiary(diaryData, userId) {
     const data = {
       ...diaryData,
       userId,
       createdBy: userId,
       updatedBy: userId
     };
-    return await TravelDiaryDAL.create(data);
+    const diary = await this.travelDiaryDAL.create(data);
+    return this._formatDiary(diary);
   }
 
-  static async listDiaries(filters, options, userId) {
+  async listDiaries(filters, options, userId) {
     const query = { userId, ...filters };
     const { page = 1, limit = 10 } = options;
     const skip = (page - 1) * limit;
 
-    const { diaries, total } = await TravelDiaryDAL.findAll(query, {
+    const { diaries, total } = await this.travelDiaryDAL.findAll(query, {
       skip,
       limit,
       sort: { createdAt: -1 }
     });
 
     return {
-      diaries,
+      diaries: diaries.map(diary => this._formatDiary(diary)),
+      total,
       totalPages: Math.ceil(total / limit),
       currentPage: page
     };
   }
 
-  static async getDiary(id) {
-    const diary = await TravelDiaryDAL.findById(id);
+  async getDiary(id) {
+    const diary = await this.travelDiaryDAL.findById(id);
     if (!diary) {
       throw createError(404, '未找到游记');
     }
-    return diary;
+    return this._formatDiary(diary);
   }
 
-  static async updateDiary(id, updateData, userId) {
-    const diary = await TravelDiaryDAL.findById(id);
+  async updateDiary(id, updateData, userId) {
+    const diary = await this.travelDiaryDAL.findById(id);
     if (!diary) {
       throw createError(404, '未找到游记');
     }
@@ -53,11 +59,12 @@ class TravelDiaryService {
       updatedBy: userId
     };
 
-    return await TravelDiaryDAL.update(id, data);
+    const updatedDiary = await this.travelDiaryDAL.update(id, data);
+    return this._formatDiary(updatedDiary);
   }
 
-  static async deleteDiary(id, userId) {
-    const diary = await TravelDiaryDAL.findById(id);
+  async deleteDiary(id, userId) {
+    const diary = await this.travelDiaryDAL.findById(id);
     if (!diary) {
       throw createError(404, '未找到游记');
     }
@@ -66,7 +73,24 @@ class TravelDiaryService {
       throw createError(403, '没有权限删除此游记');
     }
 
-    await TravelDiaryDAL.delete(id);
+    await this.travelDiaryDAL.delete(id);
+    return this._formatDiary(diary);
+  }
+
+  /**
+   * 格式化游记数据，将_id转换为diaryId
+   * @private
+   */
+  _formatDiary(diary) {
+    if (!diary) return null;
+
+    const diaryObj = diary.toObject ? diary.toObject() : diary;
+    const { _id, ...rest } = diaryObj;
+
+    return {
+      diaryId: _id.toString(),
+      ...rest
+    };
   }
 }
 

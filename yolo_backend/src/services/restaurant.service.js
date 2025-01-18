@@ -2,16 +2,21 @@ const RestaurantDAL = require('../dal/restaurant.dal');
 const { PriceLevelEnum } = require('../models/restaurant.model');
 
 class RestaurantService {
+  constructor() {
+    this.restaurantDAL = new RestaurantDAL();
+  }
+
   /**
    * 创建餐厅
    * @param {Object} restaurantData 餐厅数据
    * @param {string} username 创建者用户名
    * @returns {Promise<Object>} 创建的餐厅
    */
-  static async createRestaurant(restaurantData, username) {
+  async createRestaurant(restaurantData, username) {
     restaurantData.createdBy = username;
     restaurantData.updatedBy = username;
-    return await RestaurantDAL.create(restaurantData);
+    const restaurant = await this.restaurantDAL.create(restaurantData);
+    return this._formatRestaurant(restaurant);
   }
 
   /**
@@ -19,7 +24,7 @@ class RestaurantService {
    * @param {Object} params 查询参数
    * @returns {Promise<Object>} 餐厅列表和分页信息
    */
-  static async getAllRestaurants(params) {
+  async getAllRestaurants(params) {
     const {
       page = 1,
       limit = 10,
@@ -56,7 +61,15 @@ class RestaurantService {
       sort
     };
 
-    return await RestaurantDAL.find(filter, options);
+    const { restaurants, total } = await this.restaurantDAL.find(filter, options);
+    const totalPages = Math.ceil(total / limit);
+
+    return {
+      restaurants: restaurants.map(restaurant => this._formatRestaurant(restaurant)),
+      total,
+      totalPages,
+      currentPage: page
+    };
   }
 
   /**
@@ -64,8 +77,9 @@ class RestaurantService {
    * @param {string} id 餐厅ID
    * @returns {Promise<Object>} 餐厅信息
    */
-  static async getRestaurantById(id) {
-    return await RestaurantDAL.findById(id);
+  async getRestaurantById(id) {
+    const restaurant = await this.restaurantDAL.findById(id);
+    return this._formatRestaurant(restaurant);
   }
 
   /**
@@ -75,9 +89,10 @@ class RestaurantService {
    * @param {string} username 更新者用户名
    * @returns {Promise<Object>} 更新后的餐厅
    */
-  static async updateRestaurant(id, updateData, username) {
+  async updateRestaurant(id, updateData, username) {
     updateData.updatedBy = username;
-    return await RestaurantDAL.update(id, updateData);
+    const restaurant = await this.restaurantDAL.update(id, updateData);
+    return this._formatRestaurant(restaurant);
   }
 
   /**
@@ -85,8 +100,25 @@ class RestaurantService {
    * @param {string} id 餐厅ID
    * @returns {Promise<Object>} 删除的餐厅
    */
-  static async deleteRestaurant(id) {
-    return await RestaurantDAL.delete(id);
+  async deleteRestaurant(id) {
+    const restaurant = await this.restaurantDAL.delete(id);
+    return this._formatRestaurant(restaurant);
+  }
+
+  /**
+   * 格式化餐厅数据，将_id转换为restaurantId
+   * @private
+   */
+  _formatRestaurant(restaurant) {
+    if (!restaurant) return null;
+
+    const restaurantObj = restaurant.toObject ? restaurant.toObject() : restaurant;
+    const { _id, ...rest } = restaurantObj;
+
+    return {
+      restaurantId: _id.toString(),
+      ...rest
+    };
   }
 }
 

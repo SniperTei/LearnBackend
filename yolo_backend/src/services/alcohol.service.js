@@ -1,57 +1,48 @@
-const alcoholDAO = require('../dal/alcohol.dal');
+const AlcoholDAO = require('../dal/alcohol.dal');
 const Drink = require('../models/drink.model');
 
 class AlcoholService {
+  constructor() {
+    this.alcoholDAO = new AlcoholDAO();
+  }
+
   /**
    * 创建酒类
    * @param {Object} alcoholData - 酒类数据
-   * @returns {Promise<Object>} 创建的酒类
+   * @returns {Promise<Object>} 创建的酒类记录
    */
   async createAlcohol(alcoholData) {
-    return await alcoholDAO.createAlcohol(alcoholData);
+    return await this.alcoholDAO.createAlcohol(alcoholData);
   }
 
   /**
    * 获取酒类列表
    * @param {Object} filter - 过滤条件
    * @param {Object} options - 分页和排序选项
-   * @returns {Promise<Object>} 包含分页信息的酒类列表
+   * @returns {Promise<Array>} 酒类列表
    */
-  async getAllAlcohols(filter, options) {
-    const alcohols = await alcoholDAO.getAllAlcohols(filter, options);
-    const total = await alcoholDAO.countAlcohols(filter);
-    const totalPages = Math.ceil(total / options.limit);
-
-    return {
-      alcohols,
-      pagination: {
-        total,
-        totalPages,
-        currentPage: options.page,
-        limit: options.limit,
-        hasNextPage: options.page < totalPages,
-        hasPrevPage: options.page > 1
-      }
-    };
+  async getAllAlcohols(filter = {}, options = {}) {
+    const result = await this.alcoholDAO.getAllAlcohols(filter, options);
+    return result;
   }
 
   /**
    * 获取单个酒类
    * @param {string} id - 酒类ID
-   * @returns {Promise<Object>} 酒类
+   * @returns {Promise<Object>} 酒类记录
    */
   async getAlcoholById(id) {
-    return await alcoholDAO.getAlcoholById(id);
+    return await this.alcoholDAO.getAlcoholById(id);
   }
 
   /**
    * 更新酒类
    * @param {string} id - 酒类ID
    * @param {Object} alcoholData - 更新的数据
-   * @returns {Promise<Object>} 更新后的酒类
+   * @returns {Promise<Object>} 更新后的酒类记录
    */
   async updateAlcohol(id, alcoholData) {
-    return await alcoholDAO.updateAlcohol(id, alcoholData);
+    return await this.alcoholDAO.updateAlcohol(id, alcoholData);
   }
 
   /**
@@ -67,11 +58,11 @@ class AlcoholService {
   /**
    * 删除酒类
    * @param {string} id - 酒类ID
-   * @returns {Promise<Object>} 删除的酒类
+   * @returns {Promise<Object>} 删除的酒类记录
    */
   async deleteAlcohol(id) {
-    return await alcoholDAO.deleteAlcohol(id);
+    return await this.alcoholDAO.deleteAlcohol(id);
   }
 }
 
-module.exports = new AlcoholService();
+module.exports = AlcoholService;

@@ -1,13 +1,17 @@
 const Fitness = require('../models/fitness.model');
 
 class FitnessDAL {
+  constructor() {
+    this.Fitness = Fitness;
+  }
+
   /**
    * 创建运动记录
    * @param {Object} fitnessData - 运动记录数据
    * @returns {Promise<Object>} 创建的运动记录
    */
   async createFitness(fitnessData) {
-    const fitness = new Fitness(fitnessData);
+    const fitness = new this.Fitness(fitnessData);
     return await fitness.save();
   }
 
@@ -70,4 +74,4 @@ class FitnessDAL {
   }
 }
 
-module.exports = new FitnessDAL();
+module.exports = FitnessDAL;
