@@ -2,7 +2,7 @@ const MovieDAL = require('../dal/movie.dal');
 const UserMovieDAL = require('../dal/userMovie.dal');
 
 class MovieService {
-  static async createMovie(movieData, userId) {
+  async createMovie(movieData, userId) {
     // 检查movieUni是否已存在
     if (movieData.movieUni) {
       const existingMovie = await MovieDAL.findByMovieUni(movieData.movieUni);
@@ -20,7 +20,7 @@ class MovieService {
     return this._formatMovie(movie);
   }
 
-  static async listMovies(query, options) {
+  async listMovies(query, options) {
     const { keyword, genres, actors, director, ...otherQuery } = query;
     let result;
 
@@ -49,7 +49,7 @@ class MovieService {
     };
   }
 
-  static async getMovie(id) {
+  async getMovie(id) {
     const movie = await MovieDAL.findById(id);
     if (!movie) {
       throw new Error('未找到电影');
@@ -64,7 +64,7 @@ class MovieService {
     };
   }
 
-  static async updateMovie(id, updateData, userId) {
+  async updateMovie(id, updateData, userId) {
     const movie = await MovieDAL.findById(id);
     if (!movie) {
       throw new Error('未找到电影');
@@ -86,7 +86,7 @@ class MovieService {
     return this._formatMovie(updatedMovie);
   }
 
-  static async deleteMovie(id) {
+  async deleteMovie(id) {
     const movie = await MovieDAL.findById(id);
     if (!movie) {
       throw new Error('未找到电影');
@@ -97,7 +97,7 @@ class MovieService {
   }
 
   // 格式化电影数据，将_id转换为movieId
-  static _formatMovie(movie) {
+  _formatMovie(movie) {
     if (!movie) return null;
 
     const movieObj = movie.toObject ? movie.toObject() : movie;
