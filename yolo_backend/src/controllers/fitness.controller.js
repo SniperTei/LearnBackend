@@ -154,4 +154,4 @@ class FitnessController {
   }
 }
 
-module.exports = new FitnessController();
+module.exports = FitnessController;

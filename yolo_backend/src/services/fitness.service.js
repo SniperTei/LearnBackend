@@ -1,8 +1,8 @@
-const fitnessDAL = require('../dal/fitness.dal');
+const FitnessDAL = require('../dal/fitness.dal');
 
 class FitnessService {
   constructor() {
-    this.fitnessDAL = new fitnessDAL();
+    this.fitnessDAL = new FitnessDAL();
   }
 
   /**
@@ -11,7 +11,8 @@ class FitnessService {
    * @returns {Promise<Object>} 创建的运动记录
    */
   async createFitness(fitnessData) {
-    return await fitnessDAL.createFitness(fitnessData);
+    const fitness = await this.fitnessDAL.createFitness(fitnessData);
+    return this._formatFitness(fitness);
   }
 
   /**
@@ -21,20 +22,12 @@ class FitnessService {
    * @returns {Promise<Object>} 包含分页信息的运动记录列表
    */
   async getAllFitness(filter, options) {
-    const records = await fitnessDAL.getAllFitness(filter, options);
-    const total = await fitnessDAL.countFitness(filter);
-    const totalPages = Math.ceil(total / options.limit);
+    const result = await this.fitnessDAL.getAllFitness(filter, options);
+    const records = result.map(fitness => this._formatFitness(fitness));
 
     return {
       records,
-      pagination: {
-        total,
-        totalPages,
-        currentPage: options.page,
-        limit: options.limit,
-        hasNextPage: options.page < totalPages,
-        hasPrevPage: options.page > 1
-      }
+      pagination: result.pagination
     };
   }
 
@@ -44,7 +37,8 @@ class FitnessService {
    * @returns {Promise<Object>} 运动记录
    */
   async getFitnessById(id) {
-    return await fitnessDAL.getFitnessById(id);
+    const fitness = await this.fitnessDAL.getFitnessById(id);
+    return this._formatFitness(fitness);
   }
 
   /**
@@ -54,7 +48,8 @@ class FitnessService {
    * @returns {Promise<Object>} 更新后的运动记录
    */
   async updateFitness(id, updateData) {
-    return await fitnessDAL.updateFitness(id, updateData);
+    const fitness = await this.fitnessDAL.updateFitness(id, updateData);
+    return this._formatFitness(fitness);
   }
 
   /**
@@ -63,7 +58,24 @@ class FitnessService {
    * @returns {Promise<Object>} 删除的运动记录
    */
   async deleteFitness(id) {
-    return await fitnessDAL.deleteFitness(id);
+    const fitness = await this.fitnessDAL.deleteFitness(id);
+    return this._formatFitness(fitness);
+  }
+
+  /**
+   * 格式化健身数据，将_id转换为fitnessId
+   * @private
+   */
+  _formatFitness(fitness) {
+    if (!fitness) return null;
+
+    const fitnessObj = fitness.toObject ? fitness.toObject() : fitness;
+    const { _id, ...rest } = fitnessObj;
+
+    return {
+      fitnessId: _id.toString(),
+      ...rest
+    };
   }
 }
 

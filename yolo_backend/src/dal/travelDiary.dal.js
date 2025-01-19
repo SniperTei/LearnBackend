@@ -1,12 +1,12 @@
 const TravelDiary = require('../models/travelDiary.model');
 
 class TravelDiaryDAL {
-  static async create(diaryData) {
+  async create(diaryData) {
     const diary = new TravelDiary(diaryData);
     return await diary.save();
   }
 
-  static async findAll(query, options) {
+  async findAll(query, options) {
     const { skip = 0, limit = 10, sort = { createdAt: -1 } } = options;
     const diaries = await TravelDiary.find(query)
       .sort(sort)
@@ -20,14 +20,14 @@ class TravelDiaryDAL {
     return { diaries, total };
   }
 
-  static async findById(id) {
+  async findById(id) {
     return await TravelDiary.findById(id)
       .populate('createdBy', 'username')
       .populate('updatedBy', 'username')
       .populate('travelPlanId', 'title');
   }
 
-  static async update(id, updateData) {
+  async update(id, updateData) {
     return await TravelDiary.findByIdAndUpdate(
       id,
       updateData,
@@ -37,7 +37,7 @@ class TravelDiaryDAL {
      .populate('travelPlanId', 'title');
   }
 
-  static async delete(id) {
+  async delete(id) {
     return await TravelDiary.findByIdAndDelete(id);
   }
 }

@@ -95,4 +95,4 @@ class TravelPlanController {
   }
 }
 
-module.exports = new TravelPlanController();
+module.exports = TravelPlanController;

@@ -79,4 +79,4 @@ class TravelDiaryController {
   }
 }
 
-module.exports = new TravelDiaryController();
+module.exports = TravelDiaryController;

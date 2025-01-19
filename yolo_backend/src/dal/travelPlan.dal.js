@@ -6,7 +6,7 @@ class TravelPlanDAL {
    * @param {Object} travelPlanData - 旅行计划数据
    * @returns {Promise<Object>} 创建的旅行计划
    */
-  static async create(travelPlanData) {
+  async create(travelPlanData) {
     const travelPlan = new TravelPlan(travelPlanData);
     return await travelPlan.save();
   }
@@ -17,7 +17,7 @@ class TravelPlanDAL {
    * @param {Object} options - 分页等选项
    * @returns {Promise<{travelPlans: Array, total: Number}>} 旅行计划列表和总数
    */
-  static async findAll(query, options) {
+  async findAll(query, options) {
     const { skip, limit, sort = { createdAt: -1 } } = options;
     
     const [travelPlans, total] = await Promise.all([
@@ -38,7 +38,7 @@ class TravelPlanDAL {
    * @param {string} id - 旅行计划ID
    * @returns {Promise<Object>} 旅行计划
    */
-  static async findById(id) {
+  async findById(id) {
     return await TravelPlan.findById(id)
       .populate('createdBy', 'username')
       .populate('updatedBy', 'username');
@@ -50,7 +50,7 @@ class TravelPlanDAL {
    * @param {Object} updateData - 更新数据
    * @returns {Promise<Object>} 更新后的旅行计划
    */
-  static async update(id, updateData) {
+  async update(id, updateData) {
     return await TravelPlan.findByIdAndUpdate(
       id,
       updateData,
@@ -64,7 +64,7 @@ class TravelPlanDAL {
    * @param {string} id - 旅行计划ID
    * @returns {Promise<Object>} 删除结果
    */
-  static async delete(id) {
+  async delete(id) {
     return await TravelPlan.findByIdAndDelete(id);
   }
 }
