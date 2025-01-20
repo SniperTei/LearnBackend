@@ -2,6 +2,7 @@ const UserDAL = require('../dal/user.dal');
 const { generateToken } = require('../utils/jwt');
 const Permission = require('../models/permission.model');
 const Menu = require('../models/menu.model');
+const mongoose = require('mongoose');
 
 class UserService {
   constructor() {
@@ -59,32 +60,37 @@ class UserService {
     if (user.password !== password) {
       throw new Error('Invalid login credentials');
     }
-
-    // Get user permissions
-    let permissions = await Permission.findOne({ userId: user._id });
+    // 打印
+    console.log('user:', user);
+    console.log('user._id:', user._id);
+    
+    // Get user permissions using proper ObjectId
+    const userId = user._id.toString();
+    console.log('Looking for permissions with userId:', userId);
+    
+    // Try to find permission with exact string match on userId
+    let permissions = await Permission.findOne({
+      $or: [
+        { userId: new mongoose.Types.ObjectId(userId) },
+        { userId: userId }
+      ]
+    });
+    console.log('Permissions query result:', permissions);
     
     if (!permissions) {
-      // Try finding by username as fallback
-      permissions = await Permission.findOne({ username: user.username });
+      // Create new permissions if none exist
+      console.log('No permissions found, creating new one...');
+      const allMenus = await Menu.find({}, 'code');
+      const allMenuCodes = allMenus.map(menu => menu.code);
       
-      if (permissions) {
-        // Update the existing permission with userId
-        permissions.userId = user._id;
-        await permissions.save();
-      } else {
-        // Create new permissions if none exist
-        const allMenus = await Menu.find({}, 'code');
-        const allMenuCodes = allMenus.map(menu => menu.code);
-        
-        permissions = await Permission.create({
-          userId: user._id,
-          username: user.username,
-          menuCodes: allMenuCodes,
-          isAdmin: false,
-          createdBy: 'SYSTEM',
-          updatedBy: 'SYSTEM'
-        });
-      }
+      permissions = await Permission.create({
+        userId: new mongoose.Types.ObjectId(userId),
+        username: user.username,
+        menuCodes: allMenuCodes,
+        isAdmin: false,
+        createdBy: 'SYSTEM',
+        updatedBy: 'SYSTEM'
+      });
     }
 
     // Update last login time
