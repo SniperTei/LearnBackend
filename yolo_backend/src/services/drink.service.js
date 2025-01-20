@@ -13,7 +13,9 @@ class DrinkService {
    */
   async createDrink(drinkData) {
     const drink = await this.drinkDAO.createDrink(drinkData);
-    return this._formatDrink(drink);
+    // return this._formatDrink(drink);
+    // 没必要返回刚创建的饮品记录，所以返回空对象
+    return null;
   }
 
   /**
@@ -53,7 +55,7 @@ class DrinkService {
    * @returns {Promise<Object>} 饮品记录
    */
   async getDrinkById(id) {
-    return await drinkDAO.getDrinkById(id);
+    return await this.drinkDAO.getDrinkById(id);
   }
 
   /**
@@ -63,7 +65,7 @@ class DrinkService {
    * @returns {Promise<Object>} 更新后的饮品记录
    */
   async updateDrink(id, drinkData) {
-    return await drinkDAO.updateDrink(id, drinkData);
+    return await this.drinkDAO.updateDrink(id, drinkData);
   }
 
   /**
@@ -72,7 +74,7 @@ class DrinkService {
    * @returns {Promise<Object>} 删除的饮品记录
    */
   async deleteDrink(id) {
-    return await drinkDAO.deleteDrink(id);
+    return await this.drinkDAO.deleteDrink(id);
   }
 
   /**

@@ -42,7 +42,8 @@ class DrinkController {
       console.log('drinkData:', drinkData);
       
       const drink = await this.drinkService.createDrink(drinkData);
-      await drink.populate('alcoholId');
+      // 没必要返回刚创建的drink记录
+      // await drink.populate('alcoholId');
       
       res.status(201).json(ApiResponse.success(drink, 'Drink record created successfully'));
     } catch (error) {
@@ -177,6 +178,10 @@ class DrinkController {
    * DELETE /api/v1/drinks/:id
    */
   async deleteDrink(req, res) {
+    console.log('req.query:', req.query);
+    console.log('req.params:', req.params);
+    console.log('req.body:', req.body);
+    
     try {
       const drink = await this.drinkService.getDrinkById(req.params.id);
       if (!drink) {
