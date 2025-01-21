@@ -45,6 +45,17 @@ class TravelPlanDAL {
   }
 
   /**
+   * 根据条件查询单个旅行计划
+   * @param {Object} query - 查询条件
+   * @returns {Promise<Object>} 旅行计划
+   */
+  async findOne(query) {
+    return await TravelPlan.findOne(query)
+      .populate('createdBy', 'username')
+      .populate('updatedBy', 'username');
+  }
+
+  /**
    * 更新旅行计划
    * @param {string} id - 旅行计划ID
    * @param {Object} updateData - 更新数据

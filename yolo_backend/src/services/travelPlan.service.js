@@ -1,5 +1,6 @@
 const TravelPlanDAL = require('../dal/travelPlan.dal');
 const createError = require('http-errors');
+const mongoose = require('mongoose'); // Add mongoose import
 
 class TravelPlanService {
   constructor() {
@@ -52,14 +53,26 @@ class TravelPlanService {
   /**
    * 查询单个旅行计划
    * @param {string} id - 旅行计划ID
+   * @param {string} userId - 用户ID
    * @returns {Promise<Object>} 旅行计划
    * @throws {Error} 未找到旅行计划时抛出错误
    */
-  async getTravelPlan(id) {
-    const travelPlan = await this.travelPlanDAL.findById(id);
+  async getTravelPlan(id, userId) {
+    // Validate ObjectId
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      throw createError(400, '无效的旅行计划ID');
+    }
+
+    // Find travel plan by id and userId
+    const travelPlan = await this.travelPlanDAL.findOne({
+      _id: new mongoose.Types.ObjectId(id),
+      userId: new mongoose.Types.ObjectId(userId)
+    });
+
     if (!travelPlan) {
       throw createError(404, '未找到旅行计划');
     }
+
     return this._formatTravelPlan(travelPlan);
   }
 

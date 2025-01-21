@@ -31,12 +31,18 @@ class TravelPlanController {
 
   async queryTravelPlan(req, res, next) {
     try {
-      const travelPlan = await this.travelPlanService.getTravelPlan(req.params.id);
+      const travelPlan = await this.travelPlanService.getTravelPlan(
+        req.params.id,
+        req.user.userId
+      );
       if (!travelPlan) {
         return res.status(404).json(ApiResponse.notFound('未找到旅行计划'));
       }
       res.json(ApiResponse.success(travelPlan));
     } catch (error) {
+      if (error.status === 404) {
+        return res.status(404).json(ApiResponse.notFound(error.message));
+      }
       next(error);
     }
   }
