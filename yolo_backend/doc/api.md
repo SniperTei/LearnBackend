@@ -1245,7 +1245,7 @@ Authorization: Bearer <token>
   "exerciseDate": "2025-01-06T14:00:00.000Z",
   "duration": 30,
   "caloriesBurned": 300,
-  "intensity": "moderate",
+  "intensity": "moderate",  // 可选值: "light", "moderate", "vigorous"，默认为 "moderate"
   "location": "公园"
 }
 ```
@@ -1273,6 +1273,17 @@ Authorization: Bearer <token>
 }
 ```
 
+**错误响应示例**
+```json
+{
+  "code": "A00400",
+  "statusCode": 400,
+  "msg": "数据验证失败: intensity 必须是以下值之一: light, moderate, vigorous",
+  "data": null,
+  "timestamp": "2025-01-06T14:29:13.000Z"
+}
+```
+
 ### 2. 获取运动记录列表
 
 **请求**
@@ -1281,8 +1292,8 @@ Authorization: Bearer <token>
 - Headers:
   - `Authorization`: Bearer token
 - Query Parameters:
-  - `page`: 页码（默认：1）
-  - `limit`: 每页数量（默认：10）
+  - `page`: 页码（默认1）
+  - `limit`: 每页数量（默认10）
   - `startDate`: 开始日期（可选）
   - `endDate`: 结束日期（可选）
   - `exerciseType`: 运动类型（可选）
@@ -1294,8 +1305,7 @@ Authorization: Bearer <token>
 ```json
 {
   "code": "000000",
-  "statusCode": 200,
-  "msg": "Success",
+  "msg": "获取运动记录列表成功",
   "data": {
     "records": [
       {
@@ -1341,8 +1351,7 @@ Authorization: Bearer <token>
 ```json
 {
   "code": "000000",
-  "statusCode": 200,
-  "msg": "Success",
+  "msg": "获取运动记录成功",
   "data": {
     "_id": "5f7b5d6b3f6a8c2a1c9e4b7e",
     "exerciseType": "跑步",
@@ -1384,7 +1393,6 @@ Authorization: Bearer <token>
 ```json
 {
   "code": "000000",
-  "statusCode": 200,
   "msg": "运动记录更新成功",
   "data": {
     "_id": "5f7b5d6b3f6a8c2a1c9e4b7e",
@@ -1419,7 +1427,6 @@ Authorization: Bearer <token>
 ```json
 {
   "code": "000000",
-  "statusCode": 200,
   "msg": "运动记录删除成功",
   "data": null,
   "timestamp": "2025-01-06T14:36:13.000Z"
@@ -2166,8 +2173,14 @@ Authorization: Bearer <token>
           "updatedAt": "2025-01-10T05:48:33.867Z"
         }
       ],
-      "totalPages": 1,
-      "currentPage": 1
+      "pagination": {
+        "total": 1,
+        "totalPages": 1,
+        "currentPage": 1,
+        "limit": 10,
+        "hasNextPage": false,
+        "hasPrevPage": false
+      }
     }
   }
   ```
@@ -2653,3 +2666,160 @@ Authorization: Bearer <token>
 8. 更新日程操作会覆盖原有的日程
 9. 删除日程操作会删除整个日程
 10. 所有接口都支持分页和过滤
+
+## 用户列表 API
+
+### 获取用户列表
+
+**请求**
+- 方法: `GET`
+- URL: `/api/v1/users/list`
+- Headers: 
+  - Authorization: Bearer {token}
+- Query Parameters:
+  - `page`: 页码（可选，默认1）
+  - `limit`: 每页数量（可选，默认10）
+  - `username`: 用户名搜索（可选）
+  - `email`: 邮箱搜索（可选）
+  - `isAdmin`: 是否管理员（可选，true/false）
+
+**响应示例**
+```json
+{
+  "code": "000000",
+  "statusCode": 200,
+  "msg": "Success",
+  "data": {
+    "users": [
+      {
+        "userId": "5f7b5d7e9b8c2d1a3e4f5g6h",
+        "username": "testuser",
+        "email": "test@example.com",
+        "gender": "male",
+        "mobile": "13800000001",
+        "birthDate": "1990-01-01",
+        "isAdmin": false,
+        "lastLoginAt": "2025-01-02T06:11:30.123Z",
+        "createdAt": "2025-01-02T06:11:30.123Z",
+        "updatedAt": "2025-01-02T06:11:30.123Z"
+      }
+    ],
+    "pagination": {
+      "total": 1,
+      "totalPages": 1,
+      "currentPage": 1,
+      "limit": 10,
+      "hasNextPage": false,
+      "hasPrevPage": false
+    }
+  },
+  "timestamp": "2025-01-02 14:11:30.123"
+}
+```
+
+### 获取单个用户
+
+**请求**
+- 方法: `GET`
+- URL: `/api/v1/users/query/:id`
+- Headers: 
+  - Authorization: Bearer {token}
+
+**响应示例**
+```json
+{
+  "code": "000000",
+  "statusCode": 200,
+  "msg": "Success",
+  "data": {
+    "userId": "5f7b5d7e9b8c2d1a3e4f5g6h",
+    "username": "testuser",
+    "email": "test@example.com",
+    "gender": "male",
+    "mobile": "13800000001",
+    "birthDate": "1990-01-01",
+    "isAdmin": false,
+    "lastLoginAt": "2025-01-02T06:11:30.123Z",
+    "createdAt": "2025-01-02T06:11:30.123Z",
+    "updatedAt": "2025-01-02T06:11:30.123Z"
+  },
+  "timestamp": "2025-01-02 14:11:30.123"
+}
+```
+
+### 获取用户菜单权限
+
+**请求**
+- 方法: `GET`
+- URL: `/api/v1/users/:userId/menus`
+- Headers: 
+  - Authorization: Bearer {token}
+
+**响应示例**
+```json
+{
+  "code": "000000",
+  "statusCode": 200,
+  "msg": "Success",
+  "data": {
+    "user": {
+      "userId": "5f7b5d7e9b8c2d1a3e4f5g6h",
+      "username": "testuser",
+      "email": "test@example.com",
+      "isAdmin": false
+    },
+    "menuCodes": [
+      "dashboard",
+      "profile",
+      "fitness",
+      "drink"
+    ],
+    "isAdmin": false
+  },
+  "timestamp": "2025-01-02 14:11:30.123"
+}
+```
+
+### 更新用户菜单权限
+
+**请求**
+- 方法: `PUT`
+- URL: `/api/v1/users/:userId/menus`
+- Headers: 
+  - Authorization: Bearer {token}
+- Content-Type: `application/json`
+
+**请求体**
+```json
+{
+  "menuCodes": ["dashboard", "profile", "fitness", "drink"],
+  "isAdmin": false
+}
+```
+
+**响应示例**
+```json
+{
+  "code": "000000",
+  "statusCode": 200,
+  "msg": "Success",
+  "data": {
+    "userId": "5f7b5d7e9b8c2d1a3e4f5g6h",
+    "username": "testuser",
+    "isAdmin": false,
+    "menuCodes": ["dashboard", "profile", "fitness", "drink"]
+  },
+  "timestamp": "2025-01-02 14:11:30.123"
+}
+```
+
+### 错误响应示例
+```json
+{
+  "code": "A00404",
+  "statusCode": 404,
+  "msg": "用户不存在",
+  "data": null,
+  "timestamp": "2025-01-02 14:11:30.123"
+}
+```

@@ -130,7 +130,7 @@ class UserController {
   /**
    * 更新用户资料
    */
-  static async updateProfile(req, res) {
+  async updateProfile(req, res) {
     try {
       const user = await this.userService.getUserById(req.user.userId);
       if (!user) {
@@ -162,7 +162,7 @@ class UserController {
   /**
    * 硬删除用户
    */
-  static async hardDeleteUser(req, res) {
+  async hardDeleteUser(req, res) {
     try {
       const user = await this.userService.deleteUser(req.user.userId, true);
       if (!user) {
@@ -172,6 +172,54 @@ class UserController {
       return res.json(ApiResponse.success(null, 'User permanently deleted'));
     } catch (error) {
       return res.status(500).json(ApiResponse.error(error.message));
+    }
+  }
+
+  /**
+   * 获取用户列表（管理员接口）
+   */
+  async listUsers(req, res, next) {
+    try {
+      const { page = 1, limit = 10, username, email, isAdmin } = req.query;
+      const filters = {};
+
+      // 构建过滤条件
+      if (username) filters.username = new RegExp(username, 'i');
+      if (email) filters.email = new RegExp(email, 'i');
+      if (isAdmin !== undefined) filters.isAdmin = isAdmin === 'true';
+
+      const result = await this.userService.listUsers(filters, { page, limit });
+      res.json(ApiResponse.success(result));
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  /**
+   * 更新用户菜单权限（管理员接口）
+   */
+  async updateUserMenus(req, res, next) {
+    try {
+      const { userId } = req.params;
+      const { menuCodes, isAdmin } = req.body;
+
+      const result = await this.userService.updateUserMenus(userId, { menuCodes, isAdmin });
+      res.json(ApiResponse.success(result));
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  /**
+   * 获取用户菜单权限（管理员接口）
+   */
+  async getUserMenus(req, res, next) {
+    try {
+      const { userId } = req.params;
+      const result = await this.userService.getUserMenus(userId);
+      res.json(ApiResponse.success(result));
+    } catch (error) {
+      next(error);
     }
   }
 }
