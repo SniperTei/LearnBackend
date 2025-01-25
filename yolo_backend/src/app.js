@@ -66,13 +66,14 @@ app.get('/', (req, res) => {
 
 // API 路由
 app.use('/api/v1/users', userRoutes);
-app.use('/api/v1/drinks', drinkRoutes);
+app.use('/api/v1/fitness', fitnessRoutes);
+app.use('/api/v1/drink', drinkRoutes);
+app.use('/api/v1/menus', require('./routes/menu.routes'));
 app.use('/api/v1/alcohols', alcoholRoutes);
 app.use('/api/v1/common', commonRoutes);
 app.use('/api/v1/foodmenus', foodMenuRoutes);
 app.use('/api/v1/restaurants', restaurantRoutes);
 app.use('/api/v1/dictionaries', dictionaryRoutes);
-app.use('/api/v1/fitness', fitnessRoutes);
 app.use('/api/v1/travel-plans', travelPlanRoutes);
 app.use('/api/v1/travel-diaries', travelDiaryRoutes);
 app.use('/api/v1/movies', movieRoute);

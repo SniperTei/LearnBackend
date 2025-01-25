@@ -3,40 +3,44 @@ const mongoose = require('mongoose');
 const menuSchema = new mongoose.Schema({
   title: {
     type: String,
-    required: [true, 'Menu title is required'],
+    required: [true, '菜单标题不能为空'],
     trim: true
   },
   code: {
     type: String,
-    required: [true, 'Menu code is required'],
+    required: [true, '菜单编码不能为空'],
     unique: true,
     trim: true
   },
   path: {
     type: String,
-    required: [true, 'Menu path is required'],
+    required: [true, '菜单路径不能为空'],
     trim: true
   },
   icon: {
     type: String,
-    trim: true,
-    default: ''
+    trim: true
+  },
+  parentCode: {
+    type: String,
+    default: null,
+    trim: true
+  },
+  sort: {
+    type: Number,
+    default: 0
+  },
+  createdBy: {
+    type: String,
+    required: true
+  },
+  updatedBy: {
+    type: String,
+    required: true
   },
   isFolder: {
     type: Boolean,
     default: false
-  },
-  sort: {
-    type: Number,
-    default: 1
-  },
-  createdBy: {
-    type: String,
-    default: 'SYSTEM'
-  },
-  updatedBy: {
-    type: String,
-    default: 'SYSTEM'
   },
   isDeleted: {
     type: Boolean,
@@ -44,10 +48,10 @@ const menuSchema = new mongoose.Schema({
     select: false
   }
 }, {
-  timestamps: true,  // 自动添加 createdAt 和 updatedAt
+  timestamps: true,  
   toJSON: {
     transform: function(doc, ret) {
-      delete ret.__v;      // 不返回版本号
+      delete ret.__v;      
       if (!ret.isDeleted) {
         delete ret.isDeleted;
       }
@@ -69,6 +73,11 @@ menuSchema.methods.softDelete = async function() {
   this.isDeleted = true;
   return await this.save();
 };
+
+// 添加索引
+menuSchema.index({ code: 1 }, { unique: true });
+menuSchema.index({ parentCode: 1 });
+menuSchema.index({ sort: 1 });
 
 const Menu = mongoose.model('Menu', menuSchema);
 
