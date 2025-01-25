@@ -30,18 +30,18 @@
 
 **请求**
 - 方法: `POST`
-- 路径: `/api/v1/users/register`
+- URL: `/api/v1/users/register`
 - Content-Type: `application/json`
 
 **请求体**
 ```json
 {
   "username": "testuser",
-  "password": "123456",
+  "password": "Password123!",
   "email": "test@example.com",
-  "gender": "male",
-  "mobile": "13800000001",
-  "birthDate": "1990-01-01"
+  "gender": "male",         // 可选
+  "mobile": "13800000001",  // 可选
+  "birthDate": "1990-01-01" // 可选
 }
 ```
 
@@ -52,8 +52,17 @@
   "statusCode": 200,
   "msg": "User registered successfully",
   "data": {
-    "username": "testuser",
-    "email": "test@example.com"
+    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+    "user": {
+      "userId": "5f7b5d7e9b8c2d1a3e4f5g6h",
+      "username": "testuser",
+      "email": "test@example.com",
+      "gender": "male",
+      "mobile": "13800000001",
+      "birthDate": "1990-01-01",
+      "isAdmin": false,
+      "createdAt": "2025-01-02T06:11:30.123Z"
+    }
   },
   "timestamp": "2025-01-02 14:11:30.123"
 }
@@ -63,14 +72,14 @@
 
 **请求**
 - 方法: `POST`
-- 路径: `/api/v1/users/login`
+- URL: `/api/v1/users/login`
 - Content-Type: `application/json`
 
 **请求体**
 ```json
 {
   "username": "testuser",
-  "password": "123456"
+  "password": "Password123!"
 }
 ```
 
@@ -81,54 +90,24 @@
   "statusCode": 200,
   "msg": "Login successful",
   "data": {
-    "token": "eyJhbGciOiJIUzI1NiIs...",
+    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
     "user": {
+      "userId": "5f7b5d7e9b8c2d1a3e4f5g6h",
       "username": "testuser",
       "email": "test@example.com",
       "isAdmin": false,
-      "lastLoginAt": "2025-01-02T06:11:30.123Z"
-    },
-    "menus": [
-      {
-        "title": "Dashboard",
-        "code": "dashboard",
-        "path": "/dashboard",
-        "icon": "dashboard",
-        "children": []
-      }
-    ]
+      "menuCodes": ["dashboard", "profile"]
+    }
   },
   "timestamp": "2025-01-02 14:11:30.123"
 }
 ```
 
-**错误响应示例**
-- 用户名或密码错误
-```json
-{
-  "code": "A00401",
-  "statusCode": 401,
-  "msg": "Invalid username or password",
-  "data": null,
-  "timestamp": "2025-01-02 14:11:30.123"
-}
-```
-- 缺少用户名或密码
-```json
-{
-  "code": "A00400",
-  "statusCode": 400,
-  "msg": "Username and password are required",
-  "data": null,
-  "timestamp": "2025-01-02 14:11:30.123"
-}
-```
-
-### 3. 获取用户资料
+### 3. 获取个人资料
 
 **请求**
 - 方法: `GET`
-- 路径: `/api/v1/users/profile`
+- URL: `/api/v1/users/profile`
 - Headers: 
   - Authorization: Bearer {token}
 
@@ -142,20 +121,20 @@
     "username": "testuser",
     "email": "test@example.com",
     "gender": "male",
-    "birthDate": "1990-01-01",
     "mobile": "13800000001",
-    "avatarUrl": "default-avatar.png",
+    "birthDate": "1990-01-01",
+    "avatarUrl": "https://example.com/avatar.jpg",
     "lastLoginAt": "2025-01-02T06:11:30.123Z"
   },
   "timestamp": "2025-01-02 14:11:30.123"
 }
 ```
 
-### 4. 更新用户资料
+### 4. 更新个人资料
 
 **请求**
 - 方法: `PUT`
-- 路径: `/api/v1/users/profile`
+- URL: `/api/v1/users/profile`
 - Headers: 
   - Authorization: Bearer {token}
 - Content-Type: `application/json`
@@ -165,9 +144,9 @@
 {
   "email": "newemail@example.com",
   "gender": "female",
-  "birthDate": "1991-01-01",
   "mobile": "13800000002",
-  "avatarUrl": "new-avatar.png"
+  "birthDate": "1990-02-01",
+  "avatarUrl": "https://example.com/new-avatar.jpg"
 }
 ```
 
@@ -181,19 +160,19 @@
     "username": "testuser",
     "email": "newemail@example.com",
     "gender": "female",
-    "birthDate": "1991-01-01",
     "mobile": "13800000002",
-    "avatarUrl": "new-avatar.png"
+    "birthDate": "1990-02-01",
+    "avatarUrl": "https://example.com/new-avatar.jpg"
   },
   "timestamp": "2025-01-02 14:11:30.123"
 }
 ```
 
-### 5. 删除用户（仅管理员）
+### 5. 软删除用户
 
 **请求**
 - 方法: `DELETE`
-- 路径: `/api/v1/users/:id`
+- URL: `/api/v1/users/soft-delete`
 - Headers: 
   - Authorization: Bearer {token}
 
@@ -202,7 +181,127 @@
 {
   "code": "000000",
   "statusCode": 200,
-  "msg": "User deleted successfully",
+  "msg": "User soft deleted successfully",
+  "data": null,
+  "timestamp": "2025-01-02 14:11:30.123"
+}
+```
+
+### 6. 获取用户列表（管理员接口）
+
+**请求**
+- 方法: `GET`
+- URL: `/api/v1/users/list`
+- Headers: 
+  - Authorization: Bearer {token}
+- Query Parameters:
+  - `page`: 页码（可选，默认1）
+  - `limit`: 每页数量（可选，默认10）
+  - `username`: 用户名搜索（可选）
+  - `email`: 邮箱搜索（可选）
+  - `isAdmin`: 是否管理员（可选，true/false）
+
+**响应示例**
+```json
+{
+  "code": "000000",
+  "statusCode": 200,
+  "msg": "Success",
+  "data": {
+    "users": [
+      {
+        "userId": "5f7b5d7e9b8c2d1a3e4f5g6h",
+        "username": "testuser",
+        "email": "test@example.com",
+        "gender": "male",
+        "mobile": "13800000001",
+        "birthDate": "1990-01-01",
+        "isAdmin": false,
+        "lastLoginAt": "2025-01-02T06:11:30.123Z",
+        "createdAt": "2025-01-02T06:11:30.123Z",
+        "updatedAt": "2025-01-02T06:11:30.123Z"
+      }
+    ],
+    "pagination": {
+      "total": 1,
+      "totalPages": 1,
+      "currentPage": 1,
+      "limit": 10,
+      "hasNextPage": false,
+      "hasPrevPage": false
+    }
+  },
+  "timestamp": "2025-01-02 14:11:30.123"
+}
+```
+
+### 7. 获取用户菜单权限（管理员接口）
+
+**请求**
+- 方法: `GET`
+- URL: `/api/v1/users/:userId/menus`
+- Headers: 
+  - Authorization: Bearer {token}
+
+**响应示例**
+```json
+{
+  "code": "000000",
+  "statusCode": 200,
+  "msg": "Success",
+  "data": {
+    "user": {
+      "userId": "5f7b5d7e9b8c2d1a3e4f5g6h",
+      "username": "testuser",
+      "email": "test@example.com",
+      "isAdmin": false
+    },
+    "menuCodes": ["dashboard", "profile", "fitness", "drink"],
+    "isAdmin": false
+  },
+  "timestamp": "2025-01-02 14:11:30.123"
+}
+```
+
+### 8. 更新用户菜单权限（管理员接口）
+
+**请求**
+- 方法: `PUT`
+- URL: `/api/v1/users/:userId/menus`
+- Headers: 
+  - Authorization: Bearer {token}
+- Content-Type: `application/json`
+
+**请求体**
+```json
+{
+  "menuCodes": ["dashboard", "profile", "fitness", "drink"],
+  "isAdmin": false
+}
+```
+
+**响应示例**
+```json
+{
+  "code": "000000",
+  "statusCode": 200,
+  "msg": "Success",
+  "data": {
+    "userId": "5f7b5d7e9b8c2d1a3e4f5g6h",
+    "username": "testuser",
+    "isAdmin": false,
+    "menuCodes": ["dashboard", "profile", "fitness", "drink"]
+  },
+  "timestamp": "2025-01-02 14:11:30.123"
+}
+```
+
+**错误响应示例**
+```json
+{
+  "code": "A00404",
+  "statusCode": 404,
+  "msg": "用户不存在",
   "data": null,
   "timestamp": "2025-01-02 14:11:30.123"
 }
@@ -853,13 +952,12 @@ Authorization: Bearer <token>
   - `minPrice`: 最低价格（可选）
   - `maxPrice`: 最高价格（可选）
   - `sortBy`: 排序字段（可选，默认createdAt）
-  - `order`: 排序方式（可选，默认desc）
+  - `order`: 排序方式（asc/desc，默认desc）
 
 **响应**
 ```json
 {
   "code": "000000",
-  "statusCode": 200,
   "msg": "Success",
   "data": {
     "result": [
@@ -892,7 +990,6 @@ Authorization: Bearer <token>
 ```json
 {
   "code": "000000",
-  "statusCode": 200,
   "msg": "Success",
   "data": {
     "_id": "5f9f1b9b9b9b9b9b9b",
@@ -937,7 +1034,6 @@ Authorization: Bearer <token>
 ```json
 {
   "code": "000000",
-  "statusCode": 200,
   "msg": "菜品更新成功",
   "data": {
     "_id": "5f7b5d7e9b8c2d1a3e4f5g6h",
@@ -970,7 +1066,6 @@ Authorization: Bearer <token>
 ```json
 {
   "code": "000000",
-  "statusCode": 200,
   "msg": "菜品删除成功",
   "data": null,
   "timestamp": "2025-01-05 16:24:42.123"
@@ -993,7 +1088,6 @@ Authorization: Bearer <token>
 ```json
 {
   "code": "000000",
-  "statusCode": 200,
   "msg": "今晚吃这些！",
   "data": {
     "result": [
@@ -1098,14 +1192,13 @@ Authorization: Bearer <token>
   - `maxRating`: 最高评分（可选）
   - `priceLevel`: 价位等级（可选，可选值：super_expensive/expensive/moderate/cheap）
   - `sortBy`: 排序字段（可选，默认createdAt）
-  - `order`: 排序方式（可选，desc/asc，默认desc）
+  - `order`: 排序方式（asc/desc，默认desc）
 
 **响应**
 ```json
 {
   "code": "000000",
-  "statusCode": 200,
-  "msg": "Success",
+  "msg": "获取餐厅列表成功",
   "data": {
     "restaurants": [
       {
@@ -1142,8 +1235,7 @@ Authorization: Bearer <token>
 ```json
 {
   "code": "000000",
-  "statusCode": 200,
-  "msg": "Success",
+  "msg": "获取餐厅详情成功",
   "data": {
     "name": "金燕饭店",
     "address": "延吉市公园路123号",
@@ -1186,7 +1278,6 @@ Authorization: Bearer <token>
 ```json
 {
   "code": "000000",
-  "statusCode": 200,
   "msg": "餐厅更新成功",
   "data": {
     "name": "金燕饭店",
@@ -1222,7 +1313,6 @@ Authorization: Bearer <token>
 ```json
 {
   "code": "000000",
-  "statusCode": 200,
   "msg": "餐厅删除成功",
   "data": null,
   "timestamp": "2025-01-05T14:40:52.000Z"
@@ -1292,13 +1382,13 @@ Authorization: Bearer <token>
 - Headers:
   - `Authorization`: Bearer token
 - Query Parameters:
-  - `page`: 页码（默认1）
-  - `limit`: 每页数量（默认10）
+  - `page`: 页码（可选，默认1）
+  - `limit`: 每页数量（可选，默认10）
   - `startDate`: 开始日期（可选）
   - `endDate`: 结束日期（可选）
   - `exerciseType`: 运动类型（可选）
   - `intensity`: 运动强度（可选）
-  - `sortBy`: 排序字段（默认：exerciseDate）
+  - `sortBy`: 排序字段（可选，默认：exerciseDate）
   - `order`: 排序方式（asc/desc，默认：desc）
 
 **响应**
@@ -2143,10 +2233,10 @@ Authorization: Bearer <token>
 - **Method**: `GET`
 - **Auth**: Required
 - **Query Parameters**:
-  - `page` (optional): 页码，默认1
-  - `limit` (optional): 每页数量，默认10
-  - `tags` (optional): 标签筛选，多个标签用逗号分隔
-  - `location` (optional): 位置筛选，支持国家和城市
+  - `page`: 页码（可选，默认1）
+  - `limit`: 每页数量（可选，默认10）
+  - `tags`: 标签筛选，多个标签用逗号分隔
+  - `location`: 位置筛选，支持国家和城市
 - **Success Response**:
   ```json
   {
@@ -2717,36 +2807,6 @@ Authorization: Bearer <token>
 }
 ```
 
-### 获取单个用户
-
-**请求**
-- 方法: `GET`
-- URL: `/api/v1/users/query/:id`
-- Headers: 
-  - Authorization: Bearer {token}
-
-**响应示例**
-```json
-{
-  "code": "000000",
-  "statusCode": 200,
-  "msg": "Success",
-  "data": {
-    "userId": "5f7b5d7e9b8c2d1a3e4f5g6h",
-    "username": "testuser",
-    "email": "test@example.com",
-    "gender": "male",
-    "mobile": "13800000001",
-    "birthDate": "1990-01-01",
-    "isAdmin": false,
-    "lastLoginAt": "2025-01-02T06:11:30.123Z",
-    "createdAt": "2025-01-02T06:11:30.123Z",
-    "updatedAt": "2025-01-02T06:11:30.123Z"
-  },
-  "timestamp": "2025-01-02 14:11:30.123"
-}
-```
-
 ### 获取用户菜单权限
 
 **请求**
@@ -2768,12 +2828,7 @@ Authorization: Bearer <token>
       "email": "test@example.com",
       "isAdmin": false
     },
-    "menuCodes": [
-      "dashboard",
-      "profile",
-      "fitness",
-      "drink"
-    ],
+    "menuCodes": ["dashboard", "profile", "fitness", "drink"],
     "isAdmin": false
   },
   "timestamp": "2025-01-02 14:11:30.123"
@@ -2813,7 +2868,7 @@ Authorization: Bearer <token>
 }
 ```
 
-### 错误响应示例
+**错误响应示例**
 ```json
 {
   "code": "A00404",

@@ -1,7 +1,8 @@
 const jwt = require('jsonwebtoken');
+const createError = require('http-errors');
 const UserService = require('../services/user.service');
 const Menu = require('../models/menu.model');
-const ApiResponse = require('../utils/response');
+const Response = require('../utils/response');
 
 class UserController {
   constructor() {
@@ -18,7 +19,7 @@ class UserController {
       // 检查用户是否已存在
       const existingUser = await this.userService.getUserByUsername(username);
       if (existingUser) {
-        return res.status(400).json(ApiResponse.error('Username already exists'));
+        return res.status(400).json(Response.error('Username already exists'));
       }
 
       // 创建新用户
@@ -32,12 +33,12 @@ class UserController {
         ...(avatarUrl && { avatarUrl })
       });
 
-      return res.json(ApiResponse.success({
+      return res.json(Response.success({
         token,
         user
       }, 'User registered successfully'));
     } catch (error) {
-      return res.status(400).json(ApiResponse.error(error.message));
+      return res.status(400).json(Response.error(error.message));
     }
   }
 
@@ -49,7 +50,7 @@ class UserController {
       const { username, password } = req.body;
       
       if (!username || !password) {
-        return res.status(400).json(ApiResponse.badRequest('Username and password are required'));
+        return res.status(400).json(Response.badRequest('Username and password are required'));
       }
 
       try {
@@ -68,7 +69,7 @@ class UserController {
           }).sort({ sort: 1 });
         }
 
-        return res.json(ApiResponse.success({
+        return res.json(Response.success({
           token,
           user: {
             ...user,
@@ -78,12 +79,12 @@ class UserController {
         }, 'Login successful'));
       } catch (error) {
         if (error.message === 'Invalid login credentials') {
-          return res.status(401).json(ApiResponse.unauthorized('Invalid username or password'));
+          return res.status(401).json(Response.unauthorized('Invalid username or password'));
         }
         throw error;
       }
     } catch (error) {
-      return res.status(500).json(ApiResponse.error(error.message));
+      return res.status(500).json(Response.error(error.message));
     }
   }
 
@@ -94,10 +95,10 @@ class UserController {
     try {
       const user = await this.userService.getUserById(req.user.userId);
       if (!user) {
-        return res.status(404).json(ApiResponse.notFound('User not found'));
+        return res.status(404).json(Response.notFound('User not found'));
       }
       
-      return res.json(ApiResponse.success({
+      return res.json(Response.success({
         username: user.username,
         email: user.email,
         gender: user.gender,
@@ -107,7 +108,7 @@ class UserController {
         lastLoginAt: user.lastLoginAt
       }));
     } catch (error) {
-      return res.status(500).json(ApiResponse.error(error.message));
+      return res.status(500).json(Response.error(error.message));
     }
   }
 
@@ -118,12 +119,12 @@ class UserController {
     try {
       const user = await this.userService.deleteUser(req.user.userId, false);
       if (!user) {
-        return res.status(404).json(ApiResponse.notFound('User not found'));
+        return res.status(404).json(Response.notFound('User not found'));
       }
       
-      return res.json(ApiResponse.success(null, 'User soft deleted successfully'));
+      return res.json(Response.success(null, 'User soft deleted successfully'));
     } catch (error) {
-      return res.status(500).json(ApiResponse.error(error.message));
+      return res.status(500).json(Response.error(error.message));
     }
   }
 
@@ -134,7 +135,7 @@ class UserController {
     try {
       const user = await this.userService.getUserById(req.user.userId);
       if (!user) {
-        return res.status(404).json(ApiResponse.notFound('User not found'));
+        return res.status(404).json(Response.notFound('User not found'));
       }
 
       // 更新允许的字段
@@ -146,7 +147,7 @@ class UserController {
       });
 
       await user.save();
-      return res.json(ApiResponse.success({
+      return res.json(Response.success({
         username: user.username,
         email: user.email,
         gender: user.gender,
@@ -155,7 +156,7 @@ class UserController {
         avatarUrl: user.avatarUrl
       }, 'Profile updated successfully'));
     } catch (error) {
-      return res.status(400).json(ApiResponse.error(error.message));
+      return res.status(400).json(Response.error(error.message));
     }
   }
 
@@ -166,12 +167,12 @@ class UserController {
     try {
       const user = await this.userService.deleteUser(req.user.userId, true);
       if (!user) {
-        return res.status(404).json(ApiResponse.notFound('User not found'));
+        return res.status(404).json(Response.notFound('User not found'));
       }
 
-      return res.json(ApiResponse.success(null, 'User permanently deleted'));
+      return res.json(Response.success(null, 'User permanently deleted'));
     } catch (error) {
-      return res.status(500).json(ApiResponse.error(error.message));
+      return res.status(500).json(Response.error(error.message));
     }
   }
 
@@ -189,7 +190,8 @@ class UserController {
       if (isAdmin !== undefined) filters.isAdmin = isAdmin === 'true';
 
       const result = await this.userService.listUsers(filters, { page, limit });
-      res.json(ApiResponse.success(result));
+      console.log('User controller result:', result);
+      res.json(Response.success(result));
     } catch (error) {
       next(error);
     }
@@ -204,7 +206,7 @@ class UserController {
       const { menuCodes, isAdmin } = req.body;
 
       const result = await this.userService.updateUserMenus(userId, { menuCodes, isAdmin });
-      res.json(ApiResponse.success(result));
+      res.json(Response.success(result));
     } catch (error) {
       next(error);
     }
@@ -217,7 +219,7 @@ class UserController {
     try {
       const { userId } = req.params;
       const result = await this.userService.getUserMenus(userId);
-      res.json(ApiResponse.success(result));
+      res.json(Response.success(result));
     } catch (error) {
       next(error);
     }

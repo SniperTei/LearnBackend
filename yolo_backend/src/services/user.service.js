@@ -194,7 +194,10 @@ class UserService {
       hasPrevPage: page > 1
     };
 
-    return { users, pagination };
+    // 格式化用户数据
+    const formattedUsers = users.map(user => this._formatUser(user));
+
+    return { users: formattedUsers, pagination };
   }
 
   /**
