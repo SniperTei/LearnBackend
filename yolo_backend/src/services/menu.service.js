@@ -97,6 +97,8 @@ class MenuService {
     for (const menu of menus) {
       if (menu.parentCode === parentCode) {
         const node = menu.toObject();
+        node.menuId = node._id;
+        delete node._id;
         const children = this._buildMenuTree(menus, menu.code);
         if (children.length) {
           node.children = children;
