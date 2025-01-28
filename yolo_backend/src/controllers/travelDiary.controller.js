@@ -25,16 +25,28 @@ class TravelDiaryController {
 
       res.json(ApiResponse.success(result));
     } catch (error) {
-      next(error);
+      if (error.name === 'ValidationError') {
+        return res.status(400).json(ApiResponse.badRequest(error.message));
+      }
+      res.status(500).json(ApiResponse.error(error.message));
     }
   }
 
   async getDiary(req, res, next) {
     try {
       const diary = await this.travelDiaryService.getDiary(req.params.id);
+      if (!diary) {
+        return res.status(404).json(ApiResponse.notFound('游记不存在'));
+      }
       res.json(ApiResponse.success(diary));
     } catch (error) {
-      next(error);
+      if (error.name === 'CastError') {
+        return res.status(400).json(ApiResponse.badRequest('无效的游记ID'));
+      }
+      if (error.statusCode === 404) {
+        return res.status(404).json(ApiResponse.notFound(error.message));
+      }
+      res.status(500).json(ApiResponse.error(error.message));
     }
   }
 
@@ -49,7 +61,7 @@ class TravelDiaryController {
       if (error.name === 'ValidationError') {
         return res.status(400).json(ApiResponse.badRequest(error.message));
       }
-      next(error);
+      res.status(500).json(ApiResponse.error(error.message));
     }
   }
 
@@ -60,21 +72,45 @@ class TravelDiaryController {
         req.body,
         req.user.userId
       );
+      if (!diary) {
+        return res.status(404).json(ApiResponse.notFound('游记不存在'));
+      }
       res.json(ApiResponse.success(diary, '游记更新成功'));
     } catch (error) {
       if (error.name === 'ValidationError') {
         return res.status(400).json(ApiResponse.badRequest(error.message));
       }
-      next(error);
+      if (error.name === 'CastError') {
+        return res.status(400).json(ApiResponse.badRequest('无效的游记ID'));
+      }
+      if (error.statusCode === 403) {
+        return res.status(403).json(ApiResponse.forbidden(error.message));
+      }
+      if (error.statusCode === 404) {
+        return res.status(404).json(ApiResponse.notFound(error.message));
+      }
+      res.status(500).json(ApiResponse.error(error.message));
     }
   }
 
   async deleteDiary(req, res, next) {
     try {
-      await this.travelDiaryService.deleteDiary(req.params.id, req.user.userId);
+      const result = await this.travelDiaryService.deleteDiary(req.params.id, req.user.userId);
+      if (!result) {
+        return res.status(404).json(ApiResponse.notFound('游记不存在'));
+      }
       res.json(ApiResponse.success(null, '游记删除成功'));
     } catch (error) {
-      next(error);
+      if (error.name === 'CastError') {
+        return res.status(400).json(ApiResponse.badRequest('无效的游记ID'));
+      }
+      if (error.statusCode === 403) {
+        return res.status(403).json(ApiResponse.forbidden(error.message));
+      }
+      if (error.statusCode === 404) {
+        return res.status(404).json(ApiResponse.notFound(error.message));
+      }
+      res.status(500).json(ApiResponse.error(error.message));
     }
   }
 }

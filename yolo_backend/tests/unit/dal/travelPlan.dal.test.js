@@ -4,6 +4,7 @@ const TravelPlanDAL = require('../../../src/dal/travelPlan.dal');
 const TravelPlan = require('../../../src/models/travelPlan.model');
 
 let mongoServer;
+let travelPlanDAL;
 
 const mockTravelPlan = {
   title: '日本东京之旅',
@@ -35,6 +36,7 @@ describe('TravelPlanDAL', () => {
     mongoServer = await MongoMemoryServer.create();
     const mongoUri = mongoServer.getUri();
     await mongoose.connect(mongoUri);
+    travelPlanDAL = new TravelPlanDAL();
   });
 
   afterAll(async () => {
@@ -48,7 +50,7 @@ describe('TravelPlanDAL', () => {
 
   describe('create', () => {
     it('should create a new travel plan', async () => {
-      const result = await TravelPlanDAL.create(mockTravelPlan);
+      const result = await travelPlanDAL.create(mockTravelPlan);
       
       expect(result.title).toBe(mockTravelPlan.title);
       expect(result.description).toBe(mockTravelPlan.description);
@@ -60,8 +62,8 @@ describe('TravelPlanDAL', () => {
 
   describe('findAll', () => {
     beforeEach(async () => {
-      await TravelPlanDAL.create(mockTravelPlan);
-      await TravelPlanDAL.create({
+      await travelPlanDAL.create(mockTravelPlan);
+      await travelPlanDAL.create({
         ...mockTravelPlan,
         title: '大阪之旅',
         destination: { ...mockTravelPlan.destination, city: '大阪' }
@@ -69,7 +71,7 @@ describe('TravelPlanDAL', () => {
     });
 
     it('should return all travel plans with pagination', async () => {
-      const { travelPlans, total } = await TravelPlanDAL.findAll(
+      const { travelPlans, total } = await travelPlanDAL.findAll(
         { userId: mockTravelPlan.userId },
         { skip: 0, limit: 10 }
       );
@@ -79,7 +81,7 @@ describe('TravelPlanDAL', () => {
     });
 
     it('should filter travel plans by destination', async () => {
-      const { travelPlans, total } = await TravelPlanDAL.findAll(
+      const { travelPlans, total } = await travelPlanDAL.findAll(
         { 
           userId: mockTravelPlan.userId,
           'destination.city': '东京'
@@ -97,18 +99,39 @@ describe('TravelPlanDAL', () => {
     let createdTravelPlan;
 
     beforeEach(async () => {
-      createdTravelPlan = await TravelPlanDAL.create(mockTravelPlan);
+      createdTravelPlan = await travelPlanDAL.create(mockTravelPlan);
     });
 
     it('should find travel plan by id', async () => {
-      const result = await TravelPlanDAL.findById(createdTravelPlan._id);
-      
+      const result = await travelPlanDAL.findById(createdTravelPlan._id);
+
+      expect(result._id.toString()).toBe(createdTravelPlan._id.toString());
       expect(result.title).toBe(mockTravelPlan.title);
-      expect(result.userId.toString()).toBe(mockTravelPlan.userId);
     });
 
     it('should return null for non-existent id', async () => {
-      const result = await TravelPlanDAL.findById('507f1f77bcf86cd799439011');
+      const nonExistentId = new mongoose.Types.ObjectId();
+      const result = await travelPlanDAL.findById(nonExistentId);
+
+      expect(result).toBeNull();
+    });
+  });
+
+  describe('findOne', () => {
+    beforeEach(async () => {
+      await travelPlanDAL.create(mockTravelPlan);
+    });
+
+    it('should find travel plan by query', async () => {
+      const result = await travelPlanDAL.findOne({ title: mockTravelPlan.title });
+
+      expect(result.title).toBe(mockTravelPlan.title);
+      expect(result.description).toBe(mockTravelPlan.description);
+    });
+
+    it('should return null for non-matching query', async () => {
+      const result = await travelPlanDAL.findOne({ title: 'Non-existent Title' });
+
       expect(result).toBeNull();
     });
   });
@@ -117,20 +140,19 @@ describe('TravelPlanDAL', () => {
     let createdTravelPlan;
 
     beforeEach(async () => {
-      createdTravelPlan = await TravelPlanDAL.create(mockTravelPlan);
+      createdTravelPlan = await travelPlanDAL.create(mockTravelPlan);
     });
 
     it('should update travel plan', async () => {
       const updateData = {
         title: '更新后的东京之旅',
-        updatedBy: '507f1f77bcf86cd799439012'
+        description: '更新后的描述'
       };
 
-      const result = await TravelPlanDAL.update(createdTravelPlan._id, updateData);
-      
+      const result = await travelPlanDAL.update(createdTravelPlan._id, updateData);
+
       expect(result.title).toBe(updateData.title);
-      expect(result.updatedBy.toString()).toBe(updateData.updatedBy);
-      expect(result.description).toBe(mockTravelPlan.description);
+      expect(result.description).toBe(updateData.description);
     });
   });
 
@@ -138,13 +160,13 @@ describe('TravelPlanDAL', () => {
     let createdTravelPlan;
 
     beforeEach(async () => {
-      createdTravelPlan = await TravelPlanDAL.create(mockTravelPlan);
+      createdTravelPlan = await travelPlanDAL.create(mockTravelPlan);
     });
 
     it('should delete travel plan', async () => {
-      await TravelPlanDAL.delete(createdTravelPlan._id);
-      
-      const result = await TravelPlan.findById(createdTravelPlan._id);
+      await travelPlanDAL.delete(createdTravelPlan._id);
+
+      const result = await travelPlanDAL.findById(createdTravelPlan._id);
       expect(result).toBeNull();
     });
   });

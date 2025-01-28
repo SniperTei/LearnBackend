@@ -48,20 +48,27 @@ describe('AlcoholDAO', () => {
       ];
       const mockTotal = 2;
 
-      Alcohol.find = jest.fn().mockReturnThis();
-      Alcohol.sort = jest.fn().mockReturnThis();
-      Alcohol.skip = jest.fn().mockReturnThis();
-      Alcohol.limit = jest.fn().mockReturnThis();
-      Alcohol.lean = jest.fn().mockResolvedValue(mockAlcohols);
-      Alcohol.countDocuments = jest.fn().mockResolvedValue(mockTotal);
+      const mockFind = jest.fn().mockReturnThis();
+      const mockSort = jest.fn().mockReturnThis();
+      const mockSkip = jest.fn().mockReturnThis();
+      const mockLimit = jest.fn().mockReturnThis();
+      const mockLean = jest.fn().mockResolvedValue(mockAlcohols);
+      const mockCountDocuments = jest.fn().mockResolvedValue(mockTotal);
+
+      alcoholDAO.Alcohol.find = mockFind;
+      alcoholDAO.Alcohol.find().sort = mockSort;
+      alcoholDAO.Alcohol.find().sort().skip = mockSkip;
+      alcoholDAO.Alcohol.find().sort().skip().limit = mockLimit;
+      alcoholDAO.Alcohol.find().sort().skip().limit().lean = mockLean;
+      alcoholDAO.Alcohol.countDocuments = mockCountDocuments;
 
       const result = await alcoholDAO.getAllAlcohols(mockFilter, mockOptions);
 
-      expect(Alcohol.find).toHaveBeenCalledWith(mockFilter);
-      expect(Alcohol.sort).toHaveBeenCalledWith(mockOptions.sort);
-      expect(Alcohol.skip).toHaveBeenCalledWith(0);
-      expect(Alcohol.limit).toHaveBeenCalledWith(mockOptions.limit);
-      expect(Alcohol.countDocuments).toHaveBeenCalledWith(mockFilter);
+      expect(mockFind).toHaveBeenCalledWith(mockFilter);
+      expect(mockSort).toHaveBeenCalledWith(mockOptions.sort);
+      expect(mockSkip).toHaveBeenCalledWith(0);
+      expect(mockLimit).toHaveBeenCalledWith(mockOptions.limit);
+      expect(mockCountDocuments).toHaveBeenCalledWith(mockFilter);
 
       expect(result).toEqual({
         alcohols: mockAlcohols,
@@ -85,24 +92,30 @@ describe('AlcoholDAO', () => {
         name: 'Test Alcohol'
       };
 
-      Alcohol.findById = jest.fn().mockReturnThis();
-      Alcohol.lean = jest.fn().mockResolvedValue(mockAlcohol);
+      const mockFindById = jest.fn().mockReturnThis();
+      const mockLean = jest.fn().mockResolvedValue(mockAlcohol);
+
+      alcoholDAO.Alcohol.findById = mockFindById;
+      alcoholDAO.Alcohol.findById().lean = mockLean;
 
       const result = await alcoholDAO.getAlcoholById(mockId);
 
-      expect(Alcohol.findById).toHaveBeenCalledWith(mockId);
+      expect(mockFindById).toHaveBeenCalledWith(mockId);
       expect(result).toEqual(mockAlcohol);
     });
 
     it('should return null when alcohol not found', async () => {
       const mockId = new mongoose.Types.ObjectId().toString();
 
-      Alcohol.findById = jest.fn().mockReturnThis();
-      Alcohol.lean = jest.fn().mockResolvedValue(null);
+      const mockFindById = jest.fn().mockReturnThis();
+      const mockLean = jest.fn().mockResolvedValue(null);
+
+      alcoholDAO.Alcohol.findById = mockFindById;
+      alcoholDAO.Alcohol.findById().lean = mockLean;
 
       const result = await alcoholDAO.getAlcoholById(mockId);
 
-      expect(Alcohol.findById).toHaveBeenCalledWith(mockId);
+      expect(mockFindById).toHaveBeenCalledWith(mockId);
       expect(result).toBeNull();
     });
   });
@@ -116,11 +129,12 @@ describe('AlcoholDAO', () => {
         ...mockUpdateData
       };
 
-      Alcohol.findByIdAndUpdate = jest.fn().mockResolvedValue(mockUpdatedAlcohol);
+      const mockFindByIdAndUpdate = jest.fn().mockResolvedValue(mockUpdatedAlcohol);
+      alcoholDAO.Alcohol.findByIdAndUpdate = mockFindByIdAndUpdate;
 
       const result = await alcoholDAO.updateAlcohol(mockId, mockUpdateData);
 
-      expect(Alcohol.findByIdAndUpdate).toHaveBeenCalledWith(
+      expect(mockFindByIdAndUpdate).toHaveBeenCalledWith(
         mockId,
         mockUpdateData,
         { new: true, runValidators: true, lean: true }
@@ -137,12 +151,15 @@ describe('AlcoholDAO', () => {
         name: 'Deleted Alcohol'
       };
 
-      Alcohol.findByIdAndDelete = jest.fn().mockReturnThis();
-      Alcohol.lean = jest.fn().mockResolvedValue(mockDeletedAlcohol);
+      const mockFindByIdAndDelete = jest.fn().mockReturnThis();
+      const mockLean = jest.fn().mockResolvedValue(mockDeletedAlcohol);
+
+      alcoholDAO.Alcohol.findByIdAndDelete = mockFindByIdAndDelete;
+      alcoholDAO.Alcohol.findByIdAndDelete().lean = mockLean;
 
       const result = await alcoholDAO.deleteAlcohol(mockId);
 
-      expect(Alcohol.findByIdAndDelete).toHaveBeenCalledWith(mockId);
+      expect(mockFindByIdAndDelete).toHaveBeenCalledWith(mockId);
       expect(result).toEqual(mockDeletedAlcohol);
     });
   });

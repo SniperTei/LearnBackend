@@ -17,13 +17,13 @@ class RestaurantController {
       const user = await this.userService.getUserById(req.user.userId);
       // 检查管理员权限
       if (!user.isAdmin) {
-        return res.status(403).json(ApiResponse.error('只有管理员才能创建餐厅'));
+        return res.status(403).json(ApiResponse.forbidden('只有管理员才能创建餐厅'));
       }
 
       const restaurant = await this.restaurantService.createRestaurant(req.body, req.user.username);
       res.status(201).json(ApiResponse.success(restaurant, '餐厅创建成功'));
     } catch (error) {
-      res.status(400).json(ApiResponse.error(error.message));
+      res.status(400).json(ApiResponse.badRequest(error.message));
     }
   }
 
@@ -35,7 +35,7 @@ class RestaurantController {
       const result = await this.restaurantService.getAllRestaurants(req.query);
       res.json(ApiResponse.success(result));
     } catch (error) {
-      res.status(400).json(ApiResponse.error(error.message));
+      res.status(400).json(ApiResponse.badRequest(error.message));
     }
   }
 
@@ -46,11 +46,11 @@ class RestaurantController {
     try {
       const restaurant = await this.restaurantService.getRestaurantById(req.params.id);
       if (!restaurant) {
-        return res.status(404).json(ApiResponse.error('餐厅不存在'));
+        return res.status(404).json(ApiResponse.notFound('餐厅不存在'));
       }
       res.json(ApiResponse.success(restaurant));
     } catch (error) {
-      res.status(400).json(ApiResponse.error(error.message));
+      res.status(400).json(ApiResponse.badRequest(error.message));
     }
   }
 
@@ -63,7 +63,7 @@ class RestaurantController {
       const user = await this.userService.getUserById(req.user.userId);
       // 检查管理员权限
       if (!user.isAdmin) {
-        return res.status(403).json(ApiResponse.error('只有管理员才能更新餐厅'));
+        return res.status(403).json(ApiResponse.forbidden('只有管理员才能更新餐厅'));
       }
 
       const restaurant = await this.restaurantService.updateRestaurant(
@@ -72,11 +72,11 @@ class RestaurantController {
         req.user.username
       );
       if (!restaurant) {
-        return res.status(404).json(ApiResponse.error('餐厅不存在'));
+        return res.status(404).json(ApiResponse.notFound('餐厅不存在'));
       }
       res.json(ApiResponse.success(restaurant, '餐厅更新成功'));
     } catch (error) {
-      res.status(400).json(ApiResponse.error(error.message));
+      res.status(400).json(ApiResponse.badRequest(error.message));
     }
   }
 
@@ -89,16 +89,16 @@ class RestaurantController {
       const user = await this.userService.getUserById(req.user.userId);
       // 检查管理员权限
       if (!user.isAdmin) {
-        return res.status(403).json(ApiResponse.error('只有管理员才能删除餐厅'));
+        return res.status(403).json(ApiResponse.forbidden('只有管理员才能删除餐厅'));
       }
 
       const restaurant = await this.restaurantService.deleteRestaurant(req.params.id);
       if (!restaurant) {
-        return res.status(404).json(ApiResponse.error('餐厅不存在'));
+        return res.status(404).json(ApiResponse.notFound('餐厅不存在'));
       }
       res.json(ApiResponse.success(null, '餐厅删除成功'));
     } catch (error) {
-      res.status(400).json(ApiResponse.error(error.message));
+      res.status(400).json(ApiResponse.badRequest(error.message));
     }
   }
 }

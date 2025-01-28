@@ -17,7 +17,7 @@ class FoodMenuController {
       const foodMenu = await this.foodMenuService.createFoodMenu(foodMenuData, username);
       res.status(201).json(ApiResponse.success(foodMenu, '菜品创建成功'));
     } catch (error) {
-      res.status(400).json(ApiResponse.error(error.message));
+      res.status(400).json(ApiResponse.badRequest(error.message));
     }
   }
 
@@ -29,7 +29,7 @@ class FoodMenuController {
       const result = await this.foodMenuService.getFoodMenus(req.query);
       res.json(ApiResponse.success(result));
     } catch (error) {
-      res.status(400).json(ApiResponse.error(error.message));
+      res.status(400).json(ApiResponse.badRequest(error.message));
     }
   }
 
@@ -40,11 +40,11 @@ class FoodMenuController {
     try {
       const foodMenu = await this.foodMenuService.getFoodMenuById(req.params.id);
       if (!foodMenu) {
-        return res.status(404).json(ApiResponse.error('菜品不存在'));
+        return res.status(404).json(ApiResponse.notFound('菜品不存在'));
       }
       res.json(ApiResponse.success(foodMenu));
     } catch (error) {
-      res.status(400).json(ApiResponse.error(error.message));
+      res.status(400).json(ApiResponse.badRequest(error.message));
     }
   }
 
@@ -59,11 +59,11 @@ class FoodMenuController {
 
       const foodMenu = await this.foodMenuService.updateFoodMenu(id, updateData, username);
       if (!foodMenu) {
-        return res.status(404).json(ApiResponse.error('菜品不存在'));
+        return res.status(404).json(ApiResponse.notFound('菜品不存在'));
       }
       res.json(ApiResponse.success(foodMenu, '菜品更新成功'));
     } catch (error) {
-      res.status(400).json(ApiResponse.error(error.message));
+      res.status(400).json(ApiResponse.badRequest(error.message));
     }
   }
 
@@ -75,11 +75,11 @@ class FoodMenuController {
       const { id } = req.params;
       const foodMenu = await this.foodMenuService.deleteFoodMenu(id);
       if (!foodMenu) {
-        return res.status(404).json(ApiResponse.error('菜品不存在'));
+        return res.status(404).json(ApiResponse.notFound('菜品不存在'));
       }
       res.json(ApiResponse.success(null, '菜品删除成功'));
     } catch (error) {
-      res.status(400).json(ApiResponse.error(error.message));
+      res.status(400).json(ApiResponse.badRequest(error.message));
     }
   }
 
@@ -96,7 +96,7 @@ class FoodMenuController {
       const foodMenus = await this.foodMenuService.getRandomFoodMenus(count);
       res.json(ApiResponse.success({ result: foodMenus }, '今晚吃这些！'));
     } catch (error) {
-      res.status(400).json(ApiResponse.error(error.message));
+      res.status(400).json(ApiResponse.badRequest(error.message));
     }
   }
 }

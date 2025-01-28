@@ -17,7 +17,7 @@ class DrinkController {
       // 验证必需字段
       const { alcoholId, amount, unit } = req.body;
       if (!alcoholId || !amount || !unit) {
-        return res.status(400).json(ApiResponse.error('Missing required fields: alcoholId, amount, unit'));
+        return res.status(400).json(ApiResponse.badRequest('Missing required fields: alcoholId, amount, unit'));
       }
       // 打印
       console.log('alcoholId:', alcoholId);
@@ -25,7 +25,7 @@ class DrinkController {
       // 验证 alcoholId 是否存在
       const alcohol = await Alcohol.findById(alcoholId);
       if (!alcohol) {
-        return res.status(404).json(ApiResponse.error('Alcohol not found'));
+        return res.status(404).json(ApiResponse.notFound('Alcohol not found'));
       }
       // 打印
       console.log('alcohol:', alcohol);
@@ -48,7 +48,7 @@ class DrinkController {
       res.status(201).json(ApiResponse.success(drink, 'Drink record created successfully'));
     } catch (error) {
       if (error.name === 'ValidationError') {
-        return res.status(400).json(ApiResponse.error('Validation failed: ' + error.message));
+        return res.status(400).json(ApiResponse.badRequest('Validation failed: ' + error.message));
       }
       res.status(500).json(ApiResponse.error('Failed to create drink record: ' + error.message));
     }
@@ -112,18 +112,18 @@ class DrinkController {
     try {
       const drink = await this.drinkService.getDrinkById(req.params.id);
       if (!drink) {
-        return res.status(404).json(ApiResponse.error('Drink record not found'));
+        return res.status(404).json(ApiResponse.notFound('Drink record not found'));
       }
       
       // 验证是否是当前用户的记录
       if (drink.userId.toString() !== req.user.userId) {
-        return res.status(403).json(ApiResponse.error('You do not have permission to view this drink record'));
+        return res.status(403).json(ApiResponse.forbidden('You do not have permission to view this drink record'));
       }
       
       res.json(ApiResponse.success(drink));
     } catch (error) {
       if (error.name === 'CastError') {
-        return res.status(400).json(ApiResponse.error('Invalid drink record ID'));
+        return res.status(400).json(ApiResponse.badRequest('Invalid drink record ID'));
       }
       res.status(500).json(ApiResponse.error('Failed to fetch drink record: ' + error.message));
     }
@@ -137,19 +137,19 @@ class DrinkController {
     try {
       const drink = await this.drinkService.getDrinkById(req.params.id);
       if (!drink) {
-        return res.status(404).json(ApiResponse.error('Drink record not found'));
+        return res.status(404).json(ApiResponse.notFound('Drink record not found'));
       }
       
       // 验证是否是当前用户的记录
       if (drink.userId.toString() !== req.user.userId.toString()) {
-        return res.status(403).json(ApiResponse.error('You do not have permission to update this drink record'));
+        return res.status(403).json(ApiResponse.forbidden('You do not have permission to update this drink record'));
       }
 
       // 如果更新了 alcoholId，验证新的 alcohol 是否存在
       if (req.body.alcoholId && req.body.alcoholId !== drink.alcoholId.toString()) {
         const alcohol = await Alcohol.findById(req.body.alcoholId);
         if (!alcohol) {
-          return res.status(404).json(ApiResponse.error('Alcohol not found'));
+          return res.status(404).json(ApiResponse.notFound('Alcohol not found'));
         }
       }
 
@@ -164,10 +164,10 @@ class DrinkController {
       res.json(ApiResponse.success(updatedDrink, 'Drink record updated successfully'));
     } catch (error) {
       if (error.name === 'ValidationError') {
-        return res.status(400).json(ApiResponse.error('Validation failed: ' + error.message));
+        return res.status(400).json(ApiResponse.badRequest('Validation failed: ' + error.message));
       }
       if (error.name === 'CastError') {
-        return res.status(400).json(ApiResponse.error('Invalid drink record ID'));
+        return res.status(400).json(ApiResponse.badRequest('Invalid drink record ID'));
       }
       res.status(500).json(ApiResponse.error('Failed to update drink record: ' + error.message));
     }
@@ -185,19 +185,19 @@ class DrinkController {
     try {
       const drink = await this.drinkService.getDrinkById(req.params.id);
       if (!drink) {
-        return res.status(404).json(ApiResponse.error('Drink record not found'));
+        return res.status(404).json(ApiResponse.notFound('Drink record not found'));
       }
 
       // 验证是否为创建者
       if (drink.userId.toString() !== req.user.userId.toString()) {
-        return res.status(403).json(ApiResponse.error('You can only delete your own drink records'));
+        return res.status(403).json(ApiResponse.forbidden('You can only delete your own drink records'));
       }
 
       await this.drinkService.deleteDrink(req.params.id);
       res.json(ApiResponse.success(null, 'Drink record deleted successfully'));
     } catch (error) {
       if (error.name === 'CastError') {
-        return res.status(400).json(ApiResponse.error('Invalid drink record ID'));
+        return res.status(400).json(ApiResponse.badRequest('Invalid drink record ID'));
       }
       res.status(500).json(ApiResponse.error('Failed to delete drink record: ' + error.message));
     }

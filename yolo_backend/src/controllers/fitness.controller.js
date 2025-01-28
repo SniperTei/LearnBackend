@@ -23,7 +23,7 @@ class FitnessController {
       res.status(201).json(ApiResponse.success(fitness, '运动记录创建成功'));
     } catch (error) {
       if (error.name === 'ValidationError') {
-        return res.status(400).json(ApiResponse.error('数据验证失败: ' + error.message));
+        return res.status(400).json(ApiResponse.badRequest('数据验证失败: ' + error.message));
       }
       res.status(500).json(ApiResponse.error('创建运动记录失败: ' + error.message));
     }
@@ -85,12 +85,12 @@ class FitnessController {
       const fitness = await this.fitnessService.getFitnessById(req.params.id);
       
       if (!fitness) {
-        return res.status(404).json(ApiResponse.error('运动记录不存在'));
+        return res.status(404).json(ApiResponse.notFound('运动记录不存在'));
       }
 
       // 验证用户权限
       if (fitness.userId._id.toString() !== req.user.userId) {
-        return res.status(403).json(ApiResponse.error('无权访问此运动记录'));
+        return res.status(403).json(ApiResponse.forbidden('无权访问此运动记录'));
       }
 
       res.json(ApiResponse.success(fitness));
@@ -107,12 +107,12 @@ class FitnessController {
       const fitness = await this.fitnessService.getFitnessById(req.params.id);
       
       if (!fitness) {
-        return res.status(404).json(ApiResponse.error('运动记录不存在'));
+        return res.status(404).json(ApiResponse.notFound('运动记录不存在'));
       }
 
       // 验证用户权限
       if (fitness.userId._id.toString() !== req.user.userId) {
-        return res.status(403).json(ApiResponse.error('无权修改此运动记录'));
+        return res.status(403).json(ApiResponse.forbidden('无权修改此运动记录'));
       }
 
       const updateData = {
@@ -124,7 +124,7 @@ class FitnessController {
       res.json(ApiResponse.success(updatedFitness, '运动记录更新成功'));
     } catch (error) {
       if (error.name === 'ValidationError') {
-        return res.status(400).json(ApiResponse.error('数据验证失败: ' + error.message));
+        return res.status(400).json(ApiResponse.badRequest('数据验证失败: ' + error.message));
       }
       res.status(500).json(ApiResponse.error('更新运动记录失败: ' + error.message));
     }
@@ -138,12 +138,12 @@ class FitnessController {
       const fitness = await this.fitnessService.getFitnessById(req.params.id);
       
       if (!fitness) {
-        return res.status(404).json(ApiResponse.error('运动记录不存在'));
+        return res.status(404).json(ApiResponse.notFound('运动记录不存在'));
       }
 
       // 验证用户权限
       if (fitness.userId._id.toString() !== req.user.userId) {
-        return res.status(403).json(ApiResponse.error('无权删除此运动记录'));
+        return res.status(403).json(ApiResponse.forbidden('无权删除此运动记录'));
       }
 
       await this.fitnessService.deleteFitness(req.params.id);
