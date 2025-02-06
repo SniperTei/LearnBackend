@@ -1,5 +1,6 @@
 node_modules/
 .env
+.env.production
 .DS_Store
 npm-debug.log*
 coverage/
@@ -8,3 +9,10 @@ coverage/
 # Uploads directory
 public/uploads/
 public/uploads/**/*
+
+# Production configuration
+scripts/production/set-prod-env.sh
+
+# Build output
+dist/
+dist/**/*
