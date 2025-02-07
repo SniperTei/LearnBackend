@@ -1,0 +1,46 @@
+version: '3.8'
+
+services:
+  app:
+    build: .
+    container_name: yolo_backend
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - MONGODB_HOST=mongodb
+      - MONGODB_PORT=27017
+      - JWT_SECRET=${JWT_SECRET}
+      - ADMIN_PASSWORD=${ADMIN_PASSWORD}
+      - MONGODB_URI=mongodb://${MONGO_INITDB_ROOT_USERNAME}:${MONGO_INITDB_ROOT_PASSWORD}@mongodb:27017/${MONGODB_DATABASE}?authSource=admin
+    env_file:
+      - .env.production
+    depends_on:
+      - mongodb
+    networks:
+      - yolo-network
+    restart: unless-stopped
+
+  mongodb:
+    image: mydockers.tslience.com/mongo:6
+    container_name: yolo_mongodb
+    ports:
+      - "27018:27017"  # 将主机的 27018 端口映射到容器的 27017 端口
+    volumes:
+      - mongodb_data:/data/db
+      - ./scripts/production:/docker-entrypoint-initdb.d
+    environment:
+      - MONGODB_DATABASE=${MONGODB_DATABASE:-yolo_database_prod}
+      - MONGO_INITDB_ROOT_USERNAME=${MONGO_INITDB_ROOT_USERNAME}
+      - MONGO_INITDB_ROOT_PASSWORD=${MONGO_INITDB_ROOT_PASSWORD}
+    networks:
+      - yolo-network
+    restart: unless-stopped
+
+networks:
+  yolo-network:
+    driver: bridge
+
+volumes:
+  mongodb_data:
+    name: yolo_mongodb_data
