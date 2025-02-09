@@ -7,14 +7,24 @@ const connectDB = async () => {
       socketTimeoutMS: 45000,
     };
 
-    // 构建MongoDB URI
-    const host = process.env.MONGODB_HOST || 'localhost';
-    const port = process.env.MONGODB_PORT || '27017';
-    const database = process.env.MONGODB_DATABASE || 'yolo_database';
-    const uri = `mongodb://${host}:${port}/${database}`;
-
-    console.log('\nConnecting to MongoDB...');
-    console.log('URI:', uri);
+    // 确保在生产环境中使用完整的认证 URI
+    let uri;
+    if (process.env.NODE_ENV === 'production') {
+      if (!process.env.MONGODB_URI) {
+        throw new Error('MONGODB_URI is required in production environment');
+      }
+      uri = process.env.MONGODB_URI;
+      console.log('\nConnecting to MongoDB...');
+      console.log('URI: [REDACTED]');
+    } else {
+      // 开发环境使用简单连接
+      const host = process.env.MONGODB_HOST || 'localhost';
+      const port = process.env.MONGODB_PORT || '27017';
+      const database = process.env.MONGODB_DATABASE || 'yolo_database';
+      uri = `mongodb://${host}:${port}/${database}`;
+      console.log('\nConnecting to MongoDB...');
+      console.log('URI:', uri);
+    }
 
     const conn = await mongoose.connect(uri, options);
 

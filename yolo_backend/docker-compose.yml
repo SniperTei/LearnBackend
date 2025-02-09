@@ -22,7 +22,7 @@ services:
     restart: unless-stopped
 
   mongodb:
-    image: mongo:6
+    image: mydockers.tslience.com/mongo:6
     container_name: yolo_mongodb
     ports:
       - "27018:27017"  # 将主机的 27018 端口映射到容器的 27017 端口
