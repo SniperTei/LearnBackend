@@ -1,0 +1,225 @@
+// 读取新的菜单数据
+const newMenus = [
+  {
+    _id: ObjectId("677620bc1b77d3a638d5c441"),
+    title: "系统管理",
+    code: "system",
+    path: "/system",
+    icon: "fa-solid fa-gear",
+    isFolder: true,
+    createdBy: "SYSTEM",
+    updatedBy: "SYSTEM",
+    createdAt: ISODate("2025-01-02T05:14:36.967Z"),
+    updatedAt: ISODate("2025-01-02T05:14:36.967Z"),
+    sort: 1
+  },
+  {
+    _id: ObjectId("677620bc1b77d3a638d5c442"),
+    title: "仪表盘",
+    code: "system_dashboard",
+    path: "/system/dashboard",
+    icon: "fa-solid fa-gauge",
+    isFolder: false,
+    createdBy: "SYSTEM",
+    updatedBy: "admin",
+    createdAt: ISODate("2025-01-02T05:14:36.967Z"),
+    updatedAt: ISODate("2025-01-27T06:09:36.955Z"),
+    sort: 1,
+    parentCode: null
+  },
+  {
+    _id: ObjectId("677620bc1b77d3a638d5c443"),
+    title: "用户管理",
+    code: "system_users",
+    path: "/system/users",
+    icon: "fa-solid fa-users",
+    isFolder: false,
+    createdBy: "SYSTEM",
+    updatedBy: "SYSTEM",
+    createdAt: ISODate("2025-01-02T05:14:36.967Z"),
+    updatedAt: ISODate("2025-01-02T05:14:36.967Z"),
+    sort: 2
+  },
+  {
+    _id: ObjectId("677620bc1b77d3a638d5c444"),
+    title: "娱乐",
+    code: "entertainment",
+    path: "/entertainment",
+    icon: "fa-solid fa-gamepad",
+    isFolder: true,
+    createdBy: "SYSTEM",
+    updatedBy: "SYSTEM",
+    createdAt: ISODate("2025-01-02T05:14:36.989Z"),
+    updatedAt: ISODate("2025-01-02T05:14:36.989Z"),
+    sort: 2
+  },
+  {
+    _id: ObjectId("677620bc1b77d3a638d5c445"),
+    title: "影视",
+    code: "entertainment_movie",
+    path: "/entertainment/movie",
+    icon: "fa-solid fa-film",
+    isFolder: false,
+    createdBy: "SYSTEM",
+    updatedBy: "SYSTEM",
+    createdAt: ISODate("2025-01-02T05:14:36.989Z"),
+    updatedAt: ISODate("2025-01-02T05:14:36.989Z"),
+    sort: 1
+  },
+  {
+    _id: ObjectId("677620bc1b77d3a638d5c446"),
+    title: "游戏",
+    code: "entertainment_game",
+    path: "/entertainment/game",
+    icon: "fa-solid fa-dice",
+    isFolder: false,
+    createdBy: "SYSTEM",
+    updatedBy: "SYSTEM",
+    createdAt: ISODate("2025-01-02T05:14:36.989Z"),
+    updatedAt: ISODate("2025-01-02T05:14:36.989Z"),
+    sort: 2
+  },
+  {
+    _id: ObjectId("677620bc1b77d3a638d5c447"),
+    title: "旅游",
+    code: "entertainment_travel",
+    path: "/entertainment/travel",
+    icon: "fa-solid fa-plane",
+    isFolder: false,
+    createdBy: "SYSTEM",
+    updatedBy: "SYSTEM",
+    createdAt: ISODate("2025-01-02T05:14:36.989Z"),
+    updatedAt: ISODate("2025-01-02T05:14:36.989Z"),
+    sort: 3
+  },
+  {
+    _id: ObjectId("677620bc1b77d3a638d5c448"),
+    title: "自律",
+    code: "discipline",
+    path: "/discipline",
+    icon: "fa-solid fa-clock",
+    isFolder: true,
+    createdBy: "SYSTEM",
+    updatedBy: "SYSTEM",
+    createdAt: ISODate("2025-01-02T05:14:36.991Z"),
+    updatedAt: ISODate("2025-01-02T05:14:36.991Z"),
+    sort: 3
+  },
+  {
+    _id: ObjectId("677620bc1b77d3a638d5c449"),
+    title: "健身",
+    code: "discipline_fitness",
+    path: "/discipline/fitness",
+    icon: "fa-solid fa-dumbbell",
+    isFolder: false,
+    createdBy: "SYSTEM",
+    updatedBy: "SYSTEM",
+    createdAt: ISODate("2025-01-02T05:14:36.991Z"),
+    updatedAt: ISODate("2025-01-02T05:14:36.991Z"),
+    sort: 3
+  },
+  {
+    _id: ObjectId("677620bc1b77d3a638d5c44a"),
+    title: "饮酒",
+    code: "discipline_drinking",
+    path: "/discipline/drinking",
+    icon: "fa-solid fa-beer-mug-empty",
+    isFolder: false,
+    createdBy: "SYSTEM",
+    updatedBy: "SYSTEM",
+    createdAt: ISODate("2025-01-02T05:14:36.991Z"),
+    updatedAt: ISODate("2025-01-02T05:14:36.991Z"),
+    sort: 1
+  },
+  {
+    _id: ObjectId("677620bc1b77d3a638d5c44b"),
+    title: "图书",
+    code: "discipline_books",
+    path: "/discipline/books",
+    icon: "fa-solid fa-book",
+    isFolder: false,
+    createdBy: "SYSTEM",
+    updatedBy: "SYSTEM",
+    createdAt: ISODate("2025-01-02T05:14:36.991Z"),
+    updatedAt: ISODate("2025-01-02T05:14:36.991Z"),
+    sort: 2
+  },
+  {
+    _id: ObjectId("677620bc1b77d3a638d5c44c"),
+    title: "美食",
+    code: "food",
+    path: "/food",
+    icon: "fa-solid fa-utensils",
+    isFolder: true,
+    createdBy: "SYSTEM",
+    updatedBy: "SYSTEM",
+    createdAt: ISODate("2025-01-02T05:14:36.992Z"),
+    updatedAt: ISODate("2025-01-02T05:14:36.992Z"),
+    sort: 3
+  },
+  {
+    _id: ObjectId("677620bc1b77d3a638d5c44d"),
+    title: "餐厅",
+    code: "food_restaurant",
+    path: "/food/restaurant",
+    icon: "fa-solid fa-book-open",
+    isFolder: false,
+    createdBy: "SYSTEM",
+    updatedBy: "SYSTEM",
+    createdAt: ISODate("2025-01-02T05:14:36.992Z"),
+    updatedAt: ISODate("2025-01-02T05:14:36.992Z"),
+    sort: 1
+  },
+  {
+    _id: ObjectId("677620bc1b77d3a638d5c44e"),
+    title: "菜品",
+    code: "food_foodmenu",
+    path: "/food/foodmenu",
+    icon: "fa-solid fa-clipboard-list",
+    isFolder: false,
+    createdBy: "SYSTEM",
+    updatedBy: "SYSTEM",
+    createdAt: ISODate("2025-01-02T05:14:36.992Z"),
+    updatedAt: ISODate("2025-01-02T05:14:36.992Z"),
+    sort: 2
+  },
+  {
+    _id: ObjectId("677620bc1b77d3a638d5c44f"),
+    title: "酒类",
+    code: "food_alcohol",
+    path: "/food/alcohol",
+    icon: "fa-solid fa-wine-glass",
+    isFolder: false,
+    createdBy: "SYSTEM",
+    updatedBy: "SYSTEM",
+    createdAt: ISODate("2025-01-02T05:14:36.992Z"),
+    updatedAt: ISODate("2025-01-02T05:14:36.992Z"),
+    sort: 3
+  },
+  {
+    _id: ObjectId("67971c8b71f2322936e9673a"),
+    title: "菜单管理",
+    code: "system_menus",
+    path: "/system/menus",
+    icon: "fa-solid fa-users",
+    isFolder: false,
+    createdBy: "SYSTEM",
+    updatedBy: "SYSTEM",
+    createdAt: ISODate("2025-01-02T05:14:36.967Z"),
+    updatedAt: ISODate("2025-01-02T05:14:36.967Z"),
+    sort: 3
+  }
+];
+
+// 清空现有菜单
+db.menus.drop();
+
+// 插入新菜单
+newMenus.forEach(menu => {
+  db.menus.insertOne(menu);
+});
+
+// 创建必要的索引
+db.menus.createIndex({ "code": 1 }, { unique: true });
+
+print("菜单数据更新完成");
