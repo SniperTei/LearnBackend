@@ -7,6 +7,10 @@ const customerSchema = new mongoose.Schema(
       required: true,
       trim: true
     },
+    avatarUrl: {
+      type: String,
+      trim: true
+    },
     medicalRecordNumber: {
       type: String,
       required: true,
