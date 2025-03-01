@@ -30,6 +30,7 @@ const travelPlanRoutes = require('./routes/travelPlan.routes');
 const travelDiaryRoutes = require('./routes/travelDiary.routes');
 const movieRoute = require('./routes/movie.route');
 const customerRoutes = require('./routes/customer.routes');
+const performanceRoutes = require('./routes/performance.routes');
 // const userMovieRoute = require('./routes/userMovie.route');
 
 const app = express();
@@ -79,6 +80,7 @@ app.use('/api/v1/travel-plans', travelPlanRoutes);
 app.use('/api/v1/travel-diaries', travelDiaryRoutes);
 app.use('/api/v1/movies', movieRoute);
 app.use('/api/v1/customers', customerRoutes);
+app.use('/api/performances', performanceRoutes);
 // app.use('/api/v1/user-movies', userMovieRoute);
 
 // 错误处理中间件
