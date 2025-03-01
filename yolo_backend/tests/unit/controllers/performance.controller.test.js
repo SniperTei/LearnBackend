@@ -180,4 +180,68 @@ describe('PerformanceController', () => {
       expect(mockRes.json).toHaveBeenCalledWith({ message: '演出未找到' });
     });
   });
+
+  describe('createCustomerWithPerformance', () => {
+    const mockData = {
+      // 客户信息
+      name: '张三',
+      phone: '13800138000',
+      gender: 'female',
+      birthDate: '1990-01-01',
+      address: '北京市朝阳区',
+      customerRemarks: 'VIP客户',
+
+      // Performance信息
+      performanceDate: '2024-03-20T10:00:00Z',
+      performanceType: 'inject',
+      amount: '1000',
+      itemA: '玻尿酸',
+      itemB: '肉毒素',
+      performanceRemarks: '注射玻尿酸'
+    };
+
+    const mockResult = {
+      customer: {
+        id: '123',
+        name: '张三',
+        phone: '13800138000'
+      },
+      performance: {
+        id: '456',
+        customerId: '123',
+        performanceType: 'inject'
+      }
+    };
+
+    it('应该成功创建客户和performance并返回201状态码', async () => {
+      mockReq.body = mockData;
+      PerformanceService.createCustomerWithPerformance.mockResolvedValue(mockResult);
+
+      await PerformanceController.createCustomerWithPerformance(mockReq, mockRes);
+
+      expect(PerformanceService.createCustomerWithPerformance).toHaveBeenCalledWith(mockData);
+      expect(mockRes.status).toHaveBeenCalledWith(201);
+      expect(mockRes.json).toHaveBeenCalledWith({
+        code: '000000',
+        statusCode: 201,
+        msg: '创建成功',
+        data: mockResult
+      });
+    });
+
+    it('创建失败时应该返回400状态码', async () => {
+      const error = new Error('手机号已存在');
+      PerformanceService.createCustomerWithPerformance.mockRejectedValue(error);
+
+      await PerformanceController.createCustomerWithPerformance(mockReq, mockRes);
+
+      expect(mockRes.status).toHaveBeenCalledWith(400);
+      expect(mockRes.json).toHaveBeenCalledWith({
+        code: 'A00400',
+        statusCode: 400,
+        msg: error.message,
+        data: null
+      });
+    });
+  });
 }); 

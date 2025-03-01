@@ -5,7 +5,7 @@ const moment = require('moment');
 const path = require('path');
 
 // 根据环境加载对应的配置文件
-const envFile = process.env.NODE_ENV === 'production' ? '.env' : '.env.dev';
+const envFile = process.env.NODE_ENV === 'production' ? '.env.production' : '.env.development';
 require('dotenv').config({ path: path.join(__dirname, '..', envFile) });
 
 // 设置默认环境为开发环境

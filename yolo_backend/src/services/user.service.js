@@ -18,9 +18,10 @@ class UserService {
     if (existingUser) {
       throw new Error('Username already exists');
     }
-    
+    console.log('userData:', userData);
     // Create user
     const user = await this.userDAL.create(userData);
+    console.log('create user:', user);
 
     // Get all menu codes
     const allMenus = await Menu.find({}, 'code');

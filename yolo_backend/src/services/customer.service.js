@@ -8,12 +8,24 @@ class CustomerService {
   /**
    * 创建客户
    * @param {Object} customerData - 客户数据
+   * @param {string} userId - 用户ID
    * @returns {Promise<Object>} 创建的客户记录
    */
-  async createCustomer(customerData) {
-    const customer = await this.customerDao.createCustomer(customerData);
+  async createCustomer(customerData, userId) {
+    try {
+      // 添加创建者和更新者ID
+      const customerWithUser = {
+        ...customerData,
+        createdBy: userId,
+        updatedBy: userId
+      };
+      
+      const customer = await this.customerDao.createCustomer(customerWithUser);
 
-    return this.formatCustomer(customer);
+      return this.formatCustomer(customer);
+    } catch (error) {
+      throw new Error(`创建客户失败: ${error.message}`);
+    }
   }
 
   /**
@@ -49,9 +61,31 @@ class CustomerService {
    * @returns {Promise<Object>} 更新后的客户记录
    */
   async updateCustomer(id, customerData) {
-    const customer = await this.customerDao.updateCustomer(id, customerData);
+    try {
+      // 只提取允许更新的字段
+      const updateData = {
+        name: customerData.name,
+        avatarUrl: customerData.avatarUrl,
+        medicalRecordNumber: customerData.medicalRecordNumber,
+        lastPurchaseDate: customerData.lastPurchaseDate,
+        remarks: customerData.remarks,
+        updatedBy: customerData.updatedBy // 这个字段由控制器传入
+      };
 
-    return this.formatCustomer(customer);
+      // 移除undefined的字段
+      Object.keys(updateData).forEach(key => 
+        updateData[key] === undefined && delete updateData[key]
+      );
+
+      const customer = await this.customerDao.updateCustomer(id, updateData);
+      if (!customer) {
+        throw new Error('Customer not found');
+      }
+
+      return this.formatCustomer(customer);
+    } catch (error) {
+      throw new Error(`更新客户失败: ${error.message}`);
+    }
   }
 
   /**

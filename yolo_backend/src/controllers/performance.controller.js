@@ -45,6 +45,26 @@ class PerformanceController {
       res.status(404).json({ message: error.message });
     }
   }
+
+  async createCustomerWithPerformance(req, res) {
+    try {
+      const userId = req.user.id;
+      const result = await PerformanceService.createCustomerWithPerformance(req.body, userId);
+      res.status(201).json({
+        code: '000000',
+        statusCode: 201,
+        msg: '创建成功',
+        data: result
+      });
+    } catch (error) {
+      res.status(400).json({
+        code: 'A00400',
+        statusCode: 400,
+        msg: error.message,
+        data: null
+      });
+    }
+  }
 }
 
 module.exports = new PerformanceController(); 

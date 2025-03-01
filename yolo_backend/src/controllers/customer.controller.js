@@ -14,26 +14,23 @@ class CustomerController {
    */
   async createCustomer(req, res) {
     try {
-      // 验证必需字段
-      const { name, medicalRecordNumber } = req.body;
-      if (!name || !medicalRecordNumber) {
-        return res.status(400).json(ApiResponse.error('Missing required fields'));
-      }
-
-      // 构建客户数据
-      const customerData = {
-        ...req.body,
-        createdBy: req.user.username,
-        updatedBy: req.user.username
-      };
+      // 从请求中获取用户ID (假设通过auth中间件设置)
+      const userId = req.user.id;
       
-      const customer = await this.customerService.createCustomer(customerData);
-      res.status(201).json(ApiResponse.success(customer, 'Customer created successfully'));
+      const customer = await this.customerService.createCustomer(req.body, userId);
+      res.status(201).json({
+        code: '000000',
+        statusCode: 201,
+        msg: '创建成功',
+        data: customer
+      });
     } catch (error) {
-      if (error.name === 'ValidationError') {
-        return res.status(400).json(ApiResponse.error('Validation failed: ' + error.message));
-      }
-      res.status(500).json(ApiResponse.error('Failed to create customer: ' + error.message));
+      res.status(500).json({
+        code: 'A00500',
+        statusCode: 500,
+        msg: error.message,
+        data: null
+      });
     }
   }
 
@@ -101,27 +98,36 @@ class CustomerController {
    */
   async updateCustomer(req, res) {
     try {
+      const userId = req.user.id; // 从认证中间件获取当前用户ID
+      
+      // 只提取需要更新的字段
+      const updateData = {
+        name: req.body.name,
+        avatarUrl: req.body.avatarUrl,
+        medicalRecordNumber: req.body.medicalRecordNumber,
+        lastPurchaseDate: req.body.lastPurchaseDate,
+        remarks: req.body.remarks,
+        updatedBy: userId // 使用当前用户ID
+      };
+
       const customer = await this.customerService.updateCustomer(
         req.params.id,
-        {
-          ...req.body,
-          updatedBy: req.user.username
-        }
+        updateData
       );
 
-      if (!customer) {
-        return res.status(404).json(ApiResponse.error('Customer not found'));
-      }
-
-      res.json(ApiResponse.success(customer, 'Customer updated successfully'));
+      res.json({
+        code: '000000',
+        statusCode: 200,
+        msg: '更新成功',
+        data: customer
+      });
     } catch (error) {
-      if (error.name === 'ValidationError') {
-        return res.status(400).json(ApiResponse.error('Validation failed: ' + error.message));
-      }
-      if (error.name === 'CastError') {
-        return res.status(400).json(ApiResponse.error('Invalid customer ID'));
-      }
-      res.status(500).json(ApiResponse.error('Failed to update customer: ' + error.message));
+      res.status(500).json({
+        code: 'A00500',
+        statusCode: 500,
+        msg: error.message,
+        data: null
+      });
     }
   }
 
