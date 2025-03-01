@@ -1,41 +1,84 @@
-const PerformanceDAL = require('../dal/performance.dal');
+const PerformanceDAO = require('../dal/performance.dal');
 const CustomerService = require('./customer.service');
 
 class PerformanceService {
   constructor() {
+    this.performanceDao = new PerformanceDAO();
     this.customerService = new CustomerService();
   }
 
-  async createPerformance(performanceData) {
-    return await PerformanceDAL.create(performanceData);
+  /**
+   * 格式化performance数据，将_id转换为performanceId
+   * @private
+   */
+  formatPerformance(performance) {
+    if (!performance) return null;
+
+    const { _id, __v, ...rest } = performance;
+    return {
+      performanceId: _id.toString(),
+      ...rest
+    };
   }
 
-  async getAllPerformances() {
-    return await PerformanceDAL.findAll();
+  async createPerformance(performanceData) {
+    const performance = await this.performanceDao.create(performanceData);
+    return this.formatPerformance(performance);
+  }
+
+  async getAllPerformances(filter = {}, options = {}) {
+    try {
+      const {
+        page,
+        limit,
+        customerId,
+        performanceType,
+        startDate,
+        endDate
+      } = options;
+
+      // 构建查询条件
+      const query = { ...filter };
+      if (customerId) query.customerId = customerId;
+      if (performanceType) query.performanceType = performanceType;
+      if (startDate || endDate) {
+        query.performanceDate = {};
+        if (startDate) query.performanceDate.$gte = new Date(startDate);
+        if (endDate) query.performanceDate.$lte = new Date(endDate);
+      }
+
+      const result = await this.performanceDao.findAll(query, { page, limit });
+      return {
+        performances: result.performances.map(this.formatPerformance),
+        pagination: result.pagination
+      };
+    } catch (error) {
+      throw new Error(`获取performance列表失败: ${error.message}`);
+    }
   }
 
   async getPerformanceById(id) {
-    const performance = await PerformanceDAL.findById(id);
+    const performance = await this.performanceDao.findById(id);
     if (!performance) {
       throw new Error('Performance not found');
     }
-    return performance;
+    return this.formatPerformance(performance);
   }
 
   async updatePerformance(id, updateData) {
-    const performance = await PerformanceDAL.update(id, updateData);
+    const performance = await this.performanceDao.update(id, updateData);
     if (!performance) {
       throw new Error('Performance not found');
     }
-    return performance;
+    return this.formatPerformance(performance);
   }
 
   async deletePerformance(id) {
-    const performance = await PerformanceDAL.delete(id);
+    const performance = await this.performanceDao.delete(id);
     if (!performance) {
       throw new Error('Performance not found');
     }
-    return performance;
+    return this.formatPerformance(performance);
   }
 
   async createCustomerWithPerformance(data, userId) {

@@ -4809,7 +4809,7 @@ Authorization: Bearer <your-token>
 
 **请求**
 - 方法: `POST`
-- URL: `/api/performances`
+- URL: `/api/v1/performances`
 - Content-Type: `application/json`
 
 **请求体**
@@ -4850,7 +4850,7 @@ Authorization: Bearer <your-token>
 
 **请求**
 - 方法: `GET`
-- URL: `/api/performances`
+- URL: `/api/v1/performances`
 - Query Parameters:
   - `page`: 页码（可选，默认1）
   - `limit`: 每页数量（可选，默认10）
@@ -4892,7 +4892,7 @@ Authorization: Bearer <your-token>
 
 **请求**
 - 方法: `GET`
-- URL: `/api/performances/:id`
+- URL: `/api/v1/performances/:id`
 
 **响应示例**
 ```json
@@ -4924,7 +4924,7 @@ Authorization: Bearer <your-token>
 
 **请求**
 - 方法: `PUT`
-- URL: `/api/performances/:id`
+- URL: `/api/v1/performances/:id`
 - Content-Type: `application/json`
 
 **请求体**
@@ -4959,7 +4959,7 @@ Authorization: Bearer <your-token>
 
 **请求**
 - 方法: `DELETE`
-- URL: `/api/performances/:id`
+- URL: `/api/v1/performances/:id`
 
 **响应示例**
 ```json
@@ -4985,12 +4985,18 @@ Authorization: Bearer <your-token>
 ```json
 {
   "name": "张三",
-  "phone": "13800138000",
-  "gender": "female",
-  "birthDate": "1990-01-01",
-  "address": "北京市朝阳区",
-  "remarks": "VIP客户"
+  "avatarUrl": "https://example.com/avatar.jpg",
+  "medicalRecordNumber": "MR20240320001",
+  "lastPurchaseDate": "2024-03-20",
+  "remarks": "VIP客户",
+  "createdBy": "5f7b5d7e9b8c2d1a3e4f5g6h",  // 创建者用户ID
+  "updatedBy": "5f7b5d7e9b8c2d1a3e4f5g6h"   // 更新者用户ID
 }
+```
+
+**请求头**
+```http
+Authorization: Bearer <your-token>  // 必需，用于获取当前用户ID
 ```
 
 **响应示例**
@@ -5002,15 +5008,15 @@ Authorization: Bearer <your-token>
   "data": {
     "id": "5f7b5d7e9b8c2d1a3e4f5g6h",
     "name": "张三",
-    "phone": "13800138000",
-    "gender": "female",
-    "birthDate": "1990-01-01",
-    "address": "北京市朝阳区",
+    "avatarUrl": "https://example.com/avatar.jpg",
+    "medicalRecordNumber": "MR20240320001",
+    "lastPurchaseDate": "2024-03-20T00:00:00.000Z",
     "remarks": "VIP客户",
+    "createdBy": "5f7b5d7e9b8c2d1a3e4f5g6h",
+    "updatedBy": "5f7b5d7e9b8c2d1a3e4f5g6h",
     "createdAt": "2024-03-20T10:01:23.456Z",
     "updatedAt": "2024-03-20T10:01:23.456Z"
-  },
-  "timestamp": "2024-03-20 18:01:23"
+  }
 }
 ```
 
@@ -5023,8 +5029,7 @@ Authorization: Bearer <your-token>
   - `page`: 页码（可选，默认1）
   - `limit`: 每页数量（可选，默认10）
   - `name`: 姓名搜索（可选）
-  - `phone`: 电话搜索（可选）
-  - `gender`: 性别筛选（可选）
+  - `medicalRecordNumber`: 病历号搜索（可选）
 
 **响应示例**
 ```json
@@ -5037,11 +5042,18 @@ Authorization: Bearer <your-token>
       {
         "id": "5f7b5d7e9b8c2d1a3e4f5g6h",
         "name": "张三",
-        "phone": "13800138000",
-        "gender": "female",
-        "birthDate": "1990-01-01",
-        "address": "北京市朝阳区",
+        "avatarUrl": "https://example.com/avatar.jpg",
+        "medicalRecordNumber": "MR20240320001",
+        "lastPurchaseDate": "2024-03-20T00:00:00.000Z",
         "remarks": "VIP客户",
+        "createdBy": {
+          "id": "5f7b5d7e9b8c2d1a3e4f5g6h",
+          "username": "admin"
+        },
+        "updatedBy": {
+          "id": "5f7b5d7e9b8c2d1a3e4f5g6h",
+          "username": "admin"
+        },
         "createdAt": "2024-03-20T10:01:23.456Z",
         "updatedAt": "2024-03-20T10:01:23.456Z"
       }
@@ -5052,61 +5064,36 @@ Authorization: Bearer <your-token>
       "currentPage": 1,
       "limit": 10
     }
-  },
-  "timestamp": "2024-03-20 18:01:23"
+  }
 }
 ```
 
-### 3. 获取客户详情
+### 6. 创建客户并添加Performance记录
 
 **请求**
-- 方法: `GET`
-- URL: `/api/v1/customers/:id`
-
-**响应示例**
-```json
-{
-  "code": "000000",
-  "statusCode": 200,
-  "msg": "获取成功",
-  "data": {
-    "id": "5f7b5d7e9b8c2d1a3e4f5g6h",
-    "name": "张三",
-    "phone": "13800138000",
-    "gender": "female",
-    "birthDate": "1990-01-01",
-    "address": "北京市朝阳区",
-    "remarks": "VIP客户",
-    "performances": [
-      {
-        "id": "5f7b5d7e9b8c2d1a3e4f5g6h",
-        "performanceDate": "2024-03-20T10:00:00Z",
-        "performanceType": "inject",
-        "amount": "1000",
-        "remarks": "注射玻尿酸"
-      }
-    ],
-    "createdAt": "2024-03-20T10:01:23.456Z",
-    "updatedAt": "2024-03-20T10:01:23.456Z"
-  },
-  "timestamp": "2024-03-20 18:01:23"
-}
-```
-
-### 4. 更新客户信息
-
-**请求**
-- 方法: `PUT`
-- URL: `/api/v1/customers/:id`
+- 方法: `POST`
+- URL: `/api/v1/performances/with-customer`
 - Content-Type: `application/json`
 
 **请求体**
 ```json
 {
-  "name": "张三丰",
-  "phone": "13900139000",
-  "address": "北京市海淀区",
-  "remarks": "超级VIP客户"
+  // 客户信息
+  "name": "张三",
+  "avatarUrl": "https://example.com/avatar.jpg",
+  "medicalRecordNumber": "MR20240320001",
+  "lastPurchaseDate": "2024-03-20",
+  "customerRemarks": "VIP客户",
+  "createdBy": "5f7b5d7e9b8c2d1a3e4f5g6h",
+  "updatedBy": "5f7b5d7e9b8c2d1a3e4f5g6h",
+
+  // Performance信息
+  "performanceDate": "2024-03-20T10:00:00Z",
+  "performanceType": "inject",
+  "amount": "1000",
+  "itemA": "玻尿酸",
+  "itemB": "肉毒素",
+  "performanceRemarks": "注射玻尿酸"
 }
 ```
 
@@ -5114,35 +5101,61 @@ Authorization: Bearer <your-token>
 ```json
 {
   "code": "000000",
-  "statusCode": 200,
-  "msg": "更新成功",
+  "statusCode": 201,
+  "msg": "创建成功",
   "data": {
-    "id": "5f7b5d7e9b8c2d1a3e4f5g6h",
-    "name": "张三丰",
-    "phone": "13900139000",
-    "gender": "female",
-    "birthDate": "1990-01-01",
-    "address": "北京市海淀区",
-    "remarks": "超级VIP客户",
-    "updatedAt": "2024-03-20T11:01:23.456Z"
-  },
-  "timestamp": "2024-03-20 19:01:23"
+    "customer": {
+      "id": "5f7b5d7e9b8c2d1a3e4f5g6h",
+      "name": "张三",
+      "avatarUrl": "https://example.com/avatar.jpg",
+      "medicalRecordNumber": "MR20240320001",
+      "lastPurchaseDate": "2024-03-20T00:00:00.000Z",
+      "remarks": "VIP客户",
+      "createdBy": "5f7b5d7e9b8c2d1a3e4f5g6h",
+      "updatedBy": "5f7b5d7e9b8c2d1a3e4f5g6h",
+      "createdAt": "2024-03-20T10:01:23.456Z",
+      "updatedAt": "2024-03-20T10:01:23.456Z"
+    },
+    "performance": {
+      "id": "5f7b5d7e9b8c2d1a3e4f5g6i",
+      "customerId": "5f7b5d7e9b8c2d1a3e4f5g6h",
+      "performanceDate": "2024-03-20T10:00:00Z",
+      "performanceType": "inject",
+      "amount": "1000",
+      "itemA": "玻尿酸",
+      "itemB": "肉毒素",
+      "remarks": "注射玻尿酸",
+      "createdAt": "2024-03-20T10:01:23.456Z",
+      "updatedAt": "2024-03-20T10:01:23.456Z"
+    }
+  }
 }
 ```
 
-### 5. 删除客户
-
-**请求**
-- 方法: `DELETE`
-- URL: `/api/v1/customers/:id`
-
-**响应示例**
+**错误响应示例**
 ```json
 {
-  "code": "000000",
-  "statusCode": 204,
-  "msg": "删除成功",
-  "data": null,
-  "timestamp": "2024-03-20 19:01:23"
+  "code": "A00400",
+  "statusCode": 400,
+  "msg": "创建客户和消费记录失败: 手机号已存在",
+  "data": null
+}
+```
+
+## 认证要求
+
+所有API请求都需要在请求头中包含有效的JWT token：
+
+```http
+Authorization: Bearer <your-token>
+```
+
+未提供token或token无效将返回401错误：
+```json
+{
+  "code": "A00401",
+  "statusCode": 401,
+  "msg": "未提供认证token",
+  "data": null
 }
 ```

@@ -12,10 +12,38 @@ class PerformanceController {
 
   async getAllPerformances(req, res) {
     try {
-      const performances = await PerformanceService.getAllPerformances();
-      res.status(200).json(performances);
+      const {
+        page = 1,
+        limit = 10,
+        customerId,
+        performanceType,
+        startDate,
+        endDate
+      } = req.query;
+
+      const options = {
+        page: parseInt(page),
+        limit: parseInt(limit),
+        customerId,
+        performanceType,
+        startDate,
+        endDate
+      };
+
+      const result = await PerformanceService.getAllPerformances({}, options);
+      res.status(200).json({
+        code: '000000',
+        statusCode: 200,
+        msg: '获取成功',
+        data: result
+      });
     } catch (error) {
-      res.status(500).json({ message: error.message });
+      res.status(500).json({
+        code: 'A00500',
+        statusCode: 500,
+        msg: error.message,
+        data: null
+      });
     }
   }
 
@@ -67,4 +95,4 @@ class PerformanceController {
   }
 }
 
-module.exports = new PerformanceController(); 
+module.exports = PerformanceController; 

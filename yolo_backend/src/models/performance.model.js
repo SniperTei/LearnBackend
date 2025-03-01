@@ -10,9 +10,10 @@ const performanceSchema = new mongoose.Schema({
     type: Date,
     required: true
   },
-  performanceType: { // 注射inject、 皮肤skin、 手术operate
+  performanceType: {
     type: String,
-    required: true
+    required: true,
+    enum: ['inject', 'skin', 'operate']
   },
   // 金额
   amount: {
@@ -31,7 +32,6 @@ const performanceSchema = new mongoose.Schema({
   // 备注
   remarks: {
     type: String,
-    required: true
   }
 }, {
   timestamps: true
