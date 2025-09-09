@@ -10,7 +10,7 @@ from app.api.router import api_router
 from app.core.security import SecurityHeadersMiddleware
 from app.middleware.logging import LoggingMiddleware
 from app.middleware.cors import setup_cors
-from app.utils.response import success_response, error_response
+from app.utils.response import ApiSuccessResponse, ApiErrorResponse
 from app.core.database import Database
 
 # 配置日志
@@ -52,7 +52,8 @@ async def http_exception_handler(request: Request, exc: StarletteHTTPException):
         500: "B00500",
     }
     code = error_mapping.get(exc.status_code, "Z09999")
-    return error_response(
+    logger.error(f"HTTP异常: {code} - {exc.detail}")
+    return ApiErrorResponse.create(
         code=code,
         status_code=exc.status_code,
         msg=exc.detail or "请求处理失败"
@@ -69,11 +70,10 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
             "message": error.get("msg", ""),
             "type": error.get("type", "")
         })
-    return error_response(
+    return ApiErrorResponse.create(
         code="A00007",
         status_code=422,
-        msg="请求参数验证失败",
-        data={"errors": errors}
+        msg="请求参数验证失败"
     )
 
 
@@ -81,7 +81,7 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
 async def global_exception_handler(request: Request, exc: Exception):
     """全局异常处理"""
     logger.error(f"未处理的异常: {str(exc)}", exc_info=True)
-    return error_response(
+    return ApiErrorResponse.create(
         code="A00099",
         status_code=500,
         msg="服务器内部错误"
@@ -113,7 +113,7 @@ async def shutdown_event():
 @app.get("/")
 async def root():
     """根端点"""
-    return success_response(
+    return ApiSuccessResponse.create(
         data={
             "message": "Welcome to Sniper YOLO Backend",
             "version": settings.VERSION,
@@ -126,7 +126,7 @@ async def root():
 @app.get("/health")
 async def health_check():
     """健康检查端点"""
-    return success_response(
+    return ApiSuccessResponse.create(
         data={
             "status": "healthy",
             "service": settings.PROJECT_NAME,

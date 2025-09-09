@@ -5,7 +5,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from app.schemas.item import ItemCreate, ItemOut, ItemUpdate
 from app.services.item_service import ItemService
 from app.core.dependencies import get_current_active_user
-from app.utils.response import success_response, error_response
+from app.utils.response import ApiSuccessResponse, ApiErrorResponse
 
 router = APIRouter()
 
