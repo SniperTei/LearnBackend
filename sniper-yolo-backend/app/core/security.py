@@ -23,6 +23,7 @@ def get_password_hash(password: str) -> str:
     return pwd_context.hash(password)
 
 
+# 在 security.py 中，create_access_token 函数负责生成 JWT 令牌
 def create_access_token(
     subject: str,
     expires_delta: Optional[timedelta] = None

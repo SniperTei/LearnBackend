@@ -3,7 +3,7 @@ from typing import Dict, Any
 from fastapi import APIRouter, Depends, HTTPException, status
 
 from app.models.user import User
-from app.schemas.user import UserCreate, UserOut, UserUpdate
+from app.schemas.user import UserCreate, UserOut, UserUpdate, UserLogin, Token
 from app.services.user_service import UserService
 from app.core.dependencies import get_current_active_user, get_user_service
 from app.utils.response import success_response, error_response
@@ -184,4 +184,33 @@ async def delete_user(
             code="B00500",
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             msg="删除用户失败"
+        )
+
+# 登录路由
+@router.post("/login", response_model=dict)
+async def login_for_access_token(
+    login_data: UserLogin,
+    user_service: UserService = Depends(get_user_service)
+) -> Dict[str, Any]:
+    """用户登录并获取访问令牌"""
+    try:
+        user = await user_service.authenticate_user(login_data.email, login_data.password)
+        if not user:
+            return error_response(
+                code="C00401",
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                msg="Incorrect email or password"
+            )
+        access_token = create_access_token(subject=str(user.id))
+        token_data = {"access_token": access_token, "token_type": "bearer"}
+        return success_response(
+            data=token_data,
+            msg="登录成功",
+            status_code=status.HTTP_200_OK
+        )
+    except Exception as e:
+        return error_response(
+            code="B00500",
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            msg=f"登录失败: {str(e)}"
         )

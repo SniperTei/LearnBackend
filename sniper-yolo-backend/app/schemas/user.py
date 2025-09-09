@@ -34,12 +34,13 @@ class UserOut(UserBase):
         orm_mode = True
 
 
+# 登录请求模型
 class UserLogin(BaseModel):
     """Request model for user login."""
     email: EmailStr
     password: str
 
-
+# 令牌响应模型
 class Token(BaseModel):
     """Response model for authentication token."""
     access_token: str
