@@ -40,6 +40,10 @@ app.include_router(api_router, prefix=settings.API_V1_STR)
 
 
 # 全局异常处理器
+# 导入 JSONResponse
+from fastapi.responses import JSONResponse
+
+# 修改 HTTP 异常处理器
 @app.exception_handler(StarletteHTTPException)
 async def http_exception_handler(request: Request, exc: StarletteHTTPException):
     """HTTP异常处理"""
@@ -53,13 +57,19 @@ async def http_exception_handler(request: Request, exc: StarletteHTTPException):
     }
     code = error_mapping.get(exc.status_code, "Z09999")
     logger.error(f"HTTP异常: {code} - {exc.detail}")
-    return ApiErrorResponse.create(
+    
+    error_response = ApiErrorResponse.create(
         code=code,
         status_code=exc.status_code,
         msg=exc.detail or "请求处理失败"
     )
+    
+    return JSONResponse(
+        status_code=exc.status_code,
+        content=error_response.model_dump()
+    )
 
-
+# 同样修改其他异常处理器
 @app.exception_handler(RequestValidationError)
 async def validation_exception_handler(request: Request, exc: RequestValidationError):
     """验证异常处理"""
@@ -70,21 +80,32 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
             "message": error.get("msg", ""),
             "type": error.get("type", "")
         })
-    return ApiErrorResponse.create(
+    
+    error_response = ApiErrorResponse.create(
         code="A00007",
         status_code=422,
         msg="请求参数验证失败"
     )
-
+    
+    return JSONResponse(
+        status_code=422,
+        content=error_response.model_dump()
+    )
 
 @app.exception_handler(Exception)
 async def global_exception_handler(request: Request, exc: Exception):
     """全局异常处理"""
     logger.error(f"未处理的异常: {str(exc)}", exc_info=True)
-    return ApiErrorResponse.create(
+    
+    error_response = ApiErrorResponse.create(
         code="A00099",
         status_code=500,
         msg="服务器内部错误"
+    )
+    
+    return JSONResponse(
+        status_code=500,
+        content=error_response.model_dump()
     )
 
 @app.on_event("startup")
