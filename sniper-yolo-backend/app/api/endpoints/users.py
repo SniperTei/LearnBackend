@@ -81,12 +81,15 @@ async def read_current_user(
 
 @router.get("/", response_model=ApiSuccessResponse)
 async def read_users(
-    skip: int = 0,
-    limit: int = 100,
+    page: int = 1,
+    count: int = 10,
     user_service: UserService = Depends(get_user_service)
 ) -> ApiSuccessResponse:
     """获取用户列表"""
     try:
+        skip = (page - 1) * count
+        limit = count
+        logger.info(f"获取用户列表，page={page}, count={count} (skip={skip}, limit={limit})")
         users = await user_service.get_users(skip=skip, limit=limit)
         
         # 转换用户数据格式
@@ -105,8 +108,8 @@ async def read_users(
             data={
                 "users": users_data,
                 "total": len(users_data),
-                "skip": skip,
-                "limit": limit
+                "page": page,
+                "count": count
             },
             msg="获取用户列表成功"
         )

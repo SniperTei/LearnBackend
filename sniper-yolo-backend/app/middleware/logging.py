@@ -1,59 +1,52 @@
-"""Logging middleware using Starlette's middleware system."""
 import time
-import logging
 import json
-import asyncio
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.requests import Request
-from starlette.responses import Response
+from starlette.responses import StreamingResponse
+import logging
 
 logger = logging.getLogger(__name__)
 
+def _pretty_headers(headers: dict) -> str:
+    """脱敏 + 对齐打印"""
+    lines = []
+    for k, v in headers.items():
+        if k.lower() == "authorization":
+            v = v[:20] + "…" if len(v) > 20 else v
+        lines.append(f"  {k:<20}: {v}")
+    return "\n".join(lines)
+
 class LoggingMiddleware(BaseHTTPMiddleware):
-    """Middleware for logging HTTP requests and responses without consuming the body stream."""
-    
     async def dispatch(self, request: Request, call_next):
-        start_time = time.time()
-        
-        # Log request basic info
-        logger.info(
-            f"Request: {request.method} {request.url.path} "
-            f"from {request.client.host}"
-        )
-        
-        # Log request params
-        # if request.method == "GET":
-        #     params = dict(request.query_params)
-        #     logger.info(f"Request params: {params}")
-        # elif request.method in ["POST", "PUT", "PATCH"]:
-        #     # 使用缓存的方式读取请求体而不消耗流
-        #     # 注意：这种方法只适用于开发环境的日志记录，生产环境可能需要更复杂的处理
-        #     try:
-        #         # 使用asyncio.shield来确保不会干扰原始请求处理
-        #         body_bytes = await asyncio.shield(request.body())
-        #         if body_bytes:
-        #             try:
-        #                 body = json.loads(body_bytes.decode())
-        #                 logger.info(f"Request body: {body}")
-        #             except json.JSONDecodeError:
-        #                 logger.warning("Request body is not valid JSON")
-        #     except Exception as e:
-        #         logger.warning(f"Failed to log request body: {str(e)}")
-        
-        # Process request
+        start = time.time()
+
+        # 1. 请求头
+        headers = {k.decode("utf-8"): v.decode("utf-8") for k, v in request.headers.raw}
+        logger.info("→ Headers:\n%s", _pretty_headers(headers))
+
+        # 2. 请求体
+        body_bytes = await request.body()
+        logger.info("→ Body: %s", body_bytes.decode() or "-")
+
+        # 3. 重新注入 body
+        async def receive():
+            return {"type": "http.request", "body": body_bytes, "more_body": False}
+        request._receive = receive
+
+        # 4. 业务处理
         response = await call_next(request)
-        
-        # Calculate processing time
-        process_time = time.time() - start_time
-        
-        # Log response
-        logger.info(
-            f"Response: {response.status_code} "
-            f"for {request.method} {request.url.path} "
-            f"in {process_time:.4f}s"
+
+        # 5. 响应体
+        resp_body = b""
+        async for chunk in response.body_iterator:
+            resp_body += chunk
+        logger.info("← Status : %s", response.status_code)
+        logger.info("← Body   : %s", resp_body.decode() or "-")
+
+        # 6. 重新封装
+        return StreamingResponse(
+            iter([resp_body]),
+            status_code=response.status_code,
+            headers=dict(response.headers),
+            media_type=response.media_type,
         )
-        
-        # Add processing time header
-        response.headers["X-Process-Time"] = str(process_time)
-        
-        return response
