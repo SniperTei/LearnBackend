@@ -1,4 +1,5 @@
 """Item business logic layer backed by Beanie + MongoDB."""
+from datetime import datetime
 from typing import List, Optional
 from beanie import PydanticObjectId
 from app.models.item import Item
@@ -6,10 +7,7 @@ from app.schemas.item import ItemCreate, ItemUpdate
 
 
 class ItemService:
-    """Service class for item operations."""
-
     async def create_item(self, item_create: ItemCreate, owner_id: str) -> dict:
-        """Create a new item."""
         item = Item(
             title=item_create.title,
             description=item_create.description,
@@ -17,7 +15,7 @@ class ItemService:
             is_available=item_create.is_available,
             owner_id=PydanticObjectId(owner_id),
         )
-        await item.insert()
+        await item.insert()   # 确保异步插入完成
         return item.dict()
 
     async def get_item(self, item_id: int) -> Optional[dict]:

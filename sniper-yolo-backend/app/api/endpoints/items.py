@@ -4,6 +4,7 @@ import logging
 from fastapi import APIRouter, Depends, HTTPException, status
 
 from app.schemas.item import ItemCreate, ItemOut, ItemUpdate
+from app.models.user import User
 from app.services.item_service import ItemService
 from app.core.dependencies import get_current_active_user, get_user_service
 from app.utils.response import ApiSuccessResponse, ApiErrorResponse, ApiResponse
@@ -55,25 +56,29 @@ async def create_item(
 
 @router.get("/", response_model=ApiSuccessResponse)
 async def read_items(
-    skip: int = 0,
-    limit: int = 100,
+    page: int = 1,                       # 第几页，从 1 开始
+    count: int = 10,                    # 每页条数
     item_service: ItemService = Depends(get_item_service)
 ) -> ApiSuccessResponse:
-    """获取物品列表"""
+    """获取物品列表（page/count 分页）"""
     try:
-        logger.info(f"获取物品列表，skip={skip}, limit={limit}")
+        # 内部换算
+        skip = (page - 1) * count
+        limit = count
+
+        logger.info(f"获取物品列表，page={page}, count={count} (skip={skip}, limit={limit})")
         items = await item_service.get_items(skip=skip, limit=limit)
-        
+
         return ApiSuccessResponse.create(
             data={
                 "items": items,
-                "total": len(items),
-                "skip": skip,
-                "limit": limit
+                "total": len(items),   # 当前返回条数
+                "page": page,
+                "count": count
             },
             msg="获取物品列表成功"
         )
-        
+
     except Exception as e:
         logger.error(f"获取物品列表失败: {str(e)}", exc_info=True)
         return ApiErrorResponse.create(
@@ -84,32 +89,30 @@ async def read_items(
 
 
 @router.get("/{item_id}", response_model=ApiSuccessResponse)
-async def read_item(
-    item_id: int,  # 修复参数类型从str改为int
+async def get_item(
+    item_id: str,
     item_service: ItemService = Depends(get_item_service)
 ) -> ApiSuccessResponse:
-    """获取单个物品详情"""
+    """根据 ID 获取单个物品"""
     try:
-        logger.info(f"获取物品详情: {item_id}")
+        logger.info(f"获取物品: {item_id}")
         item = await item_service.get_item(item_id)
-        
         if not item:
-            raise ValueError("物品不存在")
-            
+            return ApiErrorResponse.create(
+                code="B00404",
+                status_code=status.HTTP_404_NOT_FOUND,
+                msg="物品不存在"
+            )
+
+        # 如果已经是 dict，直接返回；否则再转一次
+        data = item if isinstance(item, dict) else item.dict()
+
         return ApiSuccessResponse.create(
-            data=item,
-            msg="获取物品详情成功"
-        )
-        
-    except ValueError as e:
-        logger.warning(f"获取物品详情失败: {str(e)}")
-        return ApiErrorResponse.create(
-            code="A00004",
-            status_code=status.HTTP_404_NOT_FOUND,
-            msg=str(e)
+            data=data,
+            msg="获取物品成功"
         )
     except Exception as e:
-        logger.error(f"获取物品详情失败: {str(e)}", exc_info=True)
+        logger.error(f"获取物品失败: {str(e)}", exc_info=True)
         return ApiErrorResponse.create(
             code="B00500",
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
@@ -117,59 +120,59 @@ async def read_item(
         )
 
 
+# 1. 更新物品
 @router.put("/{item_id}", response_model=ApiSuccessResponse)
 async def update_item(
-    item_id: int,
-    item_update: ItemUpdate,
-    current_user: dict = Depends(get_current_active_user),
+    item_id: str,
+    item: ItemCreate,
+    item_service: ItemService = Depends(get_item_service),
+    current_user: User = Depends(get_current_active_user)   # 取当前用户
+) -> ApiSuccessResponse:
+    """根据 ID 更新单个物品"""
+    try:
+        # 把 owner_id 传进去
+        updated = await item_service.update_item(
+            item_id,
+            item,
+            owner_id=str(current_user.id)
+        )
+        if not updated:
+            return ApiErrorResponse.create(
+                code="B00404",
+                status_code=status.HTTP_404_NOT_FOUND,
+                msg="物品不存在或无权限"
+            )
+        data = updated if isinstance(updated, dict) else updated.dict()
+        return ApiSuccessResponse.create(data=data, msg="更新成功")
+    except Exception as e:
+        logger.error(f"更新物品失败: {str(e)}", exc_info=True)
+        return ApiErrorResponse.create(
+            code="B00500",
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            msg=f"服务器内部错误: {str(e)}"
+        )
+
+
+# 2. 删除物品
+@router.delete("/{item_id}", response_model=ApiSuccessResponse)
+async def delete_item(
+    item_id: str,                       # 同样保持 str
     item_service: ItemService = Depends(get_item_service)
 ) -> ApiSuccessResponse:
-    """更新物品信息"""
+    """根据 ID 删除单个物品"""
     try:
-        logger.info(f"用户 {current_user.username} 尝试更新物品: {item_id}")
-        item = await item_service.update_item(item_id, item_update, current_user.id)
-        if not item:
+        deleted = await item_service.delete_item(item_id)
+        if not deleted:
             return ApiErrorResponse.create(
-                code="B00002",
+                code="B00404",
                 status_code=status.HTTP_404_NOT_FOUND,
                 msg="物品不存在"
             )
-        return ApiSuccessResponse.create(
-            data=item,
-            msg="物品信息更新成功"
-        )
-    except Exception as e:
-        logger.error(f"更新物品信息失败: {str(e)}", exc_info=True)
-        return ApiErrorResponse.create(
-            code="B00003",
-            status_code=status.HTTP_400_BAD_REQUEST,
-            msg=str(e)
-        )
-
-
-@router.delete("/{item_id}", response_model=ApiSuccessResponse)
-async def delete_item(
-    item_id: int,
-    current_user: dict = Depends(get_current_active_user),
-    item_service: ItemService = Depends(get_item_service)
-) -> ApiSuccessResponse:
-    """删除物品"""
-    try:
-        logger.info(f"用户 {current_user.username} 尝试删除物品: {item_id}")
-        success = await item_service.delete_item(item_id, current_user.id)
-        if not success:
-            return ApiErrorResponse.create(
-                code="B00002",
-                status_code=status.HTTP_404_NOT_FOUND,
-                msg="物品不存在或无权限删除"
-            )
-        return ApiSuccessResponse.create(
-            msg="物品删除成功"
-        )
+        return ApiSuccessResponse.create(data=None, msg="删除成功")
     except Exception as e:
         logger.error(f"删除物品失败: {str(e)}", exc_info=True)
         return ApiErrorResponse.create(
-            code="B00004",
-            status_code=status.HTTP_400_BAD_REQUEST,
-            msg=str(e)
+            code="B00500",
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            msg=f"服务器内部错误: {str(e)}"
         )
