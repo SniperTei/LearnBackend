@@ -156,17 +156,21 @@ async def update_item(
 # 2. 删除物品
 @router.delete("/{item_id}", response_model=ApiSuccessResponse)
 async def delete_item(
-    item_id: str,                       # 同样保持 str
-    item_service: ItemService = Depends(get_item_service)
+    item_id: str,
+    item_service: ItemService = Depends(get_item_service),
+    current_user: User = Depends(get_current_active_user)   # 取当前用户
 ) -> ApiSuccessResponse:
     """根据 ID 删除单个物品"""
     try:
-        deleted = await item_service.delete_item(item_id)
+        deleted = await item_service.delete_item(
+            item_id,
+            owner_id=str(current_user.id)   # 补上缺失的 owner_id
+        )
         if not deleted:
             return ApiErrorResponse.create(
                 code="B00404",
                 status_code=status.HTTP_404_NOT_FOUND,
-                msg="物品不存在"
+                msg="物品不存在或无权限"
             )
         return ApiSuccessResponse.create(data=None, msg="删除成功")
     except Exception as e:
