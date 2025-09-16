@@ -5,6 +5,7 @@ from beanie import PydanticObjectId
 from app.models.user import User
 from app.schemas.user import UserCreate, UserUpdate
 from app.core.security import get_password_hash, verify_password
+from datetime import datetime
 
 class UserService:
     """Service class for user operations using MongoDB."""
@@ -33,11 +34,16 @@ class UserService:
             raise ValueError("用户名已存在")
         
         # 4. 所有验证通过后，才创建并插入用户
+        now = datetime.now(datetime.timezone.utc)
         user = User(
             email=user_create.email,
             username=user_create.username,
             hashed_password=get_password_hash(user_create.password),
-            is_active=user_create.is_active if hasattr(user_create, 'is_active') else True
+            is_active=user_create.is_active if hasattr(user_create, 'is_active') else True,
+            is_superuser=user_create.is_superuser if hasattr(user_create, 'is_superuser') else False,
+            vip_level=user_create.vip_level if hasattr(user_create, 'vip_level') else 1,
+            created_at=now,
+            updated_at=now,
         )
         
         # 5. 最后一步才插入数据库
