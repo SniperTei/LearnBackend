@@ -24,10 +24,11 @@ class Database:
             # 初始化Beanie
             from app.models.user import User
             from app.models.item import Item
+            from app.models.food import Food  # 导入Food模型
             
             await init_beanie(
                 database=cls.client[settings.DATABASE_NAME],
-                document_models=[User, Item]
+                document_models=[User, Item, Food]  # 添加Food模型
             )
             logger.info("✅ Beanie初始化完成")
             
