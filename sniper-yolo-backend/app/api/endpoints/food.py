@@ -12,7 +12,7 @@ from app.utils.response import ApiSuccessResponse, ApiErrorResponse, ApiResponse
 # 创建logger实例
 logger = logging.getLogger(__name__)
 
-router = APIRouter(prefix="/foods", tags=["foods"])
+router = APIRouter()
 
 def get_food_service() -> FoodService:
     """获取食品服务实例"""
