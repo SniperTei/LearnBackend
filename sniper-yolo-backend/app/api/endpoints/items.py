@@ -57,24 +57,25 @@ async def create_item(
 @router.get("/", response_model=ApiSuccessResponse)
 async def read_items(
     page: int = 1,                       # 第几页，从 1 开始
-    count: int = 10,                    # 每页条数
+    page_size: int = 10,                    # 每页条数
     item_service: ItemService = Depends(get_item_service)
 ) -> ApiSuccessResponse:
-    """获取物品列表（page/count 分页）"""
+    """获取物品列表（page/page_size 分页）"""
     try:
         # 内部换算
-        skip = (page - 1) * count
-        limit = count
+        skip = (page - 1) * page_size
+        limit = page_size
 
-        logger.info(f"获取物品列表，page={page}, count={count} (skip={skip}, limit={limit})")
+        logger.info(f"获取物品列表，page={page}, page_size={page_size} (skip={skip}, limit={limit})")
         items = await item_service.get_items(skip=skip, limit=limit)
+        total = await item_service.get_items_count()  # 获取所有物品总数
 
         return ApiSuccessResponse.create(
             data={
                 "items": items,
-                "total": len(items),   # 当前返回条数
+                "total": total,   # 返回所有满足条件的总条数
                 "page": page,
-                "count": count
+                "page_size": page_size
             },
             msg="获取物品列表成功"
         )

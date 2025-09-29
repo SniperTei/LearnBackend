@@ -28,6 +28,10 @@ class ItemService:
         items = await Item.find().skip(skip).limit(limit).to_list()
         return [i.dict() for i in items]
 
+    async def get_items_count(self) -> int:
+        """Get total count of all items."""
+        return await Item.find().count()
+
     async def update_item(
         self, item_id: int, item_update: ItemUpdate, owner_id: str
     ) -> Optional[dict]:
