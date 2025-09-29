@@ -1,5 +1,6 @@
 import asyncio
 import uvicorn
+import asyncio  # 添加这一行导入
 from app.main import app
 from app.core.database import Database
 from app.scripts.init_superuser import create_superuser

@@ -2,7 +2,8 @@
 from typing import Generator, Optional
 from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
-import jwt
+# 修改jwt导入方式
+from jose import jwt
 from datetime import datetime, timedelta
 from starlette.requests import Request
 from starlette.responses import Response

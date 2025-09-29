@@ -10,7 +10,12 @@ from starlette.types import ASGIApp
 
 from app.core.config import settings
 
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+# 修改pwd_context配置，使用PBKDF2替代bcrypt
+pwd_context = CryptContext(
+    schemes=["pbkdf2_sha256"],
+    default="pbkdf2_sha256",
+    pbkdf2_sha256__default_rounds=30000
+)
 
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:

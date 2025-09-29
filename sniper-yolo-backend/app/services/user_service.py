@@ -5,7 +5,7 @@ from beanie import PydanticObjectId
 from app.models.user import User
 from app.schemas.user import UserCreate, UserUpdate
 from app.core.security import get_password_hash, verify_password
-from datetime import datetime
+from datetime import datetime, timezone  # 修复导入，添加timezone
 
 class UserService:
     """Service class for user operations using MongoDB."""
@@ -34,7 +34,7 @@ class UserService:
             raise ValueError("用户名已存在")
         
         # 4. 所有验证通过后，才创建并插入用户
-        now = datetime.now(datetime.timezone.utc)
+        now = datetime.now(timezone.utc)  # 修复datetime使用方式
         user = User(
             email=user_create.email,
             username=user_create.username,
