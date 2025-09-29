@@ -1,5 +1,5 @@
 """食品相关API端点 - 使用统一响应格式"""
-from typing import List
+from typing import List, Optional
 import logging
 from fastapi import APIRouter, Depends, HTTPException, status
 
@@ -57,18 +57,44 @@ async def create_food(
 @router.get("/", response_model=ApiSuccessResponse)
 async def read_foods(
     page: int = 1,                       # 第几页，从 1 开始
-    count: int = 10,                    # 每页条数
+    count: int = 10,                     # 每页条数
+    food_name: Optional[str] = None,     # 食品名称模糊查询
+    food_desc: Optional[str] = None,     # 食品描述模糊查询
+    chef_name: Optional[str] = None,     # 厨师名称精确查询
+    min_price: Optional[float] = None,   # 最低价格
+    max_price: Optional[float] = None,   # 最高价格
+    tag: Optional[str] = None,           # 标签包含查询
     food_service: FoodService = Depends(get_food_service)
 ) -> ApiSuccessResponse:
-    """获取食品列表（page/count 分页）"""
+    """获取食品列表（支持条件查询和分页）"""
     try:
         # 内部换算
         skip = (page - 1) * count
         limit = count
 
-        logger.info(f"获取食品列表，page={page}, count={count} (skip={skip}, limit={limit})")
-        foods = await food_service.get_foods(skip=skip, limit=limit)
-        total = await food_service.get_foods_count()  # 获取所有食品总数
+        logger.info(f"获取食品列表，page={page}, count={count}, food_name={food_name}, food_desc={food_desc}, chef_name={chef_name}, min_price={min_price}, max_price={max_price}, tag={tag} (skip={skip}, limit={limit})")
+        
+        # 调用带条件查询的服务方法
+        foods = await food_service.search_foods(
+            food_name=food_name,
+            food_desc=food_desc,
+            chef_name=chef_name,
+            min_price=min_price,
+            max_price=max_price,
+            tag=tag,
+            skip=skip,
+            limit=limit
+        )
+        
+        # 获取满足条件的总条数
+        total = await food_service.search_foods_count(
+            food_name=food_name,
+            food_desc=food_desc,
+            chef_name=chef_name,
+            min_price=min_price,
+            max_price=max_price,
+            tag=tag
+        )
 
         return ApiSuccessResponse.create(
             data={

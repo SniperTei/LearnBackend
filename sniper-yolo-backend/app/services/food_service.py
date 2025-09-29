@@ -63,3 +63,83 @@ class FoodService:
             await food.delete()
             return True
         return False
+
+    async def search_foods(
+        self, 
+        food_name: Optional[str] = None,
+        food_desc: Optional[str] = None,
+        chef_name: Optional[str] = None,
+        min_price: Optional[float] = None,
+        max_price: Optional[float] = None,
+        tag: Optional[str] = None,
+        skip: int = 0,
+        limit: int = 100
+    ) -> List[dict]:
+        """Search foods with filters and pagination."""
+        # 构建查询条件
+        query = Food.find()
+        
+        # 食品名称模糊查询
+        if food_name:
+            query = query.find({"food_name": {"$regex": food_name, "$options": "i"}})
+        
+        # 食品描述模糊查询
+        if food_desc:
+            query = query.find({"food_desc": {"$regex": food_desc, "$options": "i"}})
+        
+        # 厨师名称精确查询
+        if chef_name:
+            query = query.find(Food.chef_name == chef_name)
+        
+        # 价格区间查询
+        if min_price is not None:
+            query = query.find(Food.price >= min_price)
+        
+        if max_price is not None:
+            query = query.find(Food.price <= max_price)
+        
+        # 标签包含查询
+        if tag:
+            query = query.find({"tags": tag})
+        
+        # 应用分页
+        foods = await query.skip(skip).limit(limit).to_list()
+        return [f.dict() for f in foods]
+        
+    async def search_foods_count(
+        self, 
+        food_name: Optional[str] = None,
+        food_desc: Optional[str] = None,
+        chef_name: Optional[str] = None,
+        min_price: Optional[float] = None,
+        max_price: Optional[float] = None,
+        tag: Optional[str] = None
+    ) -> int:
+        """Get total count of foods matching search criteria."""
+        # 构建查询条件
+        query = Food.find()
+        
+        # 食品名称模糊查询
+        if food_name:
+            query = query.find({"food_name": {"$regex": food_name, "$options": "i"}})
+        
+        # 食品描述模糊查询
+        if food_desc:
+            query = query.find({"food_desc": {"$regex": food_desc, "$options": "i"}})
+        
+        # 厨师名称精确查询
+        if chef_name:
+            query = query.find(Food.chef_name == chef_name)
+        
+        # 价格区间查询
+        if min_price is not None:
+            query = query.find(Food.price >= min_price)
+        
+        if max_price is not None:
+            query = query.find(Food.price <= max_price)
+        
+        # 标签包含查询
+        if tag:
+            query = query.find({"tags": tag})
+        
+        return await query.count()
