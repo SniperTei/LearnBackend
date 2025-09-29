@@ -68,11 +68,12 @@ async def read_foods(
 
         logger.info(f"获取食品列表，page={page}, count={count} (skip={skip}, limit={limit})")
         foods = await food_service.get_foods(skip=skip, limit=limit)
+        total = await food_service.get_foods_count()  # 获取所有食品总数
 
         return ApiSuccessResponse.create(
             data={
                 "foods": foods,
-                "total": len(foods),   # 当前返回条数
+                "total": total,   # 返回所有满足条件的总条数
                 "page": page,
                 "count": count
             },

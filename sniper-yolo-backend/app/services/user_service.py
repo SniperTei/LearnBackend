@@ -69,6 +69,10 @@ class UserService:
         """Get list of users with pagination."""
         return await User.find().skip(skip).limit(limit).to_list()
     
+    async def get_users_count(self) -> int:
+        """Get total count of all users."""
+        return await User.find().count()
+    
     async def update_user(self, user_id: str, user_update: UserUpdate) -> Optional[User]:
         """Update user information."""
         user = await self.get_user(user_id)

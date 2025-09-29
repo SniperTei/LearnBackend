@@ -35,6 +35,10 @@ class FoodService:
         foods = await Food.find().skip(skip).limit(limit).to_list()
         return [f.dict() for f in foods]
 
+    async def get_foods_count(self) -> int:
+        """Get total count of all foods."""
+        return await Food.find().count()
+
     async def update_food(
         self, food_id: str, food_update: FoodUpdate, updated_by: str
     ) -> Optional[dict]:

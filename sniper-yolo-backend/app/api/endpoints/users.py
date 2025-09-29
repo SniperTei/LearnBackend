@@ -104,10 +104,12 @@ async def read_users(
                 "updated_at": user.updated_at.isoformat() if user.updated_at else None
             })
         
+        total = await user_service.get_users_count()  # 获取所有用户总数
+        
         return ApiSuccessResponse.create(
             data={
                 "users": users_data,
-                "total": len(users_data),
+                "total": total,  # 返回所有满足条件的总条数
                 "page": page,
                 "page_size": page_size
             },
