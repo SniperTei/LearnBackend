@@ -1,5 +1,5 @@
 """物品相关API端点 - 使用统一响应格式"""
-from typing import List
+from typing import List, Optional  # 添加了Optional导入
 import logging
 from fastapi import APIRouter, Depends, HTTPException, status
 
@@ -57,18 +57,43 @@ async def create_item(
 @router.get("/", response_model=ApiSuccessResponse)
 async def read_items(
     page: int = 1,                       # 第几页，从 1 开始
-    page_size: int = 10,                    # 每页条数
+    page_size: int = 10,                 # 每页条数
+    title: Optional[str] = None,         # 标题模糊查询
+    description: Optional[str] = None,   # 描述模糊查询
+    owner_id: Optional[str] = None,      # 所有者ID精确查询
+    min_price: Optional[float] = None,   # 最低价格
+    max_price: Optional[float] = None,   # 最高价格
     item_service: ItemService = Depends(get_item_service)
 ) -> ApiSuccessResponse:
-    """获取物品列表（page/page_size 分页）"""
+    """获取物品列表（支持条件查询和分页）"""
     try:
-        # 内部换算
+        # 内部换算分页参数
         skip = (page - 1) * page_size
         limit = page_size
 
-        logger.info(f"获取物品列表，page={page}, page_size={page_size} (skip={skip}, limit={limit})")
-        items = await item_service.get_items(skip=skip, limit=limit)
-        total = await item_service.get_items_count()  # 获取所有物品总数
+        logger.info(f"获取物品列表，page={page}, page_size={page_size} (skip={skip}, limit={limit}), "
+                   f"title={title}, description={description}, owner_id={owner_id}, "
+                   f"min_price={min_price}, max_price={max_price}")
+                    
+        # 使用搜索方法获取符合条件的物品
+        items = await item_service.search_items(
+            title=title,
+            description=description,
+            owner_id=owner_id,
+            min_price=min_price,
+            max_price=max_price,
+            skip=skip,
+            limit=limit
+        )
+        
+        # 获取符合条件的物品总数
+        total = await item_service.search_items_count(
+            title=title,
+            description=description,
+            owner_id=owner_id,
+            min_price=min_price,
+            max_price=max_price
+        )
 
         return ApiSuccessResponse.create(
             data={
