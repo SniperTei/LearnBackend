@@ -31,7 +31,7 @@ class UserOut(UserBase):
     updated_at: Optional[datetime] = None
 
     class Config:
-        orm_mode = True
+        from_attributes = True  # 从 orm_mode = True 修改
 
 
 # 登录请求模型

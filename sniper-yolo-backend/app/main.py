@@ -141,7 +141,7 @@ async def root():
             "docs": f"{settings.API_V1_STR}/docs"
         },
         msg="服务运行正常"
-    ).body
+    )
 
 
 @app.get("/health")
@@ -154,7 +154,7 @@ async def health_check():
             "version": settings.VERSION
         },
         msg="服务健康"
-    ).body
+    )
 
 
 if __name__ == "__main__":

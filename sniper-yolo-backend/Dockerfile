@@ -35,7 +35,7 @@ ENV DEBUG=False
 EXPOSE 8000
 
 # 启动命令
-CMD ["python", "run.py"]
+CMD ["python3", "run.py"]
 
 # 第三阶段：测试环境
 FROM builder AS test
@@ -56,7 +56,7 @@ ENV DEBUG=True
 EXPOSE 8000
 
 # 启动命令
-CMD ["python", "run.py"]
+CMD ["python3", "run.py"]
 
 # 根据构建参数选择最终镜像
 FROM ${ENVIRONMENT}

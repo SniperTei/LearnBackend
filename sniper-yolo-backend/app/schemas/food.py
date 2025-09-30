@@ -38,4 +38,4 @@ class FoodOut(FoodBase):
     updated_by: Optional[str] = None
 
     class Config:
-        orm_mode = True
+        from_attributes = True  # 从 orm_mode = True 修改
