@@ -3,7 +3,11 @@ from fastapi import APIRouter
 
 from app.api.endpoints import users, items, food  # 导入food路由
 
+# 将原有的
 api_router = APIRouter()
+
+# 修改为
+api_router = APIRouter(redirect_slashes=False)
 
 # Include routers
 api_router.include_router(

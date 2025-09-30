@@ -10,10 +10,10 @@ async def on_startup():
     await create_superuser() # ② 保证超管存在
 
 if __name__ == "__main__":
-    asyncio.run(on_startup())  # ③ 启动前执行
+    asyncio.run(on_startup())
     uvicorn.run(
         "app.main:app",
         host="0.0.0.0",
         port=8000,
-        reload=True,
+        # reload=True,  # 生产环境移除这一行
     )
