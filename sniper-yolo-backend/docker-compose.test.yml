@@ -3,6 +3,7 @@ version: '3.8'
 services:
   web:
     image: sniper-yolo-backend:test
+    platform: linux/amd64
     container_name: fastapi_app_test
     ports:
       - "27051:8000"
@@ -11,15 +12,17 @@ services:
     env_file:
       - .env.test
     environment:
-      - MONGODB_URL=mongodb://mongo:27017  # 确保使用容器互联地址
+      - MONGODB_URL=mongodb://mongo:27021  # 确保使用容器互联地址
 
   mongo:
-    image: mongo:5.0
+    image: mongo:8.0.1  # 改为与本地相同的版本
+    platform: linux/amd64
     container_name: mongo_db_test
     volumes:
       - mongo_data_test:/data/db
     env_file:
       - .env.test
+    command: mongod --port 27021
 
 volumes:
   mongo_data_test:
