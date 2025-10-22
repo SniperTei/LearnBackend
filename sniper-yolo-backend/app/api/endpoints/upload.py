@@ -1,127 +1,209 @@
-from fastapi import APIRouter, UploadFile, File, HTTPException, Query
-from typing import Optional, Dict, List
-import os
+from fastapi import APIRouter, HTTPException, Query, Body
+from typing import Optional, Dict, Any
+import json
+import time
 
 from app.services.storage_service import storage_service
 from app.core.config import settings
-from app.utils.response import success_response, error_response, ApiSuccessResponse, ApiErrorResponse
+from app.utils.response import ApiSuccessResponse, ApiErrorResponse
 
-router = APIRouter(prefix="/upload", tags=["upload"])
-
-
-def validate_file(file: UploadFile, file_type: Optional[str] = None) -> None:
-    """验证文件类型和大小"""
-    # 检查文件大小
-    if file.size and file.size > settings.MAX_FILE_SIZE:
-        raise HTTPException(
-            status_code=400,
-            detail=f"文件大小超过限制，最大允许 {settings.MAX_FILE_SIZE // (1024 * 1024)}MB"
-        )
-    
-    # 检查文件类型
-    if file_type and file_type in settings.ALLOWED_FILE_TYPES:
-        ext = os.path.splitext(file.filename)[1].lower() if file.filename else ''
-        if ext not in settings.ALLOWED_FILE_TYPES[file_type]:
-            raise HTTPException(
-                status_code=400,
-                detail=f"不支持的文件类型，请上传以下格式: {', '.join(settings.ALLOWED_FILE_TYPES[file_type])}"
-            )
+router = APIRouter()
 
 
-@router.post("/file", summary="上传单个文件", response_model=ApiSuccessResponse)
-async def upload_single_file(
-    file: UploadFile = File(...),
+@router.post("/config", summary="获取上传配置", response_model=ApiSuccessResponse)
+async def get_upload_config(
     file_type: Optional[str] = Query(
-        None,
-        description="文件类型(image/audio/video/document)，用于文件格式验证"
+        default=None,
+        description="文件类型分类(image/audio/video/document)，用于生成特定路径前缀和验证规则"
+    ),
+    expires: Optional[int] = Query(
+        default=3600,
+        description="token有效期，单位秒，默认3600秒"
     )
 ) -> ApiSuccessResponse:
     """
-    上传单个文件到七牛云存储
+    获取七牛云上传配置，用于前端直传
     
-    - **file**: 要上传的文件
-    - **file_type**: 可选，指定文件类型(image/audio/video/document)，用于验证文件格式
+    - **file_type**: 可选，文件类型分类，用于生成特定路径前缀
+    - **expires**: 可选，token有效期，单位秒，默认3600秒
+    
+    返回包含token、上传地址、域名等完整上传配置信息
     """
     try:
-        # 验证文件
-        validate_file(file, file_type)
-        
-        # 上传到七牛云
-        success, result = await storage_service.upload_file(file)
-        
-        if success:
-            return ApiSuccessResponse.create(data=result, msg="文件上传成功")
-        else:
+        # 验证文件类型参数
+        if file_type and file_type not in settings.ALLOWED_FILE_TYPES:
             raise HTTPException(
-                status_code=result.get("status_code", 500),
-                detail=result.get("error", "文件上传失败")
+                status_code=400,
+                detail=f"不支持的文件类型分类，请使用以下值: {', '.join(settings.ALLOWED_FILE_TYPES.keys())}"
             )
+        
+        # 获取上传配置
+        config = storage_service.get_upload_config(file_type=file_type, expires=expires)
+        
+        return ApiSuccessResponse.create(data=config, msg="获取上传配置成功")
     except HTTPException:
         raise
     except Exception as e:
-        return ApiErrorResponse.create(code="B0001", status_code=500, msg=f"上传文件时发生错误: {str(e)}")
+        return ApiErrorResponse.create(code="UPLOAD_CONFIG_ERROR", status_code=500, msg=f"获取上传配置失败: {str(e)}")
 
 
-@router.post("/files", summary="批量上传文件", response_model=ApiSuccessResponse)
-async def upload_multiple_files(
-    files: List[UploadFile] = File(...),
-    file_type: Optional[str] = Query(
-        None,
-        description="文件类型(image/audio/video/document)，用于文件格式验证"
+# 同时支持新旧路径，确保兼容性
+@router.post("/token", summary="获取上传token", response_model=ApiSuccessResponse)
+async def get_upload_token(
+    key: Optional[str] = Query(
+        default=None,
+        description="可选的文件key，不传则使用默认生成的文件名"
+    ),
+    callback_url: Optional[str] = Query(
+        default=None,
+        description="上传成功后的回调URL"
+    ),
+    callback_body: Optional[str] = Query(
+        default="filename=$(fname)&filesize=$(fsize)",
+        description="回调内容格式，默认为'filename=$(fname)&filesize=$(fsize)')"
+    ),
+    expires: Optional[int] = Query(
+        default=3600,
+        description="token有效期，单位秒，默认3600秒"
+    ),
+    policy_json: Optional[str] = Query(
+        default=None,
+        description="自定义上传策略的JSON字符串，优先级高于其他策略参数"
+    ),
+    folder: Optional[str] = Query(
+        default="sniper-yolo",
+        description="上传文件夹，默认为sniper-yolo"
     )
 ) -> ApiSuccessResponse:
     """
-    批量上传文件到七牛云存储
+    获取七牛云上传token，用于前端直传
     
-    - **files**: 要上传的文件列表
-    - **file_type**: 可选，指定文件类型(image/audio/video/document)，用于验证文件格式
+    - **key**: 可选，上传后保存的文件名
+    - **callback_url**: 可选，上传成功后的回调URL
+    - **callback_body**: 可选，回调内容格式，默认为'filename=$(fname)&filesize=$(fsize)'
+    - **expires**: 可选，token有效期，单位秒，默认3600秒
+    - **policy_json**: 可选，自定义上传策略的JSON字符串，优先级高于其他策略参数
     """
-    results = []
-    errors = []
-    
-    for i, file in enumerate(files):
-        try:
-            # 验证文件
-            validate_file(file, file_type)
+    try:
+        # 处理文件夹逻辑
+        key_with_folder = key
+        folder_prefix = None
+        
+        if folder:
+            # 确保folder以/结尾
+            folder_prefix = folder if folder.endswith('/') else folder + '/'
             
-            # 上传到七牛云
-            success, result = await storage_service.upload_file(file)
+            # 如果提供了key，则添加文件夹前缀
+            if key:
+                # 确保key不以/开头，避免重复斜杠
+                key_with_folder = folder_prefix + (key.lstrip('/') if key.startswith('/') else key)
+        
+        # 构建上传策略
+        policy = None
+        if policy_json:
+            try:
+                policy = json.loads(policy_json)
+            except json.JSONDecodeError:
+                raise HTTPException(status_code=400, detail="无效的策略JSON格式")
+        elif callback_url:
+            policy = storage_service.create_callback_policy(callback_url, callback_body)
+        else:
+            # 创建默认策略
+            policy = {
+                'isPrefixalScope': 1,
+                'deadline': int(time.time()) + expires,
+                'returnBody': json.dumps({
+                    'key': '$(key)',
+                    'hash': '$(etag)',
+                    'fsize': '$(fsize)',
+                    'name': '$(x:name)'
+                }),
+            }
             
-            if success:
-                results.append(result)
-            else:
-                errors.append({
-                    "index": i,
-                    "filename": file.filename,
-                    "error": result.get("error", "上传失败")
-                })
-                
-        except Exception as e:
-            errors.append({
-                "index": i,
-                "filename": file.filename,
-                "error": str(e)
-            })
-    
-    return ApiSuccessResponse.create(data={
-        "total": len(files),
-        "success": len(results),
-        "failed": len(errors),
-        "results": results,
-        "errors": errors
-    }, msg="批量上传完成")
+            # 如果指定了文件夹前缀，在策略中限制上传范围
+            if folder_prefix:
+                # 当isPrefixalScope=1时，scope只需要是bucket:prefix，不需要加*
+                # 这样可以确保上传的文件必须以prefix开头
+                policy['scope'] = f"{settings.QINIU_BUCKET_NAME}:{folder_prefix}"
+                # 确保isPrefixalScope为1，表示允许前缀匹配
+                policy['isPrefixalScope'] = 1
+        
+        # 使用storage_service获取token
+        # 当使用isPrefixalScope=1时，不需要传递key参数
+        # 这样前端可以自行决定文件名，但必须使用指定的前缀
+        token = storage_service.get_token(key_with_folder, policy=policy, expires=expires)
+        
+        # 构建完整的上传URL和domain
+        protocol = "https" if getattr(settings, 'USE_HTTPS', False) else "http"
+        domain = f"{protocol}://{settings.QINIU_DOMAIN}"
+        
+        # 构造响应数据
+        response_data = {
+            "token": token,
+            "domain": domain,
+            "upload_url": "https://up-z2.qiniup.com",  # 七牛云新加坡区域(z2)上传地址
+            "expires_in": expires,
+            # 添加建议的key格式，提示前端应该使用什么前缀
+            "suggested_key_prefix": folder_prefix if folder_prefix else ""
+        }
+        
+        # 如果有folder信息，添加到响应中
+        if folder_prefix:
+            response_data["folder"] = folder_prefix
+        
+        # 如果有policy信息，添加到响应中
+        if policy:
+            response_data["policy"] = policy
+        
+        return ApiSuccessResponse.create(data=response_data, msg="获取上传令牌成功")
+    except HTTPException:
+        raise
+    except Exception as e:
+        return ApiErrorResponse.create(code="UPLOAD_TOKEN_ERROR", status_code=500, msg=f"获取上传token失败: {str(e)}")
 
 
-@router.post("/token", summary="获取上传token", response_model=ApiSuccessResponse)
-async def get_upload_token(
-    key: Optional[str] = Query(None, description="可选的文件key，不传则由服务器生成")
+@router.post("/save", summary="保存文件信息", response_model=ApiSuccessResponse)
+async def save_file_info(
+    key: str = Body(..., description="文件在七牛云的存储键名"),
+    filename: str = Body(..., description="原始文件名"),
+    size: int = Body(..., description="文件大小，单位字节"),
+    hash: Optional[str] = Body(None, description="文件哈希值"),
+    file_type: Optional[str] = Body(None, description="文件类型分类")
 ) -> ApiSuccessResponse:
     """
-    获取七牛云上传token，用于前端直传
+    保存文件信息（前端直传成功后调用）
+    
+    - **key**: 文件在七牛云的存储键名
+    - **filename**: 原始文件名
+    - **size**: 文件大小，单位字节
+    - **hash**: 可选，文件哈希值
+    - **file_type**: 可选，文件类型分类
     """
-    token = storage_service.get_token(key)
-    return ApiSuccessResponse.create(data={
-        "token": token,
-        "domain": settings.QINIU_DOMAIN,
-        "expires_in": 3600  # token有效期3600秒
-    }, msg="获取上传令牌成功")
+    try:
+        # 验证文件信息
+        validation = storage_service.validate_file_info(filename, size, file_type)
+        if not validation["valid"]:
+            raise HTTPException(status_code=400, detail=validation["error"])
+        
+        # 生成完整文件URL
+        file_url = storage_service.format_file_url(key)
+        
+        # TODO: 这里可以添加保存文件信息到数据库的逻辑
+        # 例如：保存到MongoDB或其他数据库
+        
+        # 构建返回结果
+        result = {
+            "key": key,
+            "filename": filename,
+            "size": size,
+            "url": file_url,
+            "hash": hash,
+            "file_type": file_type,
+            "save_time": json.dumps(0)  # 这里先用占位符，实际应该使用时间戳或ISO格式时间
+        }
+        
+        return ApiSuccessResponse.create(data=result, msg="保存文件信息成功")
+    except HTTPException:
+        raise
+    except Exception as e:
+        return ApiErrorResponse.create(code="SAVE_FILE_ERROR", status_code=500, msg=f"保存文件信息失败: {str(e)}")
