@@ -61,11 +61,16 @@ ApiResponse = Union[ApiSuccessResponse, ApiErrorResponse]
 
 
 # 
-# def success_response(data: Any = None, msg: str = "Success", status_code: int = 200) -> Dict[str, Any]:
-#     """创建成功响应 - 支持自定义状态码"""
-#     return SuccessResponse.create(data=data, msg=msg, status_code=status_code).model_dump()
+# 使用现有响应格式实现文件上传功能
+#
+# 当然可以复用现有的响应工具！我看到您已经有了结构完善的 `ApiSuccessResponse` 和 `ApiErrorResponse` 类，可以直接在上传功能中使用。以下是修改后的实现方案：
+#
+# ### 1. 首先修改 response.py，取消注释并调整工具函数
+def success_response(data: Any = None, msg: str = "Success", status_code: int = 200) -> Dict[str, Any]:
+    """创建成功响应 - 支持自定义状态码"""
+    return ApiSuccessResponse.create(data=data, msg=msg, status_code=status_code).model_dump()
 
 
-# def error_response(code: str, status_code: int, msg: str) -> Dict[str, Any]:
-#     """创建错误响应"""
-#     return ErrorResponse.create(code=code, status_code=status_code, msg=msg).model_dump()
+def error_response(code: str, status_code: int, msg: str) -> Dict[str, Any]:
+    """创建错误响应"""
+    return ApiErrorResponse.create(code=code, status_code=status_code, msg=msg).model_dump()
