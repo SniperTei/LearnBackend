@@ -33,36 +33,57 @@
 ### 1. 用户注册
 **POST** `/users/`
 
-创建新用户账户。
+创建新用户账户。支持通过邮箱或手机号注册（至少需要提供其中一个）。
 
 **请求参数**:
 ```json
 {
-  "email": "user@example.com",
-  "username": "exampleuser",
-  "password": "securepassword123"
+  "email": "user@example.com",  // 可选，邮箱
+  "mobile": "13800000000",    // 可选，手机号
+  "username": "exampleuser",    // 必填，用户名
+  "password": "securepassword123" // 必填，密码
 }
 ```
+
+**说明**：
+- email 和 mobile 字段至少需要提供其中一个
+- username 必须唯一且长度为3-50个字符
+- password 长度至少为8个字符
+- 如果同时提供email和mobile，两者都必须唯一（不存在于系统中）
 
 **响应示例**:
 ```json
 {
-  "code": "000000",
-  "statusCode": 201,
-  "msg": "用户创建成功",
-  "data": {
-    "id": 1,
-    "email": "user@example.com",
-    "username": "exampleuser",
-    "is_active": true,
-    "created_at": "2024-01-01T00:00:00",
-    "updated_at": null
-  },
-  "timestamp": "2025-01-02 14:11:30.123"
+    "code": "000000",
+    "statusCode": 201,
+    "msg": "用户注册成功",
+    "data": {
+        "access_token": "token",
+        "token_type": "bearer"
+    },
+    "timestamp": "2025-11-22 11:40:34"
 }
 ```
 
-### 2. 获取当前用户信息
+### 2. 用户登录
+**POST** `/users/login`
+
+用户登录并获取访问令牌。支持使用邮箱或手机号登录。
+
+**请求参数**:
+```json
+{
+  "identifier": "user@example.com",  // 必填，可以是邮箱或手机号
+  "password": "securepassword123"    // 必填，密码
+}
+```
+
+**说明**：
+- identifier 字段可以是用户注册时提供的邮箱或手机号
+- 系统会自动尝试通过邮箱和手机号两种方式查找用户
+- 密码验证成功后返回访问令牌
+
+### 3. 获取当前用户信息
 **GET** `/users/me`
 
 获取当前登录用户的详细信息。
@@ -79,6 +100,7 @@
     "id": 1,
     "email": "user@example.com",
     "username": "exampleuser",
+    "mobile": "13800000000",
     "is_active": true,
     "created_at": "2024-01-01T00:00:00",
     "updated_at": null

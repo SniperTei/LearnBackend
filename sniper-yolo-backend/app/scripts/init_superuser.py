@@ -12,6 +12,7 @@ async def create_superuser():
     user = User(
         username="admin",
         email=ADMIN_EMAIL,
+        mobile="13800000000",  # 新增mobile字段
         hashed_password=User.hash_password(ADMIN_PASS),
         is_superuser=True,
         is_active=True,

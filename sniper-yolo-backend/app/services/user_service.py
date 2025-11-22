@@ -14,8 +14,8 @@ class UserService:
         """Create a new user in MongoDB - 先验证后插入"""
         
         # 1. 先进行所有验证，确保可以创建用户
-        if not user_create.email:
-            raise ValueError("邮箱不能为空")
+        if not user_create.email and not user_create.mobile:
+            raise ValueError("邮箱和手机号至少需要提供一个")
         
         if not user_create.username or len(user_create.username) < 3:
             raise ValueError("用户名长度至少为3个字符")
@@ -23,10 +23,17 @@ class UserService:
         if not user_create.password or len(user_create.password) < 8:
             raise ValueError("密码长度至少为8个字符")
         
-        # 2. 检查邮箱是否已存在
-        existing_user = await User.find_one(User.email == user_create.email)
-        if existing_user:
-            raise ValueError("邮箱已存在")
+        # 2. 检查邮箱是否已存在（如果提供了邮箱）
+        if user_create.email:
+            existing_user = await User.find_one(User.email == user_create.email)
+            if existing_user:
+                raise ValueError("邮箱已存在")
+        
+        # 3. 检查手机号是否已存在（如果提供了手机号）
+        if user_create.mobile:
+            existing_mobile = await User.find_one(User.mobile == user_create.mobile)
+            if existing_mobile:
+                raise ValueError("手机号已存在")
         
         # 3. 检查用户名是否已存在
         existing_username = await User.find_one(User.username == user_create.username)
@@ -37,6 +44,7 @@ class UserService:
         now = datetime.now(timezone.utc)  # 修复datetime使用方式
         user = User(
             email=user_create.email,
+            mobile=user_create.mobile,
             username=user_create.username,
             hashed_password=get_password_hash(user_create.password),
             is_active=user_create.is_active if hasattr(user_create, 'is_active') else True,
@@ -64,6 +72,10 @@ class UserService:
     async def get_user_by_username(self, username: str) -> Optional[User]:
         """Get user by username."""
         return await User.find_one(User.username == username)
+    
+    async def get_user_by_mobile(self, mobile: str) -> Optional[User]:
+        """Get user by mobile phone number."""
+        return await User.find_one(User.mobile == mobile)
     
     async def get_users(self, skip: int = 0, limit: int = 100) -> List[User]:
         """Get list of users with pagination."""
@@ -120,9 +132,16 @@ class UserService:
         await user.delete()
         return True
     
-    async def authenticate_user(self, email: str, password: str) -> Optional[User]:
-        """Authenticate user with email and password."""
-        user = await self.get_user_by_email(email)
+    async def authenticate_user(self, identifier: str, password: str) -> Optional[User]:
+        """Authenticate user with email or mobile phone number and password."""
+        # 先尝试通过邮箱查找
+        user = await self.get_user_by_email(identifier)
+        
+        # 如果邮箱没找到，尝试通过手机号查找
+        if not user:
+            user = await self.get_user_by_mobile(identifier)
+        
+        # 验证密码
         if not user or not verify_password(password, user.hashed_password):
             return None
         return user

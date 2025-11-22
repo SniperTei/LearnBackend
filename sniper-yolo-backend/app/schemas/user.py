@@ -6,7 +6,8 @@ from datetime import datetime
 
 class UserBase(BaseModel):
     """Base user schema."""
-    email: EmailStr
+    email: Optional[EmailStr] = None  # 邮箱变为可选
+    mobile: Optional[str] = None  # 添加手机号字段
     username: str = Field(..., min_length=3, max_length=50)
     is_active: bool = True
 
@@ -14,6 +15,8 @@ class UserBase(BaseModel):
 class UserCreate(UserBase):
     """Request model for user creation."""
     password: str = Field(..., min_length=8, max_length=100)
+    email: Optional[EmailStr] = None  # 邮箱变为可选
+    mobile: Optional[str] = None  # 添加手机号字段
 
 
 class UserUpdate(BaseModel):
@@ -37,7 +40,7 @@ class UserOut(UserBase):
 # 登录请求模型
 class UserLogin(BaseModel):
     """Request model for user login."""
-    email: EmailStr
+    identifier: str  # 可以是邮箱或手机号
     password: str
 
 # 令牌响应模型

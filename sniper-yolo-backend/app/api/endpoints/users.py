@@ -32,16 +32,13 @@ async def create_user(
         # 添加成功日志
         logger.info(f"用户创建成功: {user.username} ({user.email})")
         
+        # 生成访问令牌
+        access_token = create_access_token(subject=str(user.id))
+        token_data = {"access_token": access_token, "token_type": "bearer"}
+        
         return ApiSuccessResponse.create(
-            data={
-                "id": str(user.id),
-                "email": user.email,
-                "username": user.username,
-                "is_active": user.is_active,
-                "created_at": user.created_at.isoformat(),
-                "updated_at": user.updated_at.isoformat() if user.updated_at else None
-            },
-            msg="用户创建成功",
+            data=token_data,
+            msg="用户注册成功",
             status_code=status.HTTP_201_CREATED
         )
         
@@ -72,6 +69,7 @@ async def read_current_user(
             "id": str(current_user.id),
             "email": current_user.email,
             "username": current_user.username,
+            "mobile": current_user.mobile,  # 新增mobile字段
             "is_active": current_user.is_active,
             "created_at": current_user.created_at.isoformat(),
             "updated_at": current_user.updated_at.isoformat() if current_user.updated_at else None
@@ -99,6 +97,7 @@ async def read_users(
                 "id": str(user.id),
                 "email": user.email,
                 "username": user.username,
+                "mobile": user.mobile,  # 新增mobile字段
                 "is_active": user.is_active,
                 "created_at": user.created_at.isoformat(),
                 "updated_at": user.updated_at.isoformat() if user.updated_at else None
@@ -142,6 +141,7 @@ async def read_user(
                 "id": str(user.id),
                 "email": user.email,
                 "username": user.username,
+                "mobile": user.mobile,  # 新增mobile字段
                 "is_active": user.is_active,
                 "created_at": user.created_at.isoformat(),
                 "updated_at": user.updated_at.isoformat() if user.updated_at else None
@@ -176,6 +176,7 @@ async def update_user(
                 "id": str(user.id),
                 "email": user.email,
                 "username": user.username,
+                "mobile": user.mobile,  # 新增mobile字段
                 "is_active": user.is_active,
                 "created_at": user.created_at.isoformat(),
                 "updated_at": user.updated_at.isoformat() if user.updated_at else None
@@ -228,12 +229,12 @@ async def login_for_access_token(
 ) -> ApiSuccessResponse:
     """用户登录并获取访问令牌"""
     try:
-        user = await user_service.authenticate_user(login_data.email, login_data.password)
+        user = await user_service.authenticate_user(login_data.identifier, login_data.password)
         if not user:
             return ApiErrorResponse.create(
                 code="C00401",
                 status_code=status.HTTP_401_UNAUTHORIZED,
-                msg="Incorrect email or password"
+                msg="用户名/邮箱/手机号或密码错误"
             )
         access_token = create_access_token(subject=str(user.id))
         token_data = {"access_token": access_token, "token_type": "bearer"}
