@@ -3,7 +3,7 @@ from typing import Generator, Optional
 from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 # 修改jwt导入方式
-from jose import jwt
+from jose import JWTError, jwt
 from datetime import datetime, timedelta
 from starlette.requests import Request
 from starlette.responses import Response
@@ -44,7 +44,7 @@ async def get_current_user(
             )
             
         return user
-    except jwt.PyJWTError:
+    except JWTError:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Could not validate credentials"

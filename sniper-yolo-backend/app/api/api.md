@@ -384,6 +384,211 @@
 }
 ```
 
+## 食品管理接口
+
+### 1. 创建食品
+**POST** `/foods/`
+
+创建新的食品记录。
+
+**认证**: 需要Bearer Token
+
+**请求参数**:
+```json
+{
+  "title": "宫保鸡丁",
+  "content": "鸡肉嫩滑，花生酥脆，麻辣鲜香",
+  "cover": "https://example.com/foods/kungpao-chicken.jpg",
+  "images": [
+    "https://example.com/foods/kungpao-chicken-1.jpg",
+    "https://example.com/foods/kungpao-chicken-2.jpg"
+  ],
+  "tags": ["川菜", "鸡肉", "麻辣", "下饭菜"],
+  "star": 4,
+  "maker": "老川菜馆",
+  "flavor": "麻辣"
+}
+```
+
+**参数说明**：
+- `title` (必填): 食品标题
+- `content` (可选): 食品描述内容
+- `cover` (可选): 封面图片URL
+- `images` (可选): 图片URL数组
+- `tags` (可选): 标签数组
+- `star` (可选): 评分(0-5之间的数值)
+- `maker` (必填): 制作者/餐厅名称
+- `flavor` (可选): 口味描述
+
+**响应示例**:
+```json
+{
+  "code": "000000",
+  "statusCode": 201,
+  "msg": "食品创建成功",
+  "data": {
+    "id": "6562c5a5b1d4e3f2e4a1b2c3",
+    "title": "宫保鸡丁",
+    "content": "鸡肉嫩滑，花生酥脆，麻辣鲜香",
+    "cover": "https://example.com/foods/kungpao-chicken.jpg",
+    "images": ["https://example.com/foods/kungpao-chicken-1.jpg"],
+    "tags": ["川菜", "鸡肉"],
+    "star": 4,
+    "maker": "老川菜馆",
+    "flavor": "麻辣",
+    "user_id": "1",
+    "create_time": "2024-01-01T00:00:00",
+    "update_time": null
+  },
+  "timestamp": "2025-11-27 13:44:02"
+}
+```
+
+### 2. 获取食品列表
+**GET** `/foods/`
+
+获取食品记录列表，支持分页和多种条件查询。
+
+**查询参数**:
+- `page` (可选): 页码，从1开始，默认1
+- `count` (可选): 每页数量，默认10
+- `title` (可选): 标题模糊查询
+- `content` (可选): 内容模糊查询
+- `maker` (可选): 制作者精确查询
+- `min_star` (可选): 最低评分
+- `max_star` (可选): 最高评分
+- `flavor` (可选): 口味精确查询
+- `tag` (可选): 标签包含查询
+
+**响应示例**:
+```json
+{
+  "code": "000000",
+  "statusCode": 200,
+  "msg": "获取食品列表成功",
+  "data": {
+    "foods": [
+      {
+        "id": "6562c5a5b1d4e3f2e4a1b2c3",
+        "title": "宫保鸡丁",
+        "content": "鸡肉嫩滑，花生酥脆，麻辣鲜香",
+        "cover": "https://example.com/foods/kungpao-chicken.jpg",
+        "images": [],
+        "tags": ["川菜", "鸡肉"],
+        "star": 4,
+        "maker": "老川菜馆",
+        "flavor": "麻辣",
+        "user_id": "1",
+        "create_time": "2024-01-01T00:00:00",
+        "update_time": "2024-01-01T00:00:00"
+      }
+    ],
+    "total": 1,
+    "page": 1,
+    "count": 10
+  },
+  "timestamp": "2025-11-27 13:44:02"
+}
+```
+
+### 3. 获取单个食品
+**GET** `/foods/{food_id}`
+
+根据ID获取单个食品的详细信息。
+
+**路径参数**:
+- `food_id`: 食品ID
+
+**响应示例**:
+```json
+{
+  "code": "000000",
+  "statusCode": 200,
+  "msg": "获取食品成功",
+  "data": {
+    "id": "6562c5a5b1d4e3f2e4a1b2c3",
+    "title": "宫保鸡丁",
+    "content": "鸡肉嫩滑，花生酥脆，麻辣鲜香",
+    "cover": "https://example.com/foods/kungpao-chicken.jpg",
+    "images": ["https://example.com/foods/kungpao-chicken-1.jpg"],
+    "tags": ["川菜", "鸡肉", "麻辣", "下饭菜"],
+    "star": 4,
+    "maker": "老川菜馆",
+    "flavor": "麻辣",
+    "user_id": "1",
+    "create_time": "2024-01-01T00:00:00",
+    "update_time": "2024-01-01T12:00:00"
+  },
+  "timestamp": "2025-11-27 13:44:02"
+}
+```
+
+### 4. 更新食品
+**PUT** `/foods/{food_id}`
+
+根据ID更新单个食品的信息。
+
+**认证**: 需要Bearer Token
+
+**路径参数**:
+- `food_id`: 食品ID
+
+**请求参数**:
+```json
+{
+  "title": "香辣宫保鸡丁",
+  "content": "升级版宫保鸡丁，更加香辣可口",
+  "star": 5,
+  "tags": ["川菜", "鸡肉", "麻辣", "招牌菜"]
+}
+```
+
+**说明**: 只需要提供需要更新的字段，未提供的字段保持不变。
+
+**响应示例**:
+```json
+{
+  "code": "000000",
+  "statusCode": 200,
+  "msg": "更新成功",
+  "data": {
+    "id": "6562c5a5b1d4e3f2e4a1b2c3",
+    "title": "香辣宫保鸡丁",
+    "content": "升级版宫保鸡丁，更加香辣可口",
+    "cover": "https://example.com/foods/kungpao-chicken.jpg",
+    "images": ["https://example.com/foods/kungpao-chicken-1.jpg"],
+    "tags": ["川菜", "鸡肉", "麻辣", "招牌菜"],
+    "star": 5,
+    "maker": "老川菜馆",
+    "flavor": "麻辣",
+    "user_id": "1",
+    "create_time": "2024-01-01T00:00:00",
+    "update_time": "2024-01-02T10:00:00"
+  },
+  "timestamp": "2025-11-27 13:44:02"
+}
+```
+
+### 5. 删除食品
+**DELETE** `/foods/{food_id}`
+
+根据ID删除单个食品。
+
+**认证**: 需要Bearer Token
+
+**路径参数**:
+- `food_id`: 食品ID
+
+**响应示例**:
+```json
+{
+  "code": "000000",
+  "statusCode": 200,
+  "msg": "删除成功",
+  "data": null,
+  "timestamp": "2025-11-27 13:44:02"
+}
+
 ## 系统接口
 
 ### 1. 健康检查

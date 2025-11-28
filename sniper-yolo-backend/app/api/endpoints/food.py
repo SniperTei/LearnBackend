@@ -25,12 +25,15 @@ async def create_food(
     current_user: dict = Depends(get_current_active_user),
     food_service: FoodService = Depends(get_food_service)
 ) -> ApiSuccessResponse:
-    """创建新食品"""
+    """创建新食品记录"""
     try:
-        logger.info(f"用户 {current_user.username} 尝试创建食品: {food.food_name}")
+        logger.info(f"用户 {current_user.username} 尝试创建食品记录: {food.title}")
+        # 添加详细的请求参数日志
+        logger.debug(f"请求参数详情: {food.model_dump()}")
+        
         new_food = await food_service.create_food(food, str(current_user.id))
         
-        logger.info(f"食品创建成功: {new_food['food_name']}")
+        logger.info(f"食品记录创建成功: {new_food['title']}")
         
         return ApiSuccessResponse.create(
             data=new_food,
@@ -48,7 +51,7 @@ async def create_food(
     except Exception as e:
         logger.error(f"食品创建服务器错误: {str(e)}", exc_info=True)
         return ApiErrorResponse.create(
-            code="B00500",
+            code="A00099",
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             msg=f"服务器内部错误: {str(e)}"
         )
@@ -58,29 +61,31 @@ async def create_food(
 async def read_foods(
     page: int = 1,                       # 第几页，从 1 开始
     count: int = 10,                     # 每页条数
-    food_name: Optional[str] = None,     # 食品名称模糊查询
-    food_desc: Optional[str] = None,     # 食品描述模糊查询
-    chef_name: Optional[str] = None,     # 厨师名称精确查询
-    min_price: Optional[float] = None,   # 最低价格
-    max_price: Optional[float] = None,   # 最高价格
+    title: Optional[str] = None,         # 标题模糊查询
+    content: Optional[str] = None,       # 内容模糊查询
+    maker: Optional[str] = None,         # 制作者精确查询
+    min_star: Optional[int] = None,      # 最低评分
+    max_star: Optional[int] = None,      # 最高评分
+    flavor: Optional[str] = None,        # 口味精确查询
     tag: Optional[str] = None,           # 标签包含查询
     food_service: FoodService = Depends(get_food_service)
 ) -> ApiSuccessResponse:
-    """获取食品列表（支持条件查询和分页）"""
+    """获取食品记录列表（支持条件查询和分页）"""
     try:
         # 内部换算
         skip = (page - 1) * count
         limit = count
 
-        logger.info(f"获取食品列表，page={page}, count={count}, food_name={food_name}, food_desc={food_desc}, chef_name={chef_name}, min_price={min_price}, max_price={max_price}, tag={tag} (skip={skip}, limit={limit})")
+        logger.info(f"获取食品记录列表，page={page}, count={count}, title={title}, content={content}, maker={maker}, min_star={min_star}, max_star={max_star}, flavor={flavor}, tag={tag} (skip={skip}, limit={limit})")
         
         # 调用带条件查询的服务方法
         foods = await food_service.search_foods(
-            food_name=food_name,
-            food_desc=food_desc,
-            chef_name=chef_name,
-            min_price=min_price,
-            max_price=max_price,
+            title=title,
+            content=content,
+            maker=maker,
+            min_star=min_star,
+            max_star=max_star,
+            flavor=flavor,
             tag=tag,
             skip=skip,
             limit=limit
@@ -88,11 +93,12 @@ async def read_foods(
         
         # 获取满足条件的总条数
         total = await food_service.search_foods_count(
-            food_name=food_name,
-            food_desc=food_desc,
-            chef_name=chef_name,
-            min_price=min_price,
-            max_price=max_price,
+            title=title,
+            content=content,
+            maker=maker,
+            min_star=min_star,
+            max_star=max_star,
+            flavor=flavor,
             tag=tag
         )
 
