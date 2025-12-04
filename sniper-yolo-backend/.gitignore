@@ -44,7 +44,6 @@ htmlcov/
 *.egg-info/
 
 # Models and data
-models/
 *.pt
 *.pth
 *.onnx
