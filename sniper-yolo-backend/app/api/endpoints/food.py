@@ -64,8 +64,8 @@ async def read_foods(
     title: Optional[str] = None,         # 标题模糊查询
     content: Optional[str] = None,       # 内容模糊查询
     maker: Optional[str] = None,         # 制作者精确查询
-    min_star: Optional[int] = None,      # 最低评分
-    max_star: Optional[int] = None,      # 最高评分
+    min_star: Optional[float] = None,      # 最低评分，支持小数
+    max_star: Optional[float] = None,      # 最高评分，支持小数
     flavor: Optional[str] = None,        # 口味精确查询
     tag: Optional[str] = None,           # 标签包含查询
     food_service: FoodService = Depends(get_food_service)
