@@ -1,9 +1,15 @@
+"""饭店信息模型"""
 from datetime import datetime, timezone
 from typing import List, Optional
-from beanie import Document, Indexed, Field
+from beanie import Document, Indexed, PydanticObjectId
+from pydantic import Field
 
 
 class Enjoy(Document):
+    """饭店信息模型
+    
+    存储饭店的基本信息、评价、图片等内容
+    """
     # ======== 核心业务字段 - 饭店记录专用（必选字段） ========
     title: Indexed(str)           # ✅ 必选 | 饭店名称（索引字段，查询更快）
     location: str                 # ✅ 必选 | 饭店详细地址

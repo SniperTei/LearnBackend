@@ -1,7 +1,7 @@
 """Router summary using Starlette's Router."""
 from fastapi import APIRouter
 
-from app.api.endpoints import users, items, food, upload  # 导入新的upload模块
+from app.api.endpoints import users, items, food, upload, enjoy # 导入enjoy模块
 
 api_router = APIRouter(redirect_slashes=False)
 
@@ -31,3 +31,17 @@ api_router.include_router(
     prefix="/upload", 
     tags=["upload"]
 )
+
+# 添加enjoy路由
+api_router.include_router(
+    enjoy.router,
+    prefix="/enjoys",
+    tags=["enjoys"]
+)
+
+# 添加drink路由
+# api_router.include_router(
+#     drink.router,
+#     prefix="/drinks",
+#     tags=["drinks"]
+# )
