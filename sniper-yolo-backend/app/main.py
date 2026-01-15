@@ -67,7 +67,8 @@ async def http_exception_handler(request: Request, exc: StarletteHTTPException):
     
     return JSONResponse(
         status_code=exc.status_code,
-        content=error_response.model_dump()
+        content=error_response.model_dump(),
+        media_type="application/json; charset=utf-8"
     )
 
 # 同样修改其他异常处理器
@@ -90,7 +91,8 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
     
     return JSONResponse(
         status_code=422,
-        content=error_response.model_dump()
+        content=error_response.model_dump(),
+        media_type="application/json; charset=utf-8"
     )
 
 @app.exception_handler(Exception)
@@ -106,7 +108,8 @@ async def global_exception_handler(request: Request, exc: Exception):
     
     return JSONResponse(
         status_code=500,
-        content=error_response.model_dump()
+        content=error_response.model_dump(),
+        media_type="application/json; charset=utf-8"
     )
 
 @app.on_event("startup")

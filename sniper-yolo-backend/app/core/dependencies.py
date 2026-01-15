@@ -11,6 +11,7 @@ from starlette.responses import Response
 from app.core.config import settings
 from app.models.user import User
 from app.services.user_service import UserService
+from app.services.llm_service import LLMService
 
 security = HTTPBearer()
 
@@ -64,6 +65,10 @@ async def get_current_active_user(
 def get_user_service() -> UserService:
     """获取用户服务实例"""
     return UserService()
+
+def get_llm_service() -> LLMService:
+    """获取LLM服务实例"""
+    return LLMService()
 
 def get_db() -> Generator:
     """Database dependency (placeholder for actual DB implementation)."""

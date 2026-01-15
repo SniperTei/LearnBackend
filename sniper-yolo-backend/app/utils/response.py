@@ -31,6 +31,11 @@ class ApiSuccessResponse(BaseModel):
             statusCode=status_code,
             timestamp=datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         )
+    
+    def json(self, **kwargs):
+        """自定义JSON序列化，确保中文正常显示"""
+        kwargs.setdefault("ensure_ascii", False)
+        return super().json(**kwargs)
 
 
 class ApiErrorResponse(BaseModel):
@@ -50,6 +55,11 @@ class ApiErrorResponse(BaseModel):
             msg=msg,
             timestamp=datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         )
+    
+    def json(self, **kwargs):
+        """自定义JSON序列化，确保中文正常显示"""
+        kwargs.setdefault("ensure_ascii", False)
+        return super().json(**kwargs)
 
 
 # 创建统一的响应类型，可以在路由中使用

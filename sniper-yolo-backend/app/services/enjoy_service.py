@@ -27,13 +27,32 @@ class EnjoyService:
         try:
             logger.info(f"创建饭店信息: {enjoy_data.title}, 创建人: {created_by}")
             
+            # 验证必需字段
+            if not enjoy_data.title or not enjoy_data.location or not enjoy_data.maker:
+                raise ValueError("标题、地址和推荐来源为必需字段")
+            
+            # 验证star值范围
+            if enjoy_data.star is not None and (enjoy_data.star < 1 or enjoy_data.star > 5):
+                raise ValueError("评分必须在1-5之间")
+            
             # 创建新的饭店信息对象
+            now = datetime.now(timezone.utc)
             new_enjoy = Enjoy(
-                **enjoy_data.model_dump(),
+                title=enjoy_data.title,
+                content=enjoy_data.content or "",
+                cover=enjoy_data.cover or "",
+                images=enjoy_data.images or [],
+                tags=enjoy_data.tags or [],
+                star=enjoy_data.star,
+                maker=enjoy_data.maker,
+                flavor=enjoy_data.flavor or "",
+                location=enjoy_data.location,
+                price_per_person=enjoy_data.price_per_person,
+                recommend_dishes=enjoy_data.recommend_dishes or [],
                 created_by=created_by,
                 updated_by=created_by,
-                create_time=datetime.now(timezone.utc),
-                update_time=datetime.now(timezone.utc)
+                create_time=now,
+                update_time=now
             )
             
             # 保存到数据库
