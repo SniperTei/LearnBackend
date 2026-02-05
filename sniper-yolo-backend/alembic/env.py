@@ -2,6 +2,11 @@ from logging.config import fileConfig
 from sqlalchemy import engine_from_config
 from sqlalchemy import pool
 from alembic import context
+import sys
+import os
+
+# Add the project root to the path
+sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
@@ -16,6 +21,11 @@ if config.config_file_name is not None:
 # for 'autogenerate' support
 from app.models.base import Base
 target_metadata = Base.metadata
+
+# Override the sqlalchemy.url from the environment if available
+from app.core.config import settings
+if settings.ALEMBIC_DATABASE_URL:
+    config.set_main_option("sqlalchemy.url", settings.ALEMBIC_DATABASE_URL)
 
 # other values from the config, defined by the needs of env.py,
 # can be acquired:
@@ -60,13 +70,17 @@ def run_migrations_online() -> None:
         poolclass=pool.NullPool,
     )
 
-    with connectable.connect() as connection:
-        context.configure(
-            connection=connection, target_metadata=target_metadata
-        )
+    try:
+        with connectable.connect() as connection:
+            context.configure(
+                connection=connection, target_metadata=target_metadata
+            )
 
-        with context.begin_transaction():
-            context.run_migrations()
+            with context.begin_transaction():
+                context.run_migrations()
+    except Exception as e:
+        print(f"Migration error: {e}")
+        raise
 
 
 if context.is_offline_mode():

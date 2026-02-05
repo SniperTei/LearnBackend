@@ -115,12 +115,12 @@ async def global_exception_handler(request: Request, exc: Exception):
 @app.on_event("startup")
 async def startup_event():
     # 连接数据库
-    """应用启动时连接MongoDB"""
+    """应用启动时连接PostgreSQL"""
     await Database.connect()
     if await Database.ping():
-        logger.info("MongoDB连接正常")
+        logger.info("PostgreSQL连接正常")
     else:
-        logger.error("MongoDB连接异常")
+        logger.error("PostgreSQL连接异常")
     """应用启动事件"""
     logger.info("Starting Sniper YOLO Backend...")
     logger.info(f"Environment: {settings.DEBUG and 'Development' or 'Production'}")
@@ -131,7 +131,7 @@ async def startup_event():
 async def shutdown_event():
     """应用关闭事件"""
     await Database.close()
-    logger.info("MongoDB连接已关闭")
+    logger.info("PostgreSQL连接已关闭")
     logger.info("Shutting down Sniper YOLO Backend...")
 
 

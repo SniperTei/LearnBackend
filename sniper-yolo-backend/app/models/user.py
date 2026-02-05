@@ -1,49 +1,39 @@
-from passlib.context import CryptContext   # 如果已有可忽略
-import hashlib
-import base64
-from passlib.context import CryptContext
-from beanie import Document
-from pydantic import BaseModel, Field, validator
-from typing import Optional
+"""User SQLAlchemy model for PostgreSQL"""
 from datetime import datetime
-from beanie.odm.fields import PydanticObjectId
-from app.core.security import get_password_hash
+from sqlalchemy import Column, Integer, String, Boolean, DateTime, SmallInteger
+from sqlalchemy.orm import relationship
+from app.models.base import Base
 
-class User(Document):
-    username: str
-    email: str
-    mobile: Optional[str] = None  # 新增mobile字段
-    hashed_password: str
-    is_active: bool = True
-    is_superuser: bool = False
-    vip_level: int = Field(1, ge=1, le=10)   # 新增字段
-    created_at: datetime = datetime.utcnow()
-    updated_at: datetime   # 保持必填
 
-    # 自动同步 superuser => vip_level
-    @validator("vip_level", pre=True, always=True)
-    def sync_vip_level(cls, v, values):
-        if values.get("is_superuser"):
-            return 10
-        return v or 1
+class User(Base):
+    """用户表模型"""
+    __tablename__ = "users"
 
-    class Settings:
-        name = "users"
-        use_state_management = True   # 启用 save 事件钩子
+    id = Column(Integer, primary_key=True, index=True, autoincrement=True)
+    username = Column(String, unique=True, nullable=False, index=True)
+    email = Column(String, unique=True, nullable=False, index=True)
+    mobile = Column(String, unique=True, nullable=True, index=True)
+    hashed_password = Column(String, nullable=False)
+    full_name = Column(String, nullable=True)
+    is_active = Column(Boolean, default=True, nullable=True)
+    is_superuser = Column(Boolean, default=False, nullable=True)
+    vip_level = Column(SmallInteger, default=1, nullable=True)
+    created_at = Column(DateTime(timezone=True), server_default="now()", nullable=True)
+    updated_at = Column(DateTime(timezone=True), onupdate="now()", nullable=True)
 
-    class Config:
-        json_encoders = {
-            datetime: lambda v: v.isoformat(),
-            PydanticObjectId: str,
+    # Relationships
+    items = relationship("Item", back_populates="owner", cascade="all, delete-orphan")
+
+    def to_dict(self) -> dict:
+        """Convert model to dictionary"""
+        return {
+            "id": str(self.id),
+            "email": self.email,
+            "username": self.username,
+            "mobile": self.mobile,
+            "is_active": self.is_active,
+            "is_superuser": self.is_superuser,
+            "vip_level": self.vip_level,
+            "created_at": self.created_at.isoformat() if self.created_at else None,
+            "updated_at": self.updated_at.isoformat() if self.updated_at else None
         }
-
-    def dict(self, **kwargs):
-        d = super().dict(**kwargs)
-        if "_id" in d:
-            d["id"] = str(d.pop("_id"))
-        return d
-
-    @staticmethod
-    def hash_password(raw: str) -> str:
-        # 使用security.py中已配置的PBKDF2哈希函数
-        return get_password_hash(raw)

@@ -28,22 +28,17 @@ class LoggingMiddleware(BaseHTTPMiddleware):
         body_bytes = await request.body()
         logger.info("→ Body: %s", body_bytes.decode() or "-")
 
-        # 3. 重新注入 body
-        async def receive():
-            return {"type": "http.request", "body": body_bytes, "more_body": False}
-        request._receive = receive
-
-        # 4. 业务处理
+        # 3. 业务处理
         response = await call_next(request)
 
-        # 5. 响应体
+        # 4. 响应体
         resp_body = b""
         async for chunk in response.body_iterator:
             resp_body += chunk
         logger.info("← Status : %s", response.status_code)
         logger.info("← Body   : %s", resp_body.decode() or "-")
 
-        # 6. 重新封装
+        # 5. 重新封装
         return StreamingResponse(
             iter([resp_body]),
             status_code=response.status_code,

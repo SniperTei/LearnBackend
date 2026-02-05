@@ -28,9 +28,10 @@ class Settings(BaseSettings):
     BACKEND_CORS_ORIGINS: List[str] = ["*"]
     
     # Database Settings
-    # DATABASE_URL: Optional[str] = "sqlite:///./sniper_yolo.db"
+    DATABASE_URL: Optional[str] = None  # 从环境变量读取，格式: postgresql+asyncpg://user:password@host:port/database
     MONGODB_URL: Optional[str] = "mongodb://localhost:27017"
     DATABASE_NAME: Optional[str] = "sniper_yolo"
+    ALEMBIC_DATABASE_URL: Optional[str] = None  # 从环境变量读取，格式: postgresql+psycopg2://user:password@host:port/database
     
     # YOLO Settings
     YOLO_MODEL_PATH: str = "./models/yolo.pt"

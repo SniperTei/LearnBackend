@@ -9,55 +9,67 @@ from app.core.config import settings
 
 class QiniuStorageService:
     """七牛云存储服务 - 前端直传模式"""
-    
+
     def __init__(self):
         self.access_key = settings.QINIU_ACCESS_KEY
         self.secret_key = settings.QINIU_SECRET_KEY
         self.bucket_name = settings.QINIU_BUCKET_NAME
         self.domain = settings.QINIU_DOMAIN
-        self.q = Auth(self.access_key, self.secret_key)
+        # Only initialize Auth if keys are configured
+        if self.access_key and self.secret_key:
+            self.q = Auth(self.access_key, self.secret_key)
+            self.enabled = True
+        else:
+            self.q = None
+            self.enabled = False
         # 默认上传策略配置
         self.default_policy = getattr(settings, 'QINIU_UPLOAD_POLICY', {})
     
     def get_token(self, key: Optional[str] = None, policy: Optional[Dict] = None, expires: int = 3600) -> str:
         """获取上传token
-        
+
         Args:
             key: 上传后保存的文件名，如果为None则使用默认文件名
             policy: 上传策略，如回调配置等
             expires: token过期时间，单位秒
-            
+
         Returns:
             上传token字符串
         """
+        if not self.enabled or not self.q:
+            raise ValueError("七牛云存储未配置，请先配置 QINIU_ACCESS_KEY 和 QINIU_SECRET_KEY")
+
         # 合并默认策略和自定义策略
         upload_policy = self.default_policy.copy()
         if policy:
             upload_policy.update(policy)
-        
+
         return self.q.upload_token(self.bucket_name, key, expires, upload_policy)
     
     def get_upload_config(self, file_type: Optional[str] = None, expires: int = 3600) -> Dict[str, Any]:
         """获取完整的上传配置信息（用于前端直传）
-        
+
         Args:
             file_type: 文件类型，用于生成特定前缀的路径
             expires: token过期时间，单位秒
-            
+
         Returns:
             包含token、上传地址、存储域名等信息的配置字典
         """
+        if not self.enabled:
+            raise ValueError("七牛云存储未配置，请先配置 QINIU_ACCESS_KEY 和 QINIU_SECRET_KEY")
+
         # 生成唯一key前缀（可选）
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         unique_id = str(uuid.uuid4())[:8]
         key_prefix = f"uploads/{file_type or 'general'}/{timestamp}_{unique_id}_"
-        
+
         # 生成token
         token = self.get_token(None, expires=expires)
-        
+
         # 构建上传配置
         protocol = "https" if getattr(settings, 'USE_HTTPS', False) else "http"
-        
+
         return {
             "token": token,
             "key_prefix": key_prefix,

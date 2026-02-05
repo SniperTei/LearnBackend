@@ -1,63 +1,68 @@
-"""MongoDB数据库连接管理"""
+"""PostgreSQL数据库连接管理"""
 import logging
 from typing import Optional
-from motor.motor_asyncio import AsyncIOMotorClient
-from beanie import init_beanie
+from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
+from sqlalchemy.orm import sessionmaker
+from sqlalchemy import text
 from app.core.config import settings
 
 logger = logging.getLogger(__name__)
 
 class Database:
-    """MongoDB连接管理器"""
-    MONGODB_URL: Optional[str] = settings.MONGODB_URL
+    """PostgreSQL连接管理器"""
+    DATABASE_URL: Optional[str] = settings.DATABASE_URL
     DATABASE_NAME: Optional[str] = settings.DATABASE_NAME
-    
-    client: Optional[AsyncIOMotorClient] = None
-    
+
+    engine = None
+    async_session = None
+
     @classmethod
     async def connect(cls):
-        """连接MongoDB"""
+        """连接PostgreSQL"""
         try:
-            cls.client = AsyncIOMotorClient(settings.MONGODB_URL)
-            logger.info("✅ MongoDB连接成功")
-            
-            # 初始化Beanie
-            from app.models.user import User
-            from app.models.item import Item
-            from app.models.food import Food  # 导入Food模型
-            from app.models.enjoy import Enjoy  # 导入Enjoy模型
-            
-            await init_beanie(
-                database=cls.client[settings.DATABASE_NAME],
-                document_models=[User, Item, Food, Enjoy]  # 添加Food和Enjoy模型
+            cls.engine = create_async_engine(
+                settings.DATABASE_URL,
+                pool_size=10,
+                max_overflow=20,
+                pool_pre_ping=True,
+                echo=False  # Set to True for SQL debug logging
             )
-            logger.info("✅ Beanie初始化完成")
-            
+
+            # Create async session factory
+            cls.async_session = sessionmaker(
+                cls.engine,
+                class_=AsyncSession,
+                expire_on_commit=False
+            )
+
+            logger.info("✅ PostgreSQL连接成功")
+
         except Exception as e:
-            logger.error(f"❌ MongoDB连接失败: {e}")
+            logger.error(f"❌ PostgreSQL连接失败: {e}")
             raise
-    
+
     @classmethod
     async def close(cls):
-        """关闭MongoDB连接"""
-        if cls.client:
-            cls.client.close()
-            logger.info("✅ MongoDB连接已关闭")
-    
+        """关闭PostgreSQL连接"""
+        if cls.engine:
+            await cls.engine.dispose()
+            logger.info("✅ PostgreSQL连接已关闭")
+
     @classmethod
     async def ping(cls) -> bool:
-        """测试MongoDB连接"""
+        """测试PostgreSQL连接"""
         try:
-            if cls.client:
-                await cls.client.admin.command('ping')
-                return True
+            if cls.engine:
+                async with cls.engine.connect() as conn:
+                    await conn.execute(text("SELECT 1"))
+                    return True
             return False
         except Exception:
             return False
-    
+
     @classmethod
-    def get_database(cls):
-        """获取数据库实例"""
-        if cls.client:
-            return cls.client[settings.DATABASE_NAME]
+    def get_session(cls):
+        """获取数据库session"""
+        if cls.async_session:
+            return cls.async_session()
         return None

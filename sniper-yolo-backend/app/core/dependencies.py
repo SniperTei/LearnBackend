@@ -2,22 +2,32 @@
 from typing import Generator, Optional
 from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
-# 修改jwt导入方式
 from jose import JWTError, jwt
-from datetime import datetime, timedelta
 from starlette.requests import Request
-from starlette.responses import Response
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.config import settings
 from app.models.user import User
 from app.services.user_service import UserService
 from app.services.llm_service import LLMService
+from app.core.database import Database
 
 security = HTTPBearer()
 
+
+async def get_db():
+    """Get database session dependency."""
+    async with Database.async_session() as session:
+        try:
+            yield session
+        finally:
+            await session.close()
+
+
 async def get_current_user(
     request: Request,
-    credentials: HTTPAuthorizationCredentials = Depends(security)
+    credentials: HTTPAuthorizationCredentials = Depends(security),
+    db: AsyncSession = Depends(get_db)
 ) -> User:
     """Get current authenticated user from JWT token."""
     try:
@@ -32,24 +42,24 @@ async def get_current_user(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail="Could not validate credentials"
             )
-        
-        # 从数据库获取用户
-        from app.services.user_service import UserService
+
+        # 从数据库获取用户 (user_id is string, convert to int)
         user_service = UserService()
-        user = await user_service.get_user(user_id)
-        
+        user = await user_service.get_user(int(user_id), db)
+
         if not user:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail="User not found"
             )
-            
+
         return user
     except JWTError:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Could not validate credentials"
         )
+
 
 async def get_current_active_user(
     current_user: User = Depends(get_current_user)
@@ -62,14 +72,12 @@ async def get_current_active_user(
         )
     return current_user
 
+
 def get_user_service() -> UserService:
     """获取用户服务实例"""
     return UserService()
 
+
 def get_llm_service() -> LLMService:
     """获取LLM服务实例"""
     return LLMService()
-
-def get_db() -> Generator:
-    """Database dependency (placeholder for actual DB implementation)."""
-    yield None

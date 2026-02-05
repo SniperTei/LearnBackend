@@ -1,46 +1,42 @@
-"""食品相关API端点 - 使用统一响应格式"""
+"""食品相关API端点 - 使用统一响应格式和PostgreSQL"""
 from typing import List, Optional
 import logging
 from fastapi import APIRouter, Depends, HTTPException, status
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.schemas.food import FoodCreate, FoodOut, FoodUpdate
 from app.models.user import User
 from app.services.food_service import FoodService
-from app.core.dependencies import get_current_active_user
+from app.core.dependencies import get_current_active_user, get_db
 from app.utils.response import ApiSuccessResponse, ApiErrorResponse, ApiResponse
 
-# 创建logger实例
 logger = logging.getLogger(__name__)
 
 router = APIRouter()
-
-def get_food_service() -> FoodService:
-    """获取食品服务实例"""
-    return FoodService()
 
 
 @router.post("/", response_model=ApiSuccessResponse)
 async def create_food(
     food: FoodCreate,
-    current_user: dict = Depends(get_current_active_user),
-    food_service: FoodService = Depends(get_food_service)
+    current_user: User = Depends(get_current_active_user),
+    db: AsyncSession = Depends(get_db)
 ) -> ApiSuccessResponse:
     """创建新食品记录"""
     try:
         logger.info(f"用户 {current_user.username} 尝试创建食品记录: {food.title}")
-        # 添加详细的请求参数日志
         logger.debug(f"请求参数详情: {food.model_dump()}")
-        
-        new_food = await food_service.create_food(food, str(current_user.id))
-        
+
+        food_service = FoodService()
+        new_food = await food_service.create_food(food, int(current_user.id), db)
+
         logger.info(f"食品记录创建成功: {new_food['title']}")
-        
+
         return ApiSuccessResponse.create(
             data=new_food,
             msg="食品创建成功",
             status_code=status.HTTP_201_CREATED
         )
-        
+
     except ValueError as e:
         logger.warning(f"食品创建验证失败: {str(e)}")
         return ApiErrorResponse.create(
@@ -59,53 +55,53 @@ async def create_food(
 
 @router.get("/", response_model=ApiSuccessResponse)
 async def read_foods(
-    page: int = 1,                       # 第几页，从 1 开始
-    count: int = 10,                     # 每页条数
-    title: Optional[str] = None,         # 标题模糊查询
-    content: Optional[str] = None,       # 内容模糊查询
-    maker: Optional[str] = None,         # 制作者精确查询
-    min_star: Optional[float] = None,      # 最低评分，支持小数
-    max_star: Optional[float] = None,      # 最高评分，支持小数
-    flavor: Optional[str] = None,        # 口味精确查询
-    tag: Optional[str] = None,           # 标签包含查询
-    food_service: FoodService = Depends(get_food_service)
+    page: int = 1,
+    count: int = 10,
+    title: Optional[str] = None,
+    content: Optional[str] = None,
+    maker: Optional[str] = None,
+    min_star: Optional[float] = None,
+    max_star: Optional[float] = None,
+    flavor: Optional[str] = None,
+    tag: Optional[str] = None,
+    db: AsyncSession = Depends(get_db)
 ) -> ApiSuccessResponse:
     """获取食品记录列表（支持条件查询和分页）"""
     try:
-        # 内部换算
         skip = (page - 1) * count
         limit = count
 
         logger.info(f"获取食品记录列表，page={page}, count={count}, title={title}, content={content}, maker={maker}, min_star={min_star}, max_star={max_star}, flavor={flavor}, tag={tag} (skip={skip}, limit={limit})")
-        
-        # 调用带条件查询的服务方法
+
+        food_service = FoodService()
         foods = await food_service.search_foods(
             title=title,
             content=content,
             maker=maker,
-            min_star=min_star,
-            max_star=max_star,
+            min_star=int(min_star) if min_star is not None else None,
+            max_star=int(max_star) if max_star is not None else None,
             flavor=flavor,
             tag=tag,
+            db=db,
             skip=skip,
             limit=limit
         )
-        
-        # 获取满足条件的总条数
+
         total = await food_service.search_foods_count(
             title=title,
             content=content,
             maker=maker,
-            min_star=min_star,
-            max_star=max_star,
+            min_star=int(min_star) if min_star is not None else None,
+            max_star=int(max_star) if max_star is not None else None,
             flavor=flavor,
-            tag=tag
+            tag=tag,
+            db=db
         )
 
         return ApiSuccessResponse.create(
             data={
                 "foods": foods,
-                "total": total,   # 返回所有满足条件的总条数
+                "total": total,
                 "page": page,
                 "count": count
             },
@@ -123,13 +119,14 @@ async def read_foods(
 
 @router.get("/{food_id}", response_model=ApiSuccessResponse)
 async def get_food(
-    food_id: str,
-    food_service: FoodService = Depends(get_food_service)
+    food_id: int,
+    db: AsyncSession = Depends(get_db)
 ) -> ApiSuccessResponse:
     """根据 ID 获取单个食品"""
     try:
         logger.info(f"获取食品: {food_id}")
-        food = await food_service.get_food(food_id)
+        food_service = FoodService()
+        food = await food_service.get_food(food_id, db)
         if not food:
             return ApiErrorResponse.create(
                 code="B00404",
@@ -137,11 +134,8 @@ async def get_food(
                 msg="食品不存在"
             )
 
-        # 如果已经是 dict，直接返回；否则再转一次
-        data = food if isinstance(food, dict) else food.dict()
-
         return ApiSuccessResponse.create(
-            data=data,
+            data=food,
             msg="获取食品成功"
         )
     except Exception as e:
@@ -155,18 +149,19 @@ async def get_food(
 
 @router.put("/{food_id}", response_model=ApiSuccessResponse)
 async def update_food(
-    food_id: str,
+    food_id: int,
     food: FoodUpdate,
-    food_service: FoodService = Depends(get_food_service),
-    current_user: User = Depends(get_current_active_user)   # 取当前用户
+    current_user: User = Depends(get_current_active_user),
+    db: AsyncSession = Depends(get_db)
 ) -> ApiSuccessResponse:
     """根据 ID 更新单个食品"""
     try:
-        # 把 updated_by 传进去
+        food_service = FoodService()
         updated = await food_service.update_food(
             food_id,
             food,
-            updated_by=str(current_user.id)
+            int(current_user.id),
+            db
         )
         if not updated:
             return ApiErrorResponse.create(
@@ -174,8 +169,7 @@ async def update_food(
                 status_code=status.HTTP_404_NOT_FOUND,
                 msg="食品不存在"
             )
-        data = updated if isinstance(updated, dict) else updated.dict()
-        return ApiSuccessResponse.create(data=data, msg="更新成功")
+        return ApiSuccessResponse.create(data=updated, msg="更新成功")
     except Exception as e:
         logger.error(f"更新食品失败: {str(e)}", exc_info=True)
         return ApiErrorResponse.create(
@@ -187,13 +181,14 @@ async def update_food(
 
 @router.delete("/{food_id}", response_model=ApiSuccessResponse)
 async def delete_food(
-    food_id: str,
-    food_service: FoodService = Depends(get_food_service),
-    current_user: User = Depends(get_current_active_user)   # 取当前用户
+    food_id: int,
+    current_user: User = Depends(get_current_active_user),
+    db: AsyncSession = Depends(get_db)
 ) -> ApiSuccessResponse:
     """根据 ID 删除单个食品"""
     try:
-        deleted = await food_service.delete_food(food_id)
+        food_service = FoodService()
+        deleted = await food_service.delete_food(food_id, db)
         if not deleted:
             return ApiErrorResponse.create(
                 code="B00404",

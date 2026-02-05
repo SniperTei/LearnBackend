@@ -95,8 +95,52 @@ def upgrade() -> None:
         sa.PrimaryKeyConstraint('id')
     )
 
+    # Create funs table
+    op.create_table('funs',
+        sa.Column('id', sa.Integer(), nullable=False),
+        sa.Column('title', sa.String(), nullable=False),
+        sa.Column('content', sa.Text(), nullable=True),
+        sa.Column('cover', sa.String(), nullable=True),
+        sa.Column('images', ARRAY(sa.String()), nullable=True),
+        sa.Column('tags', ARRAY(sa.String()), nullable=True),
+        sa.Column('star', sa.Integer(), nullable=True),
+        sa.Column('maker', sa.String(), nullable=False),
+        sa.Column('flavor', sa.String(), nullable=True),
+        sa.Column('created_by', sa.Integer(), nullable=True),
+        sa.Column('updated_by', sa.Integer(), nullable=True),
+        sa.Column('create_time', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=True),
+        sa.Column('update_time', sa.DateTime(timezone=True), nullable=True),
+        sa.ForeignKeyConstraint(['created_by'], ['users.id'], ),
+        sa.ForeignKeyConstraint(['updated_by'], ['users.id'], ),
+        sa.PrimaryKeyConstraint('id')
+    )
+
+    # Create drinks table
+    op.create_table('drinks',
+        sa.Column('id', sa.Integer(), nullable=False),
+        sa.Column('title', sa.String(), nullable=False),
+        sa.Column('content', sa.String(), nullable=True),
+        sa.Column('cover', sa.String(), nullable=True),
+        sa.Column('images', ARRAY(sa.String()), nullable=True),
+        sa.Column('tags', ARRAY(sa.String()), nullable=True),
+        sa.Column('star', sa.Float(), nullable=True),
+        sa.Column('user_id', sa.Integer(), nullable=False),
+        sa.Column('drink_name', sa.String(), nullable=False),
+        sa.Column('drink_type', sa.String(), nullable=False),
+        sa.Column('recommender', sa.String(), nullable=True),
+        sa.Column('taste', sa.String(), nullable=True),
+        sa.Column('min_price', sa.Float(), nullable=True),
+        sa.Column('max_price', sa.Float(), nullable=True),
+        sa.Column('currency', sa.String(), nullable=True, default='元'),
+        sa.Column('create_time', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=True),
+        sa.Column('update_time', sa.DateTime(timezone=True), nullable=True),
+        sa.PrimaryKeyConstraint('id')
+    )
+
 
 def downgrade() -> None:
+    op.drop_table('drinks')
+    op.drop_table('funs')
     op.drop_table('enjoys')
     op.drop_table('foods')
     op.drop_table('items')
