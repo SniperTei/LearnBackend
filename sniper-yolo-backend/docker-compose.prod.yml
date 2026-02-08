@@ -22,7 +22,7 @@ services:
       - DATABASE_URL=postgresql+asyncpg://sniper:STRONG_PASSWORD_HERE@postgres:5432/sniper_yolo
       - ALEMBIC_DATABASE_URL=postgresql+psycopg2://sniper:STRONG_PASSWORD_HERE@postgres:5432/sniper_yolo
     networks:
-      - sniper_network
+      - sniper_prod_network
     healthcheck:
       test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/api/v1/health')"]
       interval: 30s
@@ -60,7 +60,7 @@ services:
     ports:
       - "5432:5432"
     networks:
-      - sniper_network
+      - sniper_prod_network
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U sniper"]
       interval: 10s
@@ -93,7 +93,7 @@ services:
     volumes:
       - redis_data_prod:/data
     networks:
-      - sniper_network
+      - sniper_prod_network
     command: >
       redis-server
       --appendonly yes
@@ -129,7 +129,7 @@ services:
     depends_on:
       - web
     networks:
-      - sniper_network
+      - sniper_prod_network
     healthcheck:
       test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost/health"]
       interval: 30s
@@ -142,11 +142,12 @@ services:
         max-file: "5"
 
 networks:
-  sniper_network:
+  sniper_prod_network:
+    name: sniper_prod_network
     driver: bridge
     ipam:
       config:
-        - subnet: 172.20.0.0/16
+        - subnet: 172.21.0.0/16
 
 volumes:
   postgres_data_prod:

@@ -22,7 +22,7 @@ services:
       - DATABASE_URL=postgresql+asyncpg://sniper:db123456@postgres:5432/sniper_yolo_test
       - ALEMBIC_DATABASE_URL=postgresql+psycopg2://sniper:db123456@postgres:5432/sniper_yolo_test
     networks:
-      - sniper_network
+      - sniper_test_network
     healthcheck:
       test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/api/v1/health')"]
       interval: 30s
@@ -51,7 +51,7 @@ services:
     ports:
       - "5434:5432"  # 宿主机5434端口映射到容器5432
     networks:
-      - sniper_network
+      - sniper_test_network
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U sniper"]
       interval: 10s
@@ -73,7 +73,7 @@ services:
     volumes:
       - redis_data_test:/data
     networks:
-      - sniper_network
+      - sniper_test_network
     command: redis-server --appendonly yes
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
@@ -99,7 +99,7 @@ services:
     depends_on:
       - web
     networks:
-      - sniper_network
+      - sniper_test_network
     logging:
       driver: "json-file"
       options:
@@ -107,7 +107,8 @@ services:
         max-file: "3"
 
 networks:
-  sniper_network:
+  sniper_test_network:
+    name: sniper_test_network
     driver: bridge
 
 volumes:
