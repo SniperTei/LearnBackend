@@ -1,8 +1,9 @@
+# 多阶段构建 Dockerfile
 # 构建参数，默认为生产环境
 ARG ENVIRONMENT=production
 
-# 第一阶段：构建环境
-FROM python:3.11-slim-bookworm AS builder
+# 基础镜像
+FROM python:3.11-slim-bookworm
 
 # 设置工作目录
 WORKDIR /app
@@ -11,52 +12,30 @@ WORKDIR /app
 RUN apt-get update && apt-get install -y --no-install-recommends \
     gcc \
     python3-dev \
+    libpq-dev \
     && rm -rf /var/lib/apt/lists/*
 
-# 复制requirements.txt并安装依赖
+# 复制 requirements.txt 并安装依赖
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# 第二阶段：生产环境
-FROM python:3.11-slim-bookworm AS production
-
-WORKDIR /app
-
-# 从构建阶段复制已安装的依赖
-COPY --from=builder /usr/local/lib/python3.11/site-packages /usr/local/lib/python3.11/site-packages
-
 # 复制项目代码
 COPY . .
 
-# 设置生产环境变量
-ENV DEBUG=False
+# 创建非 root 用户
+RUN useradd -m -u 1000 appuser && chown -R appuser:appuser /app
+USER appuser
+
+# 根据环境设置变量
+ARG ENVIRONMENT
+ENV ENVIRONMENT=${ENVIRONMENT}
 
 # 暴露端口
 EXPOSE 8000
 
-# 启动命令
-CMD ["python3", "run.py"]
-
-# 第三阶段：测试环境
-FROM builder AS test
-
-WORKDIR /app
-
-# 复制项目代码
-COPY . .
-
-# 安装测试依赖（如果有单独的测试依赖文件）
-# COPY requirements-test.txt .
-# RUN pip install --no-cache-dir -r requirements-test.txt
-
-# 设置测试环境变量
-ENV DEBUG=True
-
-# 暴露端口
-EXPOSE 8000
+# 健康检查
+HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
+    CMD python -c "import urllib.request; urllib.request.urlopen('http://localhost:8000/api/v1/health')" || exit 1
 
 # 启动命令
 CMD ["python3", "run.py"]
-
-# 根据构建参数选择最终镜像
-FROM ${ENVIRONMENT}

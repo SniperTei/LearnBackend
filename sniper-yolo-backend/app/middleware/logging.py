@@ -26,7 +26,17 @@ class LoggingMiddleware(BaseHTTPMiddleware):
 
         # 2. 请求体
         body_bytes = await request.body()
-        logger.info("→ Body: %s", body_bytes.decode() or "-")
+        # 检查是否是文件上传请求
+        content_type = request.headers.get("content-type", "")
+        if "multipart/form-data" in content_type:
+            # 文件上传请求，不记录body（避免二进制数据解码错误）
+            logger.info("→ Body: [multipart/form-data - file upload, size: %d bytes]", len(body_bytes))
+        else:
+            # 普通请求，尝试解码body
+            try:
+                logger.info("→ Body: %s", body_bytes.decode() or "-")
+            except UnicodeDecodeError:
+                logger.info("→ Body: [binary data, size: %d bytes]", len(body_bytes))
 
         # 3. 业务处理
         response = await call_next(request)

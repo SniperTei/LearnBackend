@@ -1034,6 +1034,366 @@ curl -X POST "http://localhost:8000/api/v1/llm/generate/stream" \
   }'
 ```
 
+## 文件上传接口
+
+### 概述
+
+文件上传接口基于七牛云存储服务，采用**前端直传模式**。前端通过后端接口获取上传凭证后，直接将文件上传到七牛云服务器，减轻后端压力。
+
+### 功能特性
+
+- ✅ 支持自定义文件夹路径上传
+- ✅ 支持按文件类型自动分类（image/audio/video/document）
+- ✅ 支持嵌套文件夹路径（如：`uploads/2026/02/foods`）
+- ✅ 支持中文文件夹名
+- ✅ 自动规范化路径（去除多余斜杠）
+- ✅ 路径安全验证（防止路径遍历、绝对路径注入、特殊字符注入）
+
+### 1. 获取上传配置
+**POST** `/upload/config`
+
+获取七牛云上传配置，包含token、上传地址、域名等完整信息。此接口简化了上传流程，适合大多数场景。
+
+**查询参数**:
+- `file_type` (可选): 文件类型分类，用于生成特定路径前缀和验证规则
+  - 可选值: `image`, `audio`, `video`, `document`
+- `folder` (可选): 自定义文件夹路径
+  - 支持嵌套路径，如：`foods`, `uploads/2026/02`, `foods/images`
+  - 支持中文路径，如：`美食/川菜`
+  - 不传则使用默认文件夹：`sniper-yolo`
+- `expires` (可选): token有效期，单位秒，默认3600
+
+**路径生成规则**:
+```
+# 只指定 folder
+folder=foods
+→ key_prefix: foods/20260208_114052_xxx.jpg
+
+# 同时指定 folder 和 file_type
+folder=foods&file_type=image
+→ key_prefix: foods/image/20260208_114052_xxx.jpg
+
+# 都不指定（使用默认值）
+→ key_prefix: sniper-yolo/20260208_114052_xxx.jpg
+```
+
+**请求示例**:
+```bash
+# 使用默认文件夹
+curl -X POST "http://localhost:8000/api/v1/upload/config"
+
+# 指定文件夹
+curl -X POST "http://localhost:8000/api/v1/upload/config?folder=foods"
+
+# 组合使用
+curl -X POST "http://localhost:8000/api/v1/upload/config?folder=foods&file_type=image&expires=7200"
+
+# 中文文件夹（需要URL编码）
+curl -X POST "http://localhost:8000/api/v1/upload/config?folder=%E7%BE%8E%E9%A3%9F/%E5%B7%9D%E8%8F%9C"
+```
+
+**响应示例**:
+```json
+{
+  "code": "000000",
+  "statusCode": 200,
+  "msg": "获取上传配置成功",
+  "data": {
+    "token": "U5ZIXiGiJZgYcePVnTWi9xDBTvzoARSpufd1Lb0a:DsPGVKcdL69wbGCv6SCJe3M6fAo=:eyJzY29wZSI6InNuaXBlci15b2xvIiwiZGVhZGxpbmUiOjE3NzA1MjU2NTJ9",
+    "key_prefix": "foods/20260208_114052_1db36902_",
+    "upload_url": "https://up-z2.qiniup.com",
+    "domain": "https://snpfiles.sniper14.online",
+    "expires_in": 3600,
+    "max_file_size": 104857600,
+    "allowed_types": [".jpg", ".jpeg", ".png", ".gif", ".webp"],
+    "folder": "foods"
+  },
+  "timestamp": "2026-02-08 11:40:52"
+}
+```
+
+**参数说明**:
+- `token`: 七牛云上传凭证
+- `key_prefix`: 建议的文件key前缀，前端上传时使用
+- `upload_url`: 七牛云上传服务器地址
+- `domain`: CDN访问域名
+- `expires_in`: token有效期（秒）
+- `max_file_size`: 最大文件大小（字节），默认100MB
+- `allowed_types`: 允许的文件扩展名列表（根据file_type参数返回）
+- `folder`: 规范化后的文件夹路径
+
+**安全规则**:
+- ❌ 不允许路径遍历：`../etc`
+- ❌ 不允许绝对路径：`/etc/passwd`
+- ❌ 不允许特殊字符：`<script>`, `../../`, 等等
+- ✅ 允许字符：字母、数字、中文、下划线(`_`)、连字符(`-`)、斜杠(`/`)
+- ✅ 自动规范化多余斜杠：`foods///images` → `foods/images`
+
+---
+
+### 2. 获取上传Token
+**POST** `/upload/token`
+
+获取七牛云上传token，支持更多自定义选项。适合需要自定义上传策略的高级场景。
+
+**查询参数**:
+- `key` (可选): 上传后保存的文件名
+- `callback_url` (可选): 上传成功后的回调URL
+- `callback_body` (可选): 回调内容格式，默认`filename=$(fname)&filesize=$(fsize)`
+- `expires` (可选): token有效期，单位秒，默认3600
+- `policy_json` (可选): 自定义上传策略的JSON字符串，优先级高于其他策略参数
+- `folder` (可选): 上传文件夹路径
+
+**请求示例**:
+```bash
+# 基础用法
+curl -X POST "http://localhost:8000/api/v1/upload/token?folder=foods/images"
+
+# 指定回调
+curl -X POST "http://localhost:8000/api/v1/upload/token?folder=foods&callback_url=https://example.com/callback"
+
+# 自定义策略
+curl -X POST "http://localhost:8000/api/v1/upload/token?folder=uploads&policy_json={\"returnBody\":\"{\\\"key\\\":\\\"$(key)\\\"}\"}"
+```
+
+**响应示例**:
+```json
+{
+  "code": "000000",
+  "statusCode": 200,
+  "msg": "获取上传令牌成功",
+  "data": {
+    "token": "U5ZIXiGiJZgYcePVnTWi9xDBTvzoARSpufd1Lb0a:oCPPraFuSr5gtAUpc0DbVc5HuBY=:eyJzY29wZSI6InNuaXBlci15b2xvIiwiZGVhZGxpbmUiOjE3NzA1MjU3OTUsImlzUHJlZml4YWxTY29wZSI6MSwicmV0dXJuQm9keSI6IntcImtleVwiOiBcIiQoa2V5KVwiLCBcImhhc2hcIjogXCIkKGV0YWcpXCIsIFwiZnNpemVcIjogXCIkKGZzaXplKVwiLCBcIm5hbWVcIjogXCIkKHg6bmFtZSlcIn0ifQ==",
+    "domain": "https://snpfiles.sniper14.online",
+    "upload_url": "https://up-z2.qiniup.com",
+    "expires_in": 3600,
+    "suggested_key_prefix": "foods/images/",
+    "folder": "foods/images/",
+    "policy": {
+      "isPrefixalScope": 1,
+      "deadline": 1770525795,
+      "returnBody": "{\"key\": \"$(key)\", \"hash\": \"$(etag)\", \"fsize\": \"$(fsize)\", \"name\": \"$(x:name)\"}",
+      "scope": "sniper-yolo:foods/images/"
+    }
+  },
+  "timestamp": "2026-02-08 11:43:15"
+}
+```
+
+**参数说明**:
+- `suggested_key_prefix`: 建议的key前缀，前端应使用此前缀上传文件
+- `policy.scope`: 上传策略限制的存储范围
+- `policy.isPrefixalScope`: 为1时表示允许前缀匹配
+
+**前端上传示例**:
+```javascript
+// 1. 获取上传配置
+const response = await fetch('/api/v1/upload/config?folder=foods/images', {
+  method: 'POST'
+});
+const { data } = await response.json();
+
+// 2. 使用FormData上传文件到七牛云
+const formData = new FormData();
+formData.append('token', data.token);
+formData.append('key', data.key_prefix + 'food_001.jpg');
+formData.append('file', fileInput.files[0]);
+
+const uploadResponse = await fetch(data.upload_url, {
+  method: 'POST',
+  body: formData
+});
+```
+
+---
+
+### 3. 保存文件信息
+**POST** `/upload/save`
+
+前端上传成功后，调用此接口将文件信息保存到数据库（当前为TODO状态）。
+
+**请求参数** (JSON Body):
+```json
+{
+  "key": "foods/image/20260208_114052_food_001.jpg",
+  "filename": "food_001.jpg",
+  "size": 102400,
+  "hash": "FiZ6-modified-hash-string",
+  "file_type": "image"
+}
+```
+
+**参数说明**:
+- `key` (必填): 文件在七牛云的存储键名
+- `filename` (必填): 原始文件名
+- `size` (必填): 文件大小，单位字节
+- `hash` (可选): 文件哈希值（七牛云返回的etag）
+- `file_type` (可选): 文件类型分类
+
+**请求示例**:
+```bash
+curl -X POST "http://localhost:8000/api/v1/upload/save" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "key": "test/image.jpg",
+    "filename": "test.jpg",
+    "size": 102400,
+    "hash": "FiZ6-modified",
+    "file_type": "image"
+  }'
+```
+
+**响应示例**:
+```json
+{
+  "code": "000000",
+  "statusCode": 200,
+  "msg": "保存文件信息成功",
+  "data": {
+    "key": "test/image.jpg",
+    "filename": "test.jpg",
+    "size": 102400,
+    "url": "https://snpfiles.sniper14.online/test/image.jpg",
+    "hash": "FiZ6-modified",
+    "file_type": "image",
+    "save_time": "2026-02-08T11:44:25.314480"
+  },
+  "timestamp": "2026-02-08 11:44:25"
+}
+```
+
+**说明**:
+- `url`: 文件的完整访问URL
+- `save_time`: 保存时间（ISO 8601格式）
+
+---
+
+### 文件类型配置
+
+系统支持以下文件类型分类：
+
+| 类型 | 允许的扩展名 |
+|------|--------------|
+| `image` | `.jpg`, `.jpeg`, `.png`, `.gif`, `.webp` |
+| `audio` | `.mp3`, `.wav`, `.ogg`, `.aac` |
+| `video` | `.mp4`, `.flv`, `.avi`, `.mov`, `.wmv` |
+| `document` | `.pdf`, `.doc`, `.docx`, `.txt`, `.xlsx`, `.pptx` |
+
+---
+
+### 安全说明
+
+#### 路径验证规则
+
+✅ **合法路径示例**:
+- `foods` - 简单文件夹
+- `foods/images` - 嵌套文件夹
+- `uploads/2026/02/foods` - 多层嵌套
+- `美食/川菜` - 中文路径
+- `user-images` - 带连字符
+
+❌ **非法路径示例**:
+- `../etc` - 路径遍历攻击
+- `/etc/passwd` - 绝对路径注入
+- `foods<script>` - 特殊字符注入
+- `  foods  ` - 包含空格（会被规范化但验证失败）
+- `foods///images` - 多余斜杠（自动规范化为`foods/images`）
+
+#### 文件大小限制
+
+- 默认最大文件大小：**100MB** (104,857,600 字节)
+- 可在配置文件中修改 `MAX_FILE_SIZE`
+
+---
+
+### 完整的上传流程
+
+```javascript
+// 前端完整上传流程示例
+async function uploadFile(file) {
+  // 1. 获取上传配置
+  const configResponse = await fetch(
+    '/api/v1/upload/config?folder=foods&file_type=image'
+  );
+  const config = await configResponse.json();
+
+  if (config.code !== '000000') {
+    throw new Error(config.msg);
+  }
+
+  const { token, key_prefix, upload_url } = config.data;
+
+  // 2. 上传文件到七牛云
+  const formData = new FormData();
+  formData.append('token', token);
+  formData.append('key', key_prefix + file.name);
+  formData.append('file', file);
+
+  const uploadResponse = await fetch(upload_url, {
+    method: 'POST',
+    body: formData
+  });
+
+  const uploadResult = await uploadResponse.json();
+
+  if (uploadResult.key && uploadResult.hash) {
+    // 3. 保存文件信息到后端数据库
+    const saveResponse = await fetch('/api/v1/upload/save', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        key: uploadResult.key,
+        filename: file.name,
+        size: file.size,
+        hash: uploadResult.hash,
+        file_type: 'image'
+      })
+    });
+
+    const saveResult = await saveResponse.json();
+    console.log('文件信息已保存:', saveResult.data.url);
+
+    return saveResult.data;
+  }
+}
+```
+
+---
+
+### 测试示例
+
+#### 使用默认文件夹
+```bash
+curl -X POST "http://localhost:8000/api/v1/upload/config"
+```
+
+#### 上传到指定文件夹
+```bash
+curl -X POST "http://localhost:8000/api/v1/upload/config?folder=foods"
+```
+
+#### 按类型分类上传
+```bash
+curl -X POST "http://localhost:8000/api/v1/upload/config?file_type=image"
+```
+
+#### 组合使用
+```bash
+curl -X POST "http://localhost:8000/api/v1/upload/config?folder=foods&file_type=image"
+```
+
+#### 嵌套文件夹
+```bash
+curl -X POST "http://localhost:8000/api/v1/upload/config?folder=uploads/2026/02/foods"
+```
+
+#### 获取token（高级用法）
+```bash
+curl -X POST "http://localhost:8000/api/v1/upload/token?folder=foods/images"
+```
+
+---
+
 ## 系统接口
 
 ### 1. 健康检查

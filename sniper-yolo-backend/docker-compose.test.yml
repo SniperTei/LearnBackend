@@ -1,29 +1,117 @@
 version: '3.8'
 
 services:
+  # FastAPI 后端服务
   web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        ENVIRONMENT: test
     image: sniper-yolo-backend:test
-    platform: linux/amd64
-    container_name: fastapi_app_test
+    container_name: sniper_yolo_backend_test
+    restart: unless-stopped
     ports:
-      - "27051:8000"
+      - "8002:8000"  # 测试环境使用 8002 端口
     depends_on:
-      - mongo
+      postgres:
+        condition: service_healthy
     env_file:
       - .env.test
     environment:
-      - MONGODB_URL=mongodb://mongo:27021  # 确保使用容器互联地址
+      - DATABASE_URL=postgresql+asyncpg://sniper:db123456@postgres:5432/sniper_yolo_test
+      - ALEMBIC_DATABASE_URL=postgresql+psycopg2://sniper:db123456@postgres:5432/sniper_yolo_test
+    networks:
+      - sniper_network
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/api/v1/health')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
 
-  mongo:
-    image: mongo:6.0
-    platform: linux/amd64
-    container_name: mongo_db_test
+  # PostgreSQL 数据库
+  postgres:
+    image: postgres:15-alpine
+    container_name: sniper_postgres_test
+    restart: unless-stopped
+    environment:
+      - POSTGRES_USER=sniper
+      - POSTGRES_PASSWORD=db123456@TEST  # 使用更强的密码
+      - POSTGRES_DB=sniper_yolo_test
+      - POSTGRES_INITDB_ARGS=--encoding=UTF-8 --locale=C
     volumes:
-      - mongo_data_test:/data/db
-    env_file:
-      - .env.test
-    command: mongod --port 27021
+      - postgres_data_test:/var/lib/postgresql/data
+      - ./scripts/init-db.sql:/docker-entrypoint-initdb.d/init-db.sql
+    ports:
+      - "5434:5432"  # 宿主机5434端口映射到容器5432
+    networks:
+      - sniper_network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U sniper"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # Redis 缓存
+  redis:
+    image: redis:7-alpine
+    container_name: sniper_redis_test
+    restart: unless-stopped
+    ports:
+      - "6381:6379"
+    volumes:
+      - redis_data_test:/data
+    networks:
+      - sniper_network
+    command: redis-server --appendonly yes
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # Nginx 反向代理
+  nginx:
+    image: nginx:alpine
+    container_name: sniper_nginx_test
+    restart: unless-stopped
+    ports:
+      - "8081:80"
+    volumes:
+      - ./nginx/nginx.test.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/logs/test:/var/log/nginx
+    depends_on:
+      - web
+    networks:
+      - sniper_network
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+networks:
+  sniper_network:
+    driver: bridge
 
 volumes:
-  mongo_data_test:
+  postgres_data_test:
+    driver: local
+  redis_data_test:
     driver: local
