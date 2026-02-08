@@ -16,7 +16,7 @@ print_step() { echo -e "${BLUE}[STEP]${NC} $1"; }
 
 # 配置（请修改为你的实际配置）
 SERVER="${DEPLOY_SERVER:-root@your-server-ip}"
-REMOTE_PATH="${DEPLOY_PATH:-/root/sniper-yolo-backend}"
+REMOTE_PATH="${DEPLOY_PATH:-/opt/services/sniper-yolo-backend}"  # 默认使用 /opt/services
 ENV="${DEPLOY_ENV:-test}"
 BRANCH="${DEPLOY_BRANCH:-dev_zheng}"
 

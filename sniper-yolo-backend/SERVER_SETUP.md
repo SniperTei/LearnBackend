@@ -27,13 +27,48 @@ exit
 ssh root@your-server-ip
 ```
 
-### 第三步：克隆代码
+### 第三步：选择部署目录并克隆代码
 
+你可以选择以下任一目录部署项目：
+
+**选项 1：使用 /opt/services（推荐）**
 ```bash
-cd /root
+# 创建服务目录
+mkdir -p /opt/services
+cd /opt/services
 git clone -b dev_zheng https://github.com/SniperTei/LearnBackend.git sniper-yolo-backend
 cd sniper-yolo-backend
 ```
+
+**选项 2：使用 /data/projects**
+```bash
+mkdir -p /data/projects
+cd /data/projects
+git clone -b dev_zheng https://github.com/SniperTei/LearnBackend.git sniper-yolo-backend
+cd sniper-yolo-backend
+```
+
+**选项 3：使用 /srv**
+```bash
+mkdir -p /srv
+cd /srv
+git clone -b dev_zheng https://github.com/SniperTei/LearnBackend.git sniper-yolo-backend
+cd sniper-yolo-backend
+```
+
+**选项 4：自定义目录**
+```bash
+mkdir -p /your/custom/path
+cd /your/custom/path
+git clone -b dev_zheng https://github.com/SniperTei/LearnBackend.git sniper-yolo-backend
+cd sniper-yolo-backend
+```
+
+> **提示**：如果选择了非默认路径（/opt/services），在本地使用部署脚本时需要设置环境变量：
+> ```bash
+> export DEPLOY_PATH=/your/custom/path/sniper-yolo-backend
+> ./git-deploy.sh
+> ```
 
 ### 第四步：配置环境变量
 
@@ -135,8 +170,8 @@ sleep 30
 ### 方式一：手动更新
 
 ```bash
-# 在服务器上执行
-cd /root/sniper-yolo-backend
+# 在服务器上执行（根据你选择的目录）
+cd /opt/services/sniper-yolo-backend  # 或你使用的其他路径
 git pull origin dev_zheng
 
 # 如果有代码改动，重新构建
