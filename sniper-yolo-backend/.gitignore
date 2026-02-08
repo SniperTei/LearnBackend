@@ -54,4 +54,4 @@ temp/
 # Build
 build/
 dist/
-*.egg
+*.eggdocs/database-guide.md
