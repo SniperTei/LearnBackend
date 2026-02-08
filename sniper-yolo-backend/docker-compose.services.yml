@@ -1,0 +1,42 @@
+version: '3.8'
+
+services:
+  # PostgreSQL 数据库
+  postgres:
+    image: postgres:15-alpine
+    container_name: sniper_postgres_test
+    restart: unless-stopped
+    environment:
+      - POSTGRES_USER=sniper
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+      - POSTGRES_DB=sniper_yolo_test
+      - POSTGRES_INITDB_ARGS=--encoding=UTF-8 --locale=C
+    volumes:
+      - postgres_data_test:/var/lib/postgresql/data
+    ports:
+      - "5434:5432"
+    networks:
+      - sniper_test_network
+
+  # Redis 缓存
+  redis:
+    image: redis:7-alpine
+    container_name: sniper_redis_test
+    restart: unless-stopped
+    ports:
+      - "6381:6379"
+    volumes:
+      - redis_data_test:/data
+    networks:
+      - sniper_test_network
+    command: redis-server --appendonly yes
+
+networks:
+  sniper_test_network:
+    external: true
+
+volumes:
+  postgres_data_test:
+    driver: local
+  redis_data_test:
+    driver: local
