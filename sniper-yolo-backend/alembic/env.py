@@ -20,6 +20,8 @@ if config.config_file_name is not None:
 # add your model's MetaData object here
 # for 'autogenerate' support
 from app.models.base import Base
+# Import all models to ensure they are registered with Base.metadata
+from app.models import user, item, food, drink, fun, enjoy
 target_metadata = Base.metadata
 
 # Override the sqlalchemy.url from the environment if available
