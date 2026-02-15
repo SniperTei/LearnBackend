@@ -258,3 +258,39 @@ async def login_for_access_token(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             msg=f"登录过程中发生错误: {str(e)}"
         )
+
+
+@router.post("/test-login", response_model=ApiSuccessResponse)
+async def test_login(
+    db: AsyncSession = Depends(get_db)
+) -> ApiSuccessResponse:
+    """测试登录接口 - 仅用于开发环境快速获取token"""
+    try:
+        user_service = UserService()
+        # 查找测试用户（假设id=2的测试用户）
+        test_user = await user_service.get_user(2, db)
+        if not test_user:
+            return ApiErrorResponse.create(
+                code="USER_NOT_FOUND",
+                status_code=status.HTTP_404_NOT_FOUND,
+                msg="测试用户不存在，请先创建id=2的测试用户"
+            )
+
+        # 生成token
+        access_token = create_access_token(subject=str(test_user.id))
+        token_data = {
+            "access_token": access_token,
+            "token_type": "bearer"
+        }
+
+        return ApiSuccessResponse.create(
+            data=token_data,
+            msg="测试登录成功",
+            status_code=status.HTTP_200_OK
+        )
+    except Exception as e:
+        return ApiErrorResponse.create(
+            code="TEST_LOGIN_ERROR",
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            msg=f"测试登录失败: {str(e)}"
+        )

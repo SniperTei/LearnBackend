@@ -12,7 +12,7 @@ services:
     container_name: sniper_yolo_backend_prod
     restart: always
     ports:
-      - "8000:8000"  # 生产环境使用标准 8000 端口
+      - "8003:8003"  # 生产环境使用 8003 端口
     depends_on:
       postgres:
         condition: service_healthy
@@ -24,7 +24,7 @@ services:
     networks:
       - sniper_prod_network
     healthcheck:
-      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/api/v1/health')"]
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8003/api/v1/health')"]
       interval: 30s
       timeout: 10s
       retries: 3

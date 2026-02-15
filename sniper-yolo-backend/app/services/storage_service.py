@@ -161,7 +161,11 @@ class QiniuStorageService:
         unique_id = str(uuid.uuid4())[:8]
         type_prefix = file_type or "general"
 
-        return f"{normalized_folder}/{type_prefix}/{timestamp}_{unique_id}{ext}"
+        # 根据环境添加前缀到文件夹名称（例如：dev_image, test_image, prod_image）
+        from app.core.config import settings
+        env_prefix = "dev" if settings.ENVIRONMENT == "development" else "test" if settings.ENVIRONMENT == "test" else "prod"
+        folder_with_env = f"{type_prefix}_{env_prefix}"
+        return f"{normalized_folder}/{folder_with_env}/{timestamp}_{unique_id}{ext}"
 
     def validate_file_info(self, filename: str, file_size: int, file_type: Optional[str] = None) -> Dict[str, Any]:
         """验证文件信息（前端上传后调用）

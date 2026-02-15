@@ -17,6 +17,7 @@ class Settings(BaseSettings):
     # Server Settings
     HOST: str = "0.0.0.0"
     PORT: int = 8000
+    ENVIRONMENT: str = "production"
     DEBUG: bool = False
     ENVIRONMENT: str = "production"
     

@@ -276,23 +276,32 @@ async def upload_image(
         file_content = await file.read()
         file_size = len(file_content)
 
-        # 验证文件大小（例如限制为10MB）
-        max_size = 10 * 1024 * 1024  # 10MB
-        if file_size > max_size:
-            raise HTTPException(status_code=400, detail=f"图片大小不能超过{max_size // (1024*1024)}MB")
+        # 验证文件大小（使用配置的限制）
+        if file_size > settings.MAX_FILE_SIZE:
+            raise HTTPException(
+                status_code=400,
+                detail=f"图片大小不能超过{settings.MAX_FILE_SIZE // (1024*1024)}MB"
+            )
+
+        # 使用 storage_service 生成带环境前缀的唯一文件名
+        from app.services.storage_service import storage_service
+        unique_key = storage_service.generate_unique_key(
+            original_filename=file.filename,
+            file_type="image",
+            folder=None  # 使用默认文件夹 QINIU_DEFAULT_FOLDER
+        )
+
+        # 添加调试日志
+        import logging
+        logger = logging.getLogger(__name__)
+        logger.info(f"上传图片 - 原始文件名: {file.filename}, 生成的七牛key: {unique_key}")
+        logger.info(f"当前环境配置 - ENVIRONMENT: {settings.ENVIRONMENT}, QINIU_DEFAULT_FOLDER: {settings.QINIU_DEFAULT_FOLDER}")
 
         # 使用七牛云的SDK上传文件
         from qiniu import Auth, put_data
 
         # 生成上传凭证
         q = Auth(settings.QINIU_ACCESS_KEY, settings.QINIU_SECRET_KEY)
-
-        # 生成唯一文件名（包含文件夹路径）
-        unique_key = storage_service.generate_unique_key(
-            file.filename,
-            file_type="image",
-            folder=None  # 使用默认文件夹 QINIU_DEFAULT_FOLDER
-        )
 
         # 生成上传token
         token = q.upload_token(settings.QINIU_BUCKET_NAME, unique_key, 3600)
@@ -366,18 +375,23 @@ async def upload_images(
                 file_content = await file.read()
                 file_size = len(file_content)
 
-                # 验证文件大小
-                max_size = 10 * 1024 * 1024  # 10MB
-                if file_size > max_size:
-                    errors.append(f"文件{index+1}超过{max_size // (1024*1024)}MB")
+                # 验证文件大小（使用配置的限制）
+                if file_size > settings.MAX_FILE_SIZE:
+                    errors.append(f"文件{index+1}超过{settings.MAX_FILE_SIZE // (1024*1024)}MB")
                     continue
 
-                # 生成唯一文件名（包含文件夹路径）
+                # 使用 storage_service 生成带环境前缀的唯一文件名
+                from app.services.storage_service import storage_service
                 unique_key = storage_service.generate_unique_key(
-                    file.filename,
+                    original_filename=file.filename,
                     file_type="image",
                     folder=None  # 使用默认文件夹 QINIU_DEFAULT_FOLDER
                 )
+
+                # 添加调试日志
+                import logging
+                logger = logging.getLogger(__name__)
+                logger.info(f"批量上传[{index+1}] - 原始文件名: {file.filename}, 生成的七牛key: {unique_key}")
 
                 # 生成上传token
                 token = q.upload_token(settings.QINIU_BUCKET_NAME, unique_key, 3600)
