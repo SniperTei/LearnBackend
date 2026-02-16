@@ -11,13 +11,14 @@ class Settings(BaseSettings):
     # API Settings
     API_V1_STR: str = "/api/v1"
     PROJECT_NAME: str = "Sniper YOLO Backend"
-    VERSION: str = "1.0.0"
+    VERSION: str = "1.0.1"
     DESCRIPTION: str = "FastAPI backend for Sniper YOLO application"
     
     # Server Settings
     HOST: str = "0.0.0.0"
     PORT: int = 8000
     DEBUG: bool = False
+    ENVIRONMENT: str = "production"
     
     # Security Settings
     SECRET_KEY: str = "your-secret-key-change-this-in-production"
@@ -38,18 +39,30 @@ class Settings(BaseSettings):
     YOLO_CONFIDENCE_THRESHOLD: float = 0.5
     YOLO_IOU_THRESHOLD: float = 0.45
     
-    @validator("BACKEND_CORS_ORIGINS", pre=True)
+    @validator("BACKEND_CORS_ORIGINS", pre=True, always=True)
     def assemble_cors_origins(cls, v):
         """Parse CORS origins from comma-separated string or list."""
-        if isinstance(v, str) and not v.startswith("["):
+        if v is None or v == "":
+            return ["*"]
+        if isinstance(v, str):
+            # Try to parse as JSON first
+            if v.startswith("[") and v.endswith("]"):
+                try:
+                    import json
+                    parsed = json.loads(v)
+                    return parsed if parsed else ["*"]
+                except:
+                    pass
+            # Otherwise, split by comma
             return [i.strip() for i in v.split(",")]
-        elif isinstance(v, (list, str)):
-            return v
-        raise ValueError(v)
+        elif isinstance(v, list):
+            return v if v else ["*"]
+        return ["*"]
     
     class Config:
-        env_file = ".env"
+        env_file = ".env.test"
         case_sensitive = True
+        extra = "allow"
     
     # 七牛云配置
     QINIU_ACCESS_KEY: str = Field(default="", description="七牛云AccessKey")

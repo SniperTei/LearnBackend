@@ -281,32 +281,34 @@ async def upload_image(
         if file_size > max_size:
             raise HTTPException(status_code=400, detail=f"图片大小不能超过{max_size // (1024*1024)}MB")
 
-        # 生成唯一文件名
-        file_extension = file.filename.split(".")[-1] if "." in file.filename else "jpg"
-        unique_filename = f"{uuid.uuid4().hex}.{file_extension}"
-
         # 使用七牛云的SDK上传文件
         from qiniu import Auth, put_data
 
         # 生成上传凭证
         q = Auth(settings.QINIU_ACCESS_KEY, settings.QINIU_SECRET_KEY)
 
+        # 生成唯一文件名（包含文件夹路径）
+        unique_key = storage_service.generate_unique_key(
+            file.filename,
+            file_type="image",
+            folder=None  # 使用默认文件夹 QINIU_DEFAULT_FOLDER
+        )
+
         # 生成上传token
-        token = q.upload_token(settings.QINIU_BUCKET_NAME, unique_filename, 3600)
+        token = q.upload_token(settings.QINIU_BUCKET_NAME, unique_key, 3600)
 
         # 上传文件到七牛云
-        ret, info = put_data(token, unique_filename, file_content)
+        ret, info = put_data(token, unique_key, file_content)
 
         # 检查上传是否成功
         if ret and ret.get('key'):
             # 生成完整的图片URL
-            protocol = "https" if settings.USE_HTTPS else "http"
-            file_url = f"{protocol}://{settings.QINIU_DOMAIN}/{unique_filename}"
+            file_url = storage_service.format_file_url(unique_key)
 
             # 构建返回结果
             result = {
                 "url": file_url,
-                "key": unique_filename,
+                "key": unique_key,
                 "filename": file.filename,
                 "size": file_size,
                 "hash": ret.get('hash')
@@ -370,24 +372,26 @@ async def upload_images(
                     errors.append(f"文件{index+1}超过{max_size // (1024*1024)}MB")
                     continue
 
-                # 生成唯一文件名
-                file_extension = file.filename.split(".")[-1] if "." in file.filename else "jpg"
-                unique_filename = f"{uuid.uuid4().hex}.{file_extension}"
+                # 生成唯一文件名（包含文件夹路径）
+                unique_key = storage_service.generate_unique_key(
+                    file.filename,
+                    file_type="image",
+                    folder=None  # 使用默认文件夹 QINIU_DEFAULT_FOLDER
+                )
 
                 # 生成上传token
-                token = q.upload_token(settings.QINIU_BUCKET_NAME, unique_filename, 3600)
+                token = q.upload_token(settings.QINIU_BUCKET_NAME, unique_key, 3600)
 
                 # 上传文件到七牛云
-                ret, info = put_data(token, unique_filename, file_content)
+                ret, info = put_data(token, unique_key, file_content)
 
                 if ret and ret.get('key'):
                     # 生成完整的图片URL
-                    protocol = "https" if settings.USE_HTTPS else "http"
-                    file_url = f"{protocol}://{settings.QINIU_DOMAIN}/{unique_filename}"
+                    file_url = storage_service.format_file_url(unique_key)
 
                     uploaded_files.append({
                         "url": file_url,
-                        "key": unique_filename,
+                        "key": unique_key,
                         "filename": file.filename,
                         "size": file_size,
                         "hash": ret.get('hash')

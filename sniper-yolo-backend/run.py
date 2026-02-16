@@ -3,6 +3,7 @@ import uvicorn
 import asyncio  # 添加这一行导入
 from app.main import app
 from app.core.database import Database
+from app.core.config import settings
 from app.scripts.init_superuser import create_superuser
 
 async def on_startup():
@@ -13,7 +14,7 @@ if __name__ == "__main__":
     asyncio.run(on_startup())
     uvicorn.run(
         "app.main:app",
-        host="0.0.0.0",
-        port=8000,
-        # reload=True,  # 生产环境移除这一行
+        host=settings.HOST,
+        port=settings.PORT,
+        reload=settings.DEBUG
     )
