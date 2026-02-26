@@ -18,6 +18,7 @@ class Food(Base):
     star = Column(Integer, nullable=True)
     maker = Column(String, nullable=False)
     flavor = Column(String, nullable=True)
+    category = Column(String, nullable=True)  # 菜品分类：素菜、荤菜、凉菜、下酒菜等
     create_time = Column(DateTime(timezone=True), server_default="now()", nullable=True)
     update_time = Column(DateTime(timezone=True), onupdate="now()", nullable=True)
     created_by = Column(Integer, ForeignKey("users.id"), nullable=True)
@@ -35,6 +36,7 @@ class Food(Base):
             "star": int(self.star) if self.star is not None else 0,
             "maker": self.maker or "",
             "flavor": self.flavor or "",
+            "category": self.category or "",
             "created_by": str(self.created_by) if self.created_by else "system",
             "updated_by": str(self.updated_by) if self.updated_by else "system",
             "create_time": self.create_time.isoformat() if self.create_time else None,

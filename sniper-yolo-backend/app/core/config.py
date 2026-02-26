@@ -61,7 +61,7 @@ class Settings(BaseSettings):
         return ["*"]
     
     class Config:
-        env_file = ".env.test"
+        env_file = ".env"
         case_sensitive = True
         extra = "allow"
     

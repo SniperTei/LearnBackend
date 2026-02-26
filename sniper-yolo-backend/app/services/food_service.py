@@ -37,6 +37,7 @@ class FoodService:
                 star=food_create.star or 0,
                 maker=food_create.maker,
                 flavor=food_create.flavor or "",
+                category=food_create.category or "",
                 create_time=now,
                 update_time=now,
                 created_by=created_by,
@@ -120,6 +121,7 @@ class FoodService:
         max_star: Optional[int] = None,
         flavor: Optional[str] = None,
         tag: Optional[str] = None,
+        category: Optional[str] = None,
         db: AsyncSession = None,
         skip: int = 0,
         limit: int = 100
@@ -155,6 +157,10 @@ class FoodService:
         if tag:
             query = query.where(Food.tags.contains([tag]))
 
+        # 分类精确查询
+        if category:
+            query = query.where(Food.category == category)
+
         # 应用分页并按创建时间倒序
         query = query.order_by(Food.create_time.desc()).offset(skip).limit(limit)
         result = await db.execute(query)
@@ -170,6 +176,7 @@ class FoodService:
         max_star: Optional[int] = None,
         flavor: Optional[str] = None,
         tag: Optional[str] = None,
+        category: Optional[str] = None,
         db: AsyncSession = None
     ) -> int:
         """Get total count of foods matching search criteria."""
@@ -202,6 +209,10 @@ class FoodService:
         # 标签包含查询
         if tag:
             query = query.where(Food.tags.contains([tag]))
+
+        # 分类精确查询
+        if category:
+            query = query.where(Food.category == category)
 
         result = await db.execute(query)
         return result.scalar()

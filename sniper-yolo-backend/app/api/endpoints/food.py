@@ -64,6 +64,7 @@ async def read_foods(
     max_star: Optional[float] = None,
     flavor: Optional[str] = None,
     tag: Optional[str] = None,
+    category: Optional[str] = None,
     db: AsyncSession = Depends(get_db)
 ) -> ApiSuccessResponse:
     """获取食品记录列表（支持条件查询和分页）"""
@@ -71,7 +72,7 @@ async def read_foods(
         skip = (page - 1) * count
         limit = count
 
-        logger.info(f"获取食品记录列表，page={page}, count={count}, title={title}, content={content}, maker={maker}, min_star={min_star}, max_star={max_star}, flavor={flavor}, tag={tag} (skip={skip}, limit={limit})")
+        logger.info(f"获取食品记录列表，page={page}, count={count}, title={title}, content={content}, maker={maker}, min_star={min_star}, max_star={max_star}, flavor={flavor}, tag={tag}, category={category} (skip={skip}, limit={limit})")
 
         food_service = FoodService()
         foods = await food_service.search_foods(
@@ -82,6 +83,7 @@ async def read_foods(
             max_star=int(max_star) if max_star is not None else None,
             flavor=flavor,
             tag=tag,
+            category=category,
             db=db,
             skip=skip,
             limit=limit
@@ -95,6 +97,7 @@ async def read_foods(
             max_star=int(max_star) if max_star is not None else None,
             flavor=flavor,
             tag=tag,
+            category=category,
             db=db
         )
 

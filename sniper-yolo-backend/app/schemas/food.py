@@ -14,6 +14,7 @@ class FoodBase(BaseModel):
     star: Optional[int] = Field(None, ge=1, le=5, description="1-5星评分")
     maker: str = Field(..., min_length=1, max_length=50, description="制作者")
     flavor: Optional[str] = Field(None, max_length=50, description="菜品口味")
+    category: Optional[str] = Field(None, max_length=50, description="菜品分类：素菜、荤菜、凉菜、下酒菜等")
 
 
 class FoodCreate(FoodBase):
@@ -31,6 +32,7 @@ class FoodUpdate(BaseModel):
     star: Optional[int] = Field(None, ge=1, le=5)
     maker: Optional[str] = Field(None, min_length=1, max_length=50)
     flavor: Optional[str] = Field(None, max_length=50)
+    category: Optional[str] = Field(None, max_length=50)
 
 
 class FoodOut(FoodBase):
