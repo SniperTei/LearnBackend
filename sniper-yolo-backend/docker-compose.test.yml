@@ -19,8 +19,8 @@ services:
     env_file:
       - .env.test
     environment:
-      - DATABASE_URL=postgresql+asyncpg://sniper:db123456@postgres:5432/sniper_yolo_test
-      - ALEMBIC_DATABASE_URL=postgresql+psycopg2://sniper:db123456@postgres:5432/sniper_yolo_test
+      - DATABASE_URL=postgresql+asyncpg://sniper:${DB_PASSWORD}@postgres:5432/sniper_yolo_test
+      - ALEMBIC_DATABASE_URL=postgresql+psycopg2://sniper:${DB_PASSWORD}@postgres:5432/sniper_yolo_test
     networks:
       - sniper_test_network
     healthcheck:
@@ -42,7 +42,7 @@ services:
     restart: unless-stopped
     environment:
       - POSTGRES_USER=sniper
-      - POSTGRES_PASSWORD=db123456@TEST  # 使用更强的密码
+      - POSTGRES_PASSWORD=${DB_PASSWORD}  # 从 .env.test 读取
       - POSTGRES_DB=sniper_yolo_test
       - POSTGRES_INITDB_ARGS=--encoding=UTF-8 --locale=C
     volumes:

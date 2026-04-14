@@ -32,10 +32,21 @@ async def create_user(
 
         # 生成访问令牌
         access_token = create_access_token(subject=str(user.id))
-        token_data = {"access_token": access_token, "token_type": "bearer"}
 
         return ApiSuccessResponse.create(
-            data=token_data,
+            data={
+                "access_token": access_token,
+                "token_type": "bearer",
+                "user": {
+                    "id": str(user.id),
+                    "email": user.email,
+                    "username": user.username,
+                    "mobile": user.mobile,
+                    "is_active": user.is_active,
+                    "created_at": user.created_at.isoformat() if user.created_at else None,
+                    "updated_at": user.updated_at.isoformat() if user.updated_at else None
+                }
+            },
             msg="用户注册成功",
             status_code=status.HTTP_201_CREATED
         )
@@ -56,25 +67,6 @@ async def create_user(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             msg=f"服务器内部错误: {str(e)}"
         )
-
-
-@router.get("/me", response_model=ApiSuccessResponse)
-async def read_current_user(
-    current_user: User = Depends(get_current_active_user)
-) -> ApiSuccessResponse:
-    """获取当前用户信息"""
-    return ApiSuccessResponse.create(
-        data={
-            "id": str(current_user.id),
-            "email": current_user.email,
-            "username": current_user.username,
-            "mobile": current_user.mobile,
-            "is_active": current_user.is_active,
-            "created_at": current_user.created_at.isoformat() if current_user.created_at else None,
-            "updated_at": current_user.updated_at.isoformat() if current_user.updated_at else None
-        },
-        msg="获取用户信息成功"
-    )
 
 
 @router.get("/", response_model=ApiSuccessResponse)
@@ -246,9 +238,20 @@ async def login_for_access_token(
                 msg="用户名/邮箱/手机号或密码错误"
             )
         access_token = create_access_token(subject=str(user.id))
-        token_data = {"access_token": access_token, "token_type": "bearer"}
         return ApiSuccessResponse.create(
-            data=token_data,
+            data={
+                "access_token": access_token,
+                "token_type": "bearer",
+                "user": {
+                    "id": str(user.id),
+                    "email": user.email,
+                    "username": user.username,
+                    "mobile": user.mobile,
+                    "is_active": user.is_active,
+                    "created_at": user.created_at.isoformat() if user.created_at else None,
+                    "updated_at": user.updated_at.isoformat() if user.updated_at else None
+                }
+            },
             msg="登录成功",
             status_code=status.HTTP_200_OK
         )

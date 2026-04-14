@@ -1,10 +1,11 @@
+import os
 from app.models.user import User
 from app.core.security import get_password_hash
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 
-ADMIN_EMAIL = "admin@123.com"
-ADMIN_PASS = "admin123"
+ADMIN_EMAIL = os.getenv("ADMIN_EMAIL", "admin@example.com")
+ADMIN_PASS = os.getenv("ADMIN_PASS", "changeme")
 
 async def create_superuser():
     """创建超级用户（如果不存在）"""

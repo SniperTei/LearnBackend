@@ -80,4 +80,8 @@ def get_user_service() -> UserService:
 
 def get_llm_service() -> LLMService:
     """获取LLM服务实例"""
-    return LLMService()
+    return LLMService(
+        api_key=settings.LLM_API_KEY,
+        base_url=settings.LLM_BASE_URL,
+        default_model=settings.LLM_DEFAULT_MODEL
+    )

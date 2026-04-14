@@ -207,7 +207,7 @@ DEBUG=true
 ENVIRONMENT=development
 
 # 数据库配置（Docker 内部网络）
-DATABASE_URL=postgresql+asyncpg://sniper:db123456@postgres:5432/sniper_yolo_dev
+DATABASE_URL=postgresql+asyncpg://sniper:your_strong_password@postgres:5432/sniper_yolo_dev
 
 # 七牛云配置
 QINIU_ACCESS_KEY=your-access-key
@@ -224,7 +224,7 @@ DEBUG=true
 ENVIRONMENT=test
 
 # 数据库配置
-DATABASE_URL=postgresql+asyncpg://sniper:db123456@postgres:5432/sniper_yolo_test
+DATABASE_URL=postgresql+asyncpg://sniper:your_strong_password@postgres:5432/sniper_yolo_test
 
 # 七牛云配置
 QINIU_ACCESS_KEY=your-access-key

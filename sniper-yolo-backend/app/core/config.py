@@ -1,7 +1,15 @@
 """Pydantic configuration models for reading environment variables."""
+import os
+from pathlib import Path
 from pydantic import validator, Field
 from pydantic_settings import BaseSettings
 from typing import Optional, List, Dict
+
+# 根据环境变量选择 .env 文件
+_env = os.getenv("ENV", "dev")
+_env_file = Path(__file__).resolve().parent.parent.parent / f".env.{_env}"
+if not _env_file.exists():
+    _env_file = Path(__file__).resolve().parent.parent.parent / ".env.dev"
 
 
 # 在Settings类中添加以下配置项
@@ -61,10 +69,15 @@ class Settings(BaseSettings):
         return ["*"]
     
     class Config:
-        env_file = ".env"
+        env_file = str(_env_file)
         case_sensitive = True
         extra = "allow"
     
+    # 智谱 BigModel LLM 配置
+    LLM_API_KEY: str = Field(default="", description="智谱 BigModel API Key")
+    LLM_BASE_URL: str = Field(default="https://open.bigmodel.cn/api/paas/v4", description="智谱 API 地址")
+    LLM_DEFAULT_MODEL: str = Field(default="glm-5.1", description="默认模型")
+
     # 七牛云配置
     QINIU_ACCESS_KEY: str = Field(default="", description="七牛云AccessKey")
     QINIU_SECRET_KEY: str = Field(default="", description="七牛云SecretKey")

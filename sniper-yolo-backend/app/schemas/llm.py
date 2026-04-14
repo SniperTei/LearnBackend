@@ -5,7 +5,7 @@ from typing import Optional, List, Dict, Any
 
 class LLMGenerateRequest(BaseModel):
     """Request model for LLM text generation."""
-    model: str = Field(..., description="模型名称，如 deepseek-r1:1.5b")
+    model: str = Field(default="glm-5.1", description="模型名称，如 glm-5.1")
     prompt: str = Field(..., description="输入提示词")
     stream: bool = Field(default=False, description="是否流式输出")
     temperature: Optional[float] = Field(default=0.8, ge=0.0, le=2.0, description="控制随机性，0-2")
@@ -22,7 +22,7 @@ class LLMChatMessage(BaseModel):
 
 class LLMChatRequest(BaseModel):
     """Request model for LLM chat."""
-    model: str = Field(..., description="模型名称，如 deepseek-r1:1.5b")
+    model: str = Field(default="glm-5.1", description="模型名称，如 glm-5.1")
     messages: List[LLMChatMessage] = Field(..., description="对话消息列表")
     stream: bool = Field(default=False, description="是否流式输出")
     temperature: Optional[float] = Field(default=0.8, ge=0.0, le=2.0, description="控制随机性，0-2")

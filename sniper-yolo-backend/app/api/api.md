@@ -1099,7 +1099,7 @@ curl -X POST "http://localhost:8000/api/v1/upload/config?folder=%E7%BE%8E%E9%A3%
   "statusCode": 200,
   "msg": "获取上传配置成功",
   "data": {
-    "token": "U5ZIXiGiJZgYcePVnTWi9xDBTvzoARSpufd1Lb0a:DsPGVKcdL69wbGCv6SCJe3M6fAo=:eyJzY29wZSI6InNuaXBlci15b2xvIiwiZGVhZGxpbmUiOjE3NzA1MjU2NTJ9",
+    "token": "<your-qiniu-upload-token>",
     "key_prefix": "foods/20260208_114052_1db36902_",
     "upload_url": "https://up-z2.qiniup.com",
     "domain": "https://snpfiles.sniper14.online",
@@ -1163,7 +1163,7 @@ curl -X POST "http://localhost:8000/api/v1/upload/token?folder=uploads&policy_js
   "statusCode": 200,
   "msg": "获取上传令牌成功",
   "data": {
-    "token": "U5ZIXiGiJZgYcePVnTWi9xDBTvzoARSpufd1Lb0a:oCPPraFuSr5gtAUpc0DbVc5HuBY=:eyJzY29wZSI6InNuaXBlci15b2xvIiwiZGVhZGxpbmUiOjE3NzA1MjU3OTUsImlzUHJlZml4YWxTY29wZSI6MSwicmV0dXJuQm9keSI6IntcImtleVwiOiBcIiQoa2V5KVwiLCBcImhhc2hcIjogXCIkKGV0YWcpXCIsIFwiZnNpemVcIjogXCIkKGZzaXplKVwiLCBcIm5hbWVcIjogXCIkKHg6bmFtZSlcIn0ifQ==",
+    "token": "<your-qiniu-upload-token>",
     "domain": "https://snpfiles.sniper14.online",
     "upload_url": "https://up-z2.qiniup.com",
     "expires_in": 3600,
