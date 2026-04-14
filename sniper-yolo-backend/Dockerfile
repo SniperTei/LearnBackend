@@ -31,11 +31,7 @@ ARG ENVIRONMENT
 ENV ENVIRONMENT=${ENVIRONMENT}
 
 # 暴露端口
-EXPOSE 8002
-
-# 健康检查
-HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
-    CMD python -c "import urllib.request; urllib.request.urlopen('http://localhost:8002/health')" || exit 1
+EXPOSE 8000
 
 # 启动命令
-CMD ["python3", "run.py"]
+ENTRYPOINT ["./entrypoint.sh"]

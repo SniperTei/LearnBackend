@@ -69,6 +69,10 @@ CREATE TABLE users (
 
 ## 🛠️ 常用命令
 
+### 为用户添加超级用户权限
+
+psql -d postgres -c "ALTER USER sniper WITH SUPERUSER;"   
+
 ### psql 元命令
 
 | 命令 | 说明 |

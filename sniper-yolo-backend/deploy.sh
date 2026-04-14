@@ -66,7 +66,7 @@ show_usage() {
 
 ENVIRONMENT:
     test    测试环境 (端口: 8002)
-    prod    生产环境 (端口: 8000)
+    prod    生产环境 (端口: 8003)
 
 COMMAND:
     build   构建 Docker 镜像
@@ -119,7 +119,7 @@ get_env_port() {
             echo "8002"
             ;;
         prod)
-            echo "8000"
+            echo "8003"
             ;;
     esac
 }
@@ -146,6 +146,14 @@ start_services() {
 
     print_step "启动 $env 环境服务..."
 
+    # 检查环境配置文件
+    local env_file=".env.$env"
+    if [ ! -f "$env_file" ]; then
+        print_error "未找到环境配置文件: $env_file"
+        print_info "请先创建: cp .env.example $env_file"
+        exit 1
+    fi
+
     # 创建必要的目录
     mkdir -p nginx/logs/$env
     mkdir -p backups/postgres
@@ -163,7 +171,19 @@ start_services() {
     $DOCKER_COMPOSE -f $compose_file up -d
 
     print_info "⏳ 等待服务启动..."
-    sleep 30
+    MAX_WAIT=120
+    WAITED=0
+    until curl -sf http://localhost:$port/api/v1/health > /dev/null 2>&1; do
+        sleep 3
+        WAITED=$((WAITED + 3))
+        if [ $WAITED -ge $MAX_WAIT ]; then
+            print_error "服务启动超时，请查看日志:"
+            $DOCKER_COMPOSE -f $compose_file logs --tail=50 web
+            exit 1
+        fi
+        echo -n "."
+    done
+    echo ""
 
     # 检查服务状态
     if $DOCKER_COMPOSE -f $compose_file ps | grep -q "Exit"; then
