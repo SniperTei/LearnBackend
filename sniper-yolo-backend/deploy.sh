@@ -173,7 +173,7 @@ start_services() {
     print_info "⏳ 等待服务启动..."
     MAX_WAIT=120
     WAITED=0
-    until curl -sf http://localhost:$port/api/v1/health > /dev/null 2>&1; do
+    until curl -sf http://localhost:$port/health > /dev/null 2>&1; do
         sleep 3
         WAITED=$((WAITED + 3))
         if [ $WAITED -ge $MAX_WAIT ]; then
@@ -237,7 +237,7 @@ show_status() {
     # 显示健康检查
     local port=$(get_env_port $env)
     print_info "执行健康检查..."
-    if curl -s http://localhost:$port/api/v1/health > /dev/null; then
+    if curl -s http://localhost:$port/health > /dev/null; then
         print_info "✅ API 服务正常"
     else
         print_warning "⚠️  API 服务可能未就绪"
