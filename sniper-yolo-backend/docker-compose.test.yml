@@ -12,7 +12,7 @@ services:
     container_name: sniper_yolo_backend_test
     restart: unless-stopped
     ports:
-      - "8002:8002"  # 测试环境使用 8002 端口
+      - "8041:8041"  # 测试环境使用 8041 端口
     depends_on:
       postgres:
         condition: service_healthy
@@ -21,7 +21,7 @@ services:
     networks:
       - sniper_test_network
     healthcheck:
-      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8002/api/v1/health')"]
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8041/api/v1/health')"]
       interval: 30s
       timeout: 10s
       retries: 3
