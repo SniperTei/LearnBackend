@@ -47,7 +47,7 @@ services:
     restart: always
     environment:
       - POSTGRES_USER=sniper
-      - POSTGRES_PASSWORD=STRONG_PASSWORD_HERE_CHANGE_THIS
+      - POSTGRES_PASSWORD=CHANGE_THIS_STRONG_PASSWORD
       - POSTGRES_DB=sniper_yolo
       - POSTGRES_INITDB_ARGS=--encoding=UTF-8 --locale=C
     volumes:
@@ -55,7 +55,7 @@ services:
       - ./scripts/init-db.sql:/docker-entrypoint-initdb.d/init-db.sql
       - ./backups/postgres:/backups  # 备份目录
     ports:
-      - "5432:5432"
+      - "5433:5432"  # 宿主机5433避免与测试环境冲突
     networks:
       - sniper_prod_network
     healthcheck:
@@ -86,7 +86,7 @@ services:
     container_name: sniper_redis_prod
     restart: always
     ports:
-      - "6379:6379"
+      - "6380:6379"  # 宿主机6380避免与测试环境冲突
     volumes:
       - redis_data_prod:/data
     networks:
@@ -116,13 +116,10 @@ services:
     container_name: sniper_nginx_prod
     restart: always
     ports:
-      - "80:80"
-      - "443:443"
+      - "8082:80"
     volumes:
       - ./nginx/nginx.prod.conf:/etc/nginx/nginx.conf:ro
-      - ./nginx/ssl:/etc/nginx/ssl:ro  # SSL 证书目录
       - ./nginx/logs/prod:/var/log/nginx
-      - ./nginx/html:/usr/share/nginx/html:ro  # 静态文件
     depends_on:
       - web
     networks:

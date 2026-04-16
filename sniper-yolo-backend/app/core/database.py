@@ -11,7 +11,6 @@ logger = logging.getLogger(__name__)
 class Database:
     """PostgreSQL连接管理器"""
     DATABASE_URL: Optional[str] = settings.DATABASE_URL
-    DATABASE_NAME: Optional[str] = settings.DATABASE_NAME
 
     engine = None
     async_session = None
