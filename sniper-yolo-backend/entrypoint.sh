@@ -7,7 +7,8 @@ echo "=== Sniper YOLO Backend Entrypoint ==="
 echo "[1/3] 等待数据库就绪..."
 until python3 -c "
 import psycopg2, os
-conn = psycopg2.connect(os.getenv('ALEMBIC_DATABASE_URL', ''))
+url = os.getenv('ALEMBIC_DATABASE_URL', '').replace('+psycopg2', '')
+conn = psycopg2.connect(url)
 conn.close()
 " 2>/dev/null; do
     sleep 1
