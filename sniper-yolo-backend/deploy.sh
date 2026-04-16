@@ -65,8 +65,8 @@ show_usage() {
     $0 [ENVIRONMENT] [COMMAND]
 
 ENVIRONMENT:
-    test    测试环境 (端口: 8002)
-    prod    生产环境 (端口: 8003)
+    test    测试环境 (端口: 8041)
+    prod    生产环境 (端口: 8042)
 
 COMMAND:
     build   构建 Docker 镜像
@@ -116,10 +116,10 @@ get_env_port() {
     local env=$1
     case $env in
         test)
-            echo "8002"
+            echo "8041"
             ;;
         prod)
-            echo "8003"
+            echo "8042"
             ;;
     esac
 }
